@@ -1,163 +1,161 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-    <head>
-        <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
-        <meta http-equiv='cache-control' content='no-cache'> 
-<meta http-equiv='expires' content='0'> 
-<meta http-equiv='pragma' content='no-cache'>
-    </head>
-<style>
-      </style>
-    <body>
-        <div id="reviewArea">
-            <table id=table-full>
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Description</th>
-                        <th>UOM</th>
-                        <th>Price</th>
-                        <th>QTY</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                </tbody>
-                <tfoot id="table-footer">
-                </tfoot>
-            </table>
-        </div>
-        <script type="text/javascript">
+  <head>
+    <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="pragma" content="no-cache" />
+  </head>
+  <style></style>
+  <body>
+    <div id="reviewArea">
+      <table id="table-full">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Description</th>
+            <th>UOM</th>
+            <th>Price</th>
+            <th>QTY</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+        <tfoot id="table-footer"></tfoot>
+      </table>
+    </div>
+    <script type="text/javascript">
+      function tableExampleForCleaningDepot() {
+        // get widget parameters if any using getWidgetSettings for all, or getWidgetSetting('name') for a specific one.
+        // const params = JFCustomWidget.getWidgetSettings();
 
-        function tableExampleForCleaningDepot() {
-            // get widget parameters if any using getWidgetSettings for all, or getWidgetSetting('name') for a specific one.
-            // const params = JFCustomWidget.getWidgetSettings();
-         
-            // exposed functions
-            this.init = init;
-            this.getData = getData;
-         
-            // initialization of the widget
-            function init(formData) {
-                console.log("Hello world!")
-                mockFetchData().then((data) => generateHtmlTable(data))
-            }
+        // exposed functions
+        this.init = init;
+        this.getData = getData;
 
-            function mockFetchData(){
+        // initialization of the widget
+        function init(formData) {
+          console.log("Hello world!");
+          mockFetchData().then((data) => generateHtmlTable(data));
+        }
 
-                return new Promise((resolve, reject) => {
-  setTimeout(() => {
-    resolve(                {
-                    lineItems: [
-                        {
-                            product: "JS-0200",
-                            description: "P/T 8\" White #02001 Scott Paper Towel Roll 950' x 6/cs",
-                            uom: "",
-                            price: 117.99,
-                            qty: 2,
-                            total: 235.98
-                        },
-                        {
-                            product: "JS-48420",
-                            description: "Toilet Tissue 2ply #48420 Evolv 420 sheet 48/cs",
-                            uom: "",
-                            price: 43.99,
-                            qty: 2,
-                            total: 87.98
-                        },
-                        {
-                            product: "CP-0061CLEA0006L",
-                            description: "PBJ- Acid Bowl Cleaner",
-                            uom: "Case",
-                            price: 41.99,
-                            qty: 1,
-                            total: 41.99
-                        },
-                        {
-                            product: "PG-NADIN2MC",
-                            description: "SERVIETTE 2PLY DINNER 20x150/CS (3000/cs)",
-                            uom: "Sleeve",
-                            price: 5.50,
-                            qty: 1,
-                            total: 5.50
-                        },
-                        {
-                            product: "CP-0004CLEA0016L",
-                            description: "PBJ-Vehicle Wash 4L",
-                            uom: "Case",
-                            price: 99.99,
-                            qty: 1,
-                            total: 99.99
-                        }
-                    ],
-                    cartInfo: {shipping: 10,
-                    subtotal: 481.44,
-                    taxes: 62.59,
-                    total: 544.03}
-                }
-        );
-  }, 300);
-});
+        function mockFetchData() {
+          return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              resolve({
+                lineItems: [
+                  {
+                    product: "JS-0200",
+                    description:
+                      "P/T 8\" White #02001 Scott Paper Towel Roll 950' x 6/cs",
+                    uom: "",
+                    price: 117.99,
+                    qty: 2,
+                    total: 235.98,
+                  },
+                  {
+                    product: "JS-48420",
+                    description:
+                      "Toilet Tissue 2ply #48420 Evolv 420 sheet 48/cs",
+                    uom: "",
+                    price: 43.99,
+                    qty: 2,
+                    total: 87.98,
+                  },
+                  {
+                    product: "CP-0061CLEA0006L",
+                    description: "PBJ- Acid Bowl Cleaner",
+                    uom: "Case",
+                    price: 41.99,
+                    qty: 1,
+                    total: 41.99,
+                  },
+                  {
+                    product: "PG-NADIN2MC",
+                    description: "SERVIETTE 2PLY DINNER 20x150/CS (3000/cs)",
+                    uom: "Sleeve",
+                    price: 5.5,
+                    qty: 1,
+                    total: 5.5,
+                  },
+                  {
+                    product: "CP-0004CLEA0016L",
+                    description: "PBJ-Vehicle Wash 4L",
+                    uom: "Case",
+                    price: 99.99,
+                    qty: 1,
+                    total: 99.99,
+                  },
+                ],
+                cartInfo: {
+                  shipping: 10,
+                  subtotal: 481.44,
+                  taxes: 62.59,
+                  total: 544.03,
+                },
+              });
+            }, 300);
+          });
+        }
 
-            }
+        function generateTableRows(rowData) {
+          let tr = document.createElement("tr");
+          for (const [key, value] of Object.entries(rowData)) {
+            let td = document.createElement("td");
+            let text = document.createTextNode(value);
+            td.appendChild(text);
+            tr.appendChild(td);
+          }
+          return tr;
+        }
 
-            function generateTableRows(rowData){
-                let tr = document.createElement('tr')
-                for (const [key, value] of Object.entries(rowData)) {
-                    let td = document.createElement('td')
-                    let text = document.createTextNode(value)
-                    td.appendChild(text)
-                    tr.appendChild(td)
-                }
-                return tr
-            }
-         
-            function generateHtmlTable(data){
+        function generateHtmlTable(data) {
+          const { lineItems, cartInfo } = data;
+          const tableBody = document.getElementById("table-body");
+          const tableFooter = document.getElementById("table-footer");
+          for (const lineItem of lineItems) {
+            tableBody.appendChild(generateTableRows(lineItem));
+          }
+          for (const [key, value] of Object.entries(cartInfo)) {
+            let tr = document.createElement("tr");
+            let tdTitle = document.createElement("th");
+            tdTitle.style.textTransform = "capitalize";
+            tdTitle.style.textAlign = "left";
+            tdTitle.colSpan = "5";
+            let tdValue = document.createElement("td");
+            let rowTitle = document.createTextNode(key);
+            let rowValue = document.createTextNode(value);
+            tdTitle.appendChild(rowTitle);
+            tdValue.appendChild(rowValue);
+            tr.appendChild(tdTitle);
+            tr.appendChild(tdValue);
+            tableFooter.appendChild(tr);
+          }
+        }
 
-                const {lineItems, cartInfo} = data;
-                const tableBody = document.getElementById("table-body")
-                const tableFooter = document.getElementById("table-footer")
-                for (const lineItem of lineItems){
-                    tableBody.appendChild(generateTableRows(lineItem))
-                }
-                for (const [key, value] of Object.entries(cartInfo)){
-                    let tr = document.createElement('tr')
-                    let tdTitle = document.createElement('th')
-                    tdTitle.style.textTransform = "capitalize"
-                    tdTitle.style.textAlign = "left"
-                    tdTitle.colSpan = "5"
-                    let tdValue = document.createElement('td')
-                    let rowTitle = document.createTextNode(key)
-                    let rowValue = document.createTextNode(value)
-                    tdTitle.appendChild(rowTitle)
-                    tdValue.appendChild(rowValue)
-                    tr.appendChild(tdTitle)
-                    tr.appendChild(tdValue)
-                    tableFooter.appendChild(tr)
-                }
-            }
+        // get widget data
+        function getData() {
+          const htmlString = document.getElementById("table-full").innerHTML;
+          return {
+            valid: !!htmlString,
+            value: JFCustomWidgetUtils.buildMetadata(
+              "htmltext",
+              window.btoa(htmlString),
+            ),
+          };
+        }
+      }
 
-             // get widget data
-             function getData() {
-            const htmlString = document.getElementById("table-full").innerHTML;
-               return {
-                 valid: !!htmlString,
-                 value: JFCustomWidgetUtils.buildMetadata('htmltext', window.btoa(htmlString))
-               };
-             }
-            }
+      // always subscribe to ready event and implement widget related code
+      // inside callback function , it is the best practice while developing widgets
+      JFCustomWidget.subscribe("ready", function (data) {
+        var widget = new tableExampleForCleaningDepot();
+        widget.init(data);
 
-        // always subscribe to ready event and implement widget related code
-        // inside callback function , it is the best practice while developing widgets
-        JFCustomWidget.subscribe("ready", function(data) {
-
-            var widget = new tableExampleForCleaningDepot();
-            widget.init(data);
-
-            JFCustomWidget.subscribe("submit", function() {
-                JFCustomWidget.sendSubmit(widget.getData());
-            });
+        JFCustomWidget.subscribe("submit", function () {
+          JFCustomWidget.sendSubmit(widget.getData());
         });
-        </script>
-    </body>
+      });
+    </script>
+  </body>
 </html>
