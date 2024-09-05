@@ -1,0 +1,148 @@
+--
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+    </head>
+<style>
+      </style>
+    <body>
+        <div id="reviewArea">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Description</th>
+                        <th>UOM</th>
+                        <th>Price</th>
+                        <th>QTY</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                <tfoot>
+                </tfoot>
+            </table>
+        </div>
+        <script type="text/javascript">
+
+        function tableExampleForCleaningDepot() {
+            // get widget parameters if any using getWidgetSettings for all, or getWidgetSetting('name') for a specific one.
+            const params = JFCustomWidget.getWidgetSettings();
+         
+            // exposed functions
+            this.init = init;
+            this.getData = getData;
+            let dummyData
+         
+            // initialization of the widget
+            function init(formData) {
+                console.log("Hello world!")
+                dummyData = mockFetchData()
+            }
+
+            function mockFetchData(){
+                return {
+                    lineItems: [
+                        {
+                            product: "JS-0200",
+                            description: "P/T 8\" White #02001 Scott Paper Towel Roll 950' x 6/cs",
+                            uom: "",
+                            Price: 117.99,
+                            qty: 2,
+                            total: 235.98
+                        },
+                        {
+                            product: "JS-48420",
+                            description: "Toilet Tissue 2ply #48420 Evolv 420 sheet 48/cs",
+                            uom: "",
+                            Price: 43.99,
+                            qty: 2,
+                            total: 87.98
+                        },
+                        {
+                            product: "CP-0061CLEA0006L",
+                            description: "PBJ- Acid Bowl Cleaner",
+                            uom: "Case",
+                            Price: 41.99,
+                            qty: 1,
+                            total: 41.99
+                        },
+                        {
+                            product: "PG-NADIN2MC",
+                            description: "SERVIETTE 2PLY DINNER 20x150/CS (3000/cs)",
+                            uom: "Sleeve",
+                            Price: 5.50,
+                            qty: 1,
+                            total: 5.50
+                        },
+                        {
+                            product: "CP-0004CLEA0016L",
+                            description: "PBJ-Vehicle Wash 4L",
+                            uom: "Case",
+                            Price: 99.99,
+                            qty: 1,
+                            total: 99.99
+                        }
+                    ],
+                    shipping: 10,
+                    subtotal: 481.44,
+                    taxes: 62.59,
+                    total: 544.03
+                }
+            }
+         
+            function generateHtmlTable(data){
+
+                const {lineItems, shipping, subtotal, taxes, total} = data;
+
+                for (const lineItem in lineItems){
+                    console.log({lineItem})
+                }
+
+                // for (var i = 1; i < 4; i++) {
+                //   var tr = document.createElement('tr');
+
+                //   var td1 = document.createElement('td');
+                //   var td2 = document.createElement('td');
+
+                //   var text1 = document.createTextNode('Text1');
+                //   var text2 = document.createTextNode('Text2');
+
+                //   td1.appendChild(text1);
+                //   td2.appendChild(text2);
+                //   tr.appendChild(td1);
+                //   tr.appendChild(td2);
+
+                //   table.appendChild(tr);
+                // }
+            
+            }
+
+             // get widget data
+             function getData() {
+               // var inputValue = dummyData;
+
+               // return {
+               //   valid: !!inputValue,
+               //   value: inputValue.split(delimiter.toString())[parseInt(indexToSplitOn)]
+               // };
+             }
+            }
+
+        // always subscribe to ready event and implement widget related code
+        // inside callback function , it is the best practice while developing widgets
+        JFCustomWidget.subscribe("ready", function(data) {
+
+            var widget = new tableExampleForCleaningDepot();
+            widget.init(data);
+
+            JFCustomWidget.subscribe("submit", function() {
+                JFCustomWidget.sendSubmit(widget.getData());
+            });
+        });
+       
+        </script>
+    </body>
+</html>
