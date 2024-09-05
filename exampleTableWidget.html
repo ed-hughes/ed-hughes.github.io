@@ -141,7 +141,7 @@
              function getData() {
             const htmlString = document.getElementById("table-full").innerHTML;
                return {
-                 valid: !!inputValue,
+                 valid: !!htmlString,
                  value: JFCustomWidgetUtils.buildMetadata('htmltext', window.btoa(htmlString))
                };
              }
