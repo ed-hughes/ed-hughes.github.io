@@ -10,7 +10,7 @@
       </style>
     <body>
         <div id="reviewArea">
-            <table>
+            <table id=table-full>
                 <thead>
                     <tr>
                         <th>Product</th>
@@ -21,9 +21,9 @@
                         <th>Total</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="table-body">
                 </tbody>
-                <tfoot>
+                <tfoot id="table-footer">
                 </tfoot>
             </table>
         </div>
@@ -31,7 +31,7 @@
 
         function tableExampleForCleaningDepot() {
             // get widget parameters if any using getWidgetSettings for all, or getWidgetSetting('name') for a specific one.
-            const params = JFCustomWidget.getWidgetSettings();
+            // const params = JFCustomWidget.getWidgetSettings();
          
             // exposed functions
             this.init = init;
@@ -53,7 +53,7 @@
                             product: "JS-0200",
                             description: "P/T 8\" White #02001 Scott Paper Towel Roll 950' x 6/cs",
                             uom: "",
-                            Price: 117.99,
+                            price: 117.99,
                             qty: 2,
                             total: 235.98
                         },
@@ -61,7 +61,7 @@
                             product: "JS-48420",
                             description: "Toilet Tissue 2ply #48420 Evolv 420 sheet 48/cs",
                             uom: "",
-                            Price: 43.99,
+                            price: 43.99,
                             qty: 2,
                             total: 87.98
                         },
@@ -69,7 +69,7 @@
                             product: "CP-0061CLEA0006L",
                             description: "PBJ- Acid Bowl Cleaner",
                             uom: "Case",
-                            Price: 41.99,
+                            price: 41.99,
                             qty: 1,
                             total: 41.99
                         },
@@ -77,7 +77,7 @@
                             product: "PG-NADIN2MC",
                             description: "SERVIETTE 2PLY DINNER 20x150/CS (3000/cs)",
                             uom: "Sleeve",
-                            Price: 5.50,
+                            price: 5.50,
                             qty: 1,
                             total: 5.50
                         },
@@ -85,57 +85,65 @@
                             product: "CP-0004CLEA0016L",
                             description: "PBJ-Vehicle Wash 4L",
                             uom: "Case",
-                            Price: 99.99,
+                            price: 99.99,
                             qty: 1,
                             total: 99.99
                         }
                     ],
-                    shipping: 10,
+                    cartInfo: {shipping: 10,
                     subtotal: 481.44,
                     taxes: 62.59,
-                    total: 544.03
+                    total: 544.03}
                 }
         );
   }, 300);
 });
 
             }
+
+            function generateTableRows(rowData){
+                let tr = document.createElement('tr')
+                for (const [key, value] of Object.entries(rowData)) {
+                    let td = document.createElement('td')
+                    let text = document.createTextNode(value)
+                    td.appendChild(text)
+                    tr.appendChild(td)
+                }
+                return tr
+            }
          
             function generateHtmlTable(data){
 
-                const {lineItems, shipping, subtotal, taxes, total} = data;
-
-                for (const lineItem in lineItems){
-                    console.log({lineItem})
+                const {lineItems, cartInfo} = data;
+                const tableBody = document.getElementById("table-body")
+                const tableFooter = document.getElementById("table-footer")
+                for (const lineItem of lineItems){
+                    tableBody.appendChild(generateTableRows(lineItem))
                 }
-
-                // for (var i = 1; i < 4; i++) {
-                //   var tr = document.createElement('tr');
-
-                //   var td1 = document.createElement('td');
-                //   var td2 = document.createElement('td');
-
-                //   var text1 = document.createTextNode('Text1');
-                //   var text2 = document.createTextNode('Text2');
-
-                //   td1.appendChild(text1);
-                //   td2.appendChild(text2);
-                //   tr.appendChild(td1);
-                //   tr.appendChild(td2);
-
-                //   table.appendChild(tr);
-                // }
-            
+                for (const [key, value] of Object.entries(cartInfo)){
+                    let tr = document.createElement('tr')
+                    let tdTitle = document.createElement('th')
+                    tdTitle.style.textTransform = "capitalize"
+                    tdTitle.style.textAlign = "left"
+                    tdTitle.colSpan = "5"
+                    let tdValue = document.createElement('td')
+                    let rowTitle = document.createTextNode(key)
+                    let rowValue = document.createTextNode(value)
+                    tdTitle.appendChild(rowTitle)
+                    tdValue.appendChild(rowValue)
+                    tr.appendChild(tdTitle)
+                    tr.appendChild(tdValue)
+                    tableFooter.appendChild(tr)
+                }
             }
 
              // get widget data
              function getData() {
-               // var inputValue = dummyData;
-
-               // return {
-               //   valid: !!inputValue,
-               //   value: inputValue.split(delimiter.toString())[parseInt(indexToSplitOn)]
-               // };
+            const htmlString = document.getElementById("table-full").innerHTML;
+               return {
+                 valid: !!inputValue,
+                 value: JFCustomWidgetUtils.buildMetadata('htmltext', window.btoa(htmlString));
+               };
              }
             }
 
@@ -150,7 +158,6 @@
                 JFCustomWidget.sendSubmit(widget.getData());
             });
         });
-       
         </script>
     </body>
 </html>
