@@ -9,7 +9,6 @@
   <style></style>
   <body>
     <div id="reviewArea">
-      <button>Run getFieldsByX</button>
     </div>
     <script type="text/javascript">
       function tableExampleForCleaningDepot() {
@@ -19,21 +18,18 @@
         // exposed functions
         this.init = init;
         this.getData = getData;
-
-        function listenFromSpecificField(qid){
-          console.log("Running getFieldsByX")
+        
           JFCustomWidget.listenFromField(qid, 'change', function(value) {
               console.log(`CHANGE EVENT: ${value}`)
           })
           JFCustomWidget.listenFromField(qid, 'keyup', function(value) {
               console.log(`KEYUP EVENT: ${value}`)
           })
-        }
+
 
         // initialization of the widget
         function init(formData) {
           console.log("Hello world!");
-          listenFromSpecificField("3")
         }
 
         // get widget data
