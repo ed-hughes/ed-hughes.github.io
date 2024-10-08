@@ -2,6 +2,7 @@
 <html>
   <head>
     <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+    // You'd want to put that prism script tag from the setup page here 
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="expires" content="0" />
     <meta http-equiv="pragma" content="no-cache" />
@@ -27,27 +28,49 @@
           'control_fullname',
           'control_email'
         ]
-
-        function getFieldsByX(){
-          console.log("Running getFieldsByX")
-          JFCustomWidget.getFieldsValueByName(otherFields, function(res){
-              setTimeout(console.log(`Here's the data ${JSON.stringify(res, null, 2)}`), 500)
-          })
-        }
-
+        
         // initialization of the widget
         function init(formData) {
           console.log("Hello world!");
-          getFieldsByX()
         }
 
         // get widget data
         function getData() {
-          getFieldsByX();
-          return {
-            valid: true,
-            value: "TEST"
-          };
+
+          JFCustomWidget.getFieldsValueByName(otherFields, function(res){
+              const prismFormattedData = {
+                  name: {
+                      type: 'text',
+                      value: data.filter((item) => item.selector == "control_fullname")[0],
+                      label: 'Name',
+                  },
+                  email: {
+                      type: 'email',
+                      value: data.filter((item) => item.selector == "control_email")[0],
+                      label: 'Email',
+                  },
+                  phone: {
+                      type: 'tel',
+                      value: data.filter((item) => item.selector == "control_phone")[0],
+                      label: 'Phone Number',
+                  },
+              };              
+              const id = 'contact-form-health';
+              
+              // Optional:
+              const options = {
+                  // location: '{location_uuid}'
+              };
+
+              console.log(`The data that would be sent to prism: ${JSON.stringify(prismFormattedData, null, 2)}`)
+              //window.$prism.submission.send(data, id, options);
+          })
+
+          // Commenting out the below blocks the submit event, you wouldn't want to do this in reality. But I've done this here so you can see the prismFormttedData logged out
+          // return {
+          //   valid: true,
+          //   value: "TEST"
+          // };
         }
       }
 
