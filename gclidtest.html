@@ -8,22 +8,60 @@
   </head>
   <style></style>
   <body>
-<h1>Parent Page</h1>
-    
-    <iframe
-      id="JotFormIFrame-242816079944063"
-      title="GCLID Example"
-      onload="window.parent.scrollTo(0,0)"
-      allowtransparency="true"
-      allow="geolocation; microphone; camera; fullscreen"
-      src="https://demo.jotform.com/242816079944063"
-      frameborder="0"
-      style="min-width:100%;max-width:100%;height:539px;border:none;"
-      scrolling="no"
-    >
-    </iframe>
-    <script src='https://demo.jotform.com/s/umd/latest/for-form-embed-handler.js'></script>
-    <script>window.jotformEmbedHandler("iframe[id='JotFormIFrame-242816079944063']", "https://demo.jotform.com/")</script>
-    
+    <div id="reviewArea">
+      <button>Run getFieldsByX</button>
+    </div>
+    <script type="text/javascript">
+      function tableExampleForCleaningDepot() {
+        // get widget parameters if any using getWidgetSettings for all, or getWidgetSetting('name') for a specific one.
+        // const params = JFCustomWidget.getWidgetSettings();
+
+        // exposed functions
+        this.init = init;
+        this.getData = getData;
+        const otherFields = [
+          'control_textbox',
+          'control_textarea',
+          'control_dropdown',
+          'control_datetime',
+          'control_phone',
+          'control_fullname',
+          'control_email'
+        ]
+
+        function getFieldsByX(){
+          console.log("Running getFieldsByX")
+          JFCustomWidget.getFieldsValueByName(otherFields, function(res){
+              setTimeout(console.log(`Here's the data ${JSON.stringify(res)}`), 500)
+          })
+        }
+
+        // initialization of the widget
+        function init(formData) {
+          console.log("Hello world!");
+          getFieldsByX()
+        }
+
+        // get widget data
+        function getData() {
+          getFieldsByX();
+          return {
+            valid: true,
+            value: "TEST"
+          };
+        }
+      }
+
+      // always subscribe to ready event and implement widget related code
+      // inside callback function , it is the best practice while developing widgets
+      JFCustomWidget.subscribe("ready", function (data) {
+        var widget = new tableExampleForCleaningDepot();
+        widget.init(data);
+
+        JFCustomWidget.subscribe("submit", function () {
+          JFCustomWidget.sendSubmit(widget.getData());
+        });
+      });
+    </script>
   </body>
 </html>
