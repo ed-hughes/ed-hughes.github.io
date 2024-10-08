@@ -9,20 +9,7 @@
   <style></style>
   <body>
     <div id="reviewArea">
-      <table id="table-full">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Description</th>
-            <th>UOM</th>
-            <th>Price</th>
-            <th>QTY</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-        <tfoot id="table-footer"></tfoot>
-      </table>
+      <button>Run getFieldsByX</button>
     </div>
     <script type="text/javascript">
       function tableExampleForCleaningDepot() {
@@ -33,19 +20,19 @@
         this.init = init;
         this.getData = getData;
         const otherFields = [
-        'control_textbox',
-        'control_textarea',
-        'control_dropdown',
-        'control_datetime',
-        'control_phone',
-        'control_fullname',
-        'control_email'
+          'control_textbox',
+          'control_textarea',
+          'control_dropdown',
+          'control_datetime',
+          'control_phone',
+          'control_fullname',
+          'control_email'
         ]
 
         function getFieldsByX(){
           console.log("Running getFieldsByX")
           JFCustomWidget.getFieldsValueByName(otherFields, function(res){
-              setTimeout(console.log(`Here's the data ${res}`), 500)
+              setTimeout(console.log(`Here's the data ${JSON.parse(res)}`), 500)
           })
         }
 
