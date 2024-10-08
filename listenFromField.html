@@ -19,27 +19,21 @@
         // exposed functions
         this.init = init;
         this.getData = getData;
-        const otherFields = [
-          'control_textbox',
-          'control_textarea',
-          'control_dropdown',
-          'control_datetime',
-          'control_phone',
-          'control_fullname',
-          'control_email'
-        ]
 
-        function getFieldsByX(){
+        function listenFromSpecificField(qid){
           console.log("Running getFieldsByX")
-          JFCustomWidget.getFieldsValueByName(otherFields, function(res){
-              setTimeout(console.log(`Here's the data ${JSON.stringify(res)}`), 500)
+          JFCustomWidget.listenFromField(qid, 'change', function(value) {
+              console.log(`CHANGE EVENT: ${value}`)
+          })
+          JFCustomWidget.listenFromField(qid, 'keyup', function(value) {
+              console.log(`KEYUP EVENT: ${value}`)
           })
         }
 
         // initialization of the widget
         function init(formData) {
           console.log("Hello world!");
-          getFieldsByX()
+          listenFromSpecificField("3")
         }
 
         // get widget data
