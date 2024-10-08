@@ -40,17 +40,17 @@
               const prismFormattedData = {
                   name: {
                       type: 'text',
-                      value: data.filter((item) => item.selector == "control_fullname")[0],
+                      value: res.filter((item) => item.selector == "control_fullname")[0],
                       label: 'Name',
                   },
                   email: {
                       type: 'email',
-                      value: data.filter((item) => item.selector == "control_email")[0],
+                      value: res.filter((item) => item.selector == "control_email")[0],
                       label: 'Email',
                   },
                   phone: {
                       type: 'tel',
-                      value: data.filter((item) => item.selector == "control_phone")[0],
+                      value: res.filter((item) => item.selector == "control_phone")[0],
                       label: 'Phone Number',
                   },
               };              
