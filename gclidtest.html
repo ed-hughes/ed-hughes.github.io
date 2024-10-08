@@ -11,7 +11,7 @@
     <div id="reviewArea">
     </div>
     <script type="text/javascript">
-      function tableExampleForCleaningDepot() {
+      function GCLIDExample() {
         // get widget parameters if any using getWidgetSettings for all, or getWidgetSetting('name') for a specific one.
         // const params = JFCustomWidget.getWidgetSettings();
 
@@ -76,7 +76,7 @@
       // always subscribe to ready event and implement widget related code
       // inside callback function , it is the best practice while developing widgets
       JFCustomWidget.subscribe("ready", function (data) {
-        var widget = new tableExampleForCleaningDepot();
+        var widget = new GCLIDExample();
         widget.init(data);
 
         JFCustomWidget.subscribe("submit", function () {
