@@ -36,7 +36,9 @@
           console.log("getAllQueryString", JFCustomWidget.getAllQueryString())
           console.log("getQueryString", JFCustomWidget.getQueryString())
           const parentUrl = (window.location != window.parent.location) ? document.referrer : document.location.href;
-          console.log({parentUrl})
+          console.log("ref", document.referrer)
+          console.log("href", document.location.href)
+          console.log("aO", window.location.ancestorOrigin)
         }
 
         // initialization of the widget
