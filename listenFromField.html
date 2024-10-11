@@ -57,7 +57,7 @@
         // initialization of the widget
         function init(formData) {
           console.log("Hello world!");
-          getAllFormFields()
+          console.log(formData)
         }
         
         // get widget data
@@ -72,6 +72,7 @@
       // always subscribe to ready event and implement widget related code
       // inside callback function , it is the best practice while developing widgets
       JFCustomWidget.subscribe("ready", function (data) {
+        console.log(data)
         var widget = new tableExampleForCleaningDepot();
         widget.init(data);
 
