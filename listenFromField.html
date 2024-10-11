@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+    <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="expires" content="0" />
     <meta http-equiv="pragma" content="no-cache" />
@@ -11,74 +11,62 @@
     <div id="reviewArea">
     </div>
     <script type="text/javascript">
-      function tableExampleForCleaningDepot() {
-        // get widget parameters if any using getWidgetSettings for all, or getWidgetSetting('name') for a specific one.
-        const params = JFCustomWidget.getWidgetSettings();
-        const parent = params.ref
-        const thisQid = params.qid
-
-        // exposed functions
-        this.init = init;
-        this.getData = getData;
-        const qid = "input_3"
-        
-          JFCustomWidget.listenFromField(qid, 'change', function(value) {
-              console.log(`CHANGE EVENT: ${value}`)
-          })
-          JFCustomWidget.listenFromField(qid, 'keyup', function(value) {
-              console.log(`KEYUP EVENT: ${value}`)
-          })
 
 
-        function getAllFormFields(){
-          console.log("JFCustomWidget.", JFCustomWidget.formID)
-          console.log("Settings", JFCustomWidget.getWidgetSettings())
-          console.log("getParentOrigin", JFCustomWidget.getParentOrigin())
-          console.log("getFrameData", JFCustomWidget.getFrameData())
-          console.log("getFormTrackerID", JFCustomWidget.getFormTrackerID())
-          console.log("getAllQueryString", JFCustomWidget.getAllQueryString())
-          console.log("getQueryString", JFCustomWidget.getQueryString())
-          const parentUrl = (window.location != window.parent.location) ? document.referrer : document.location.href;
-          console.log("ref", document.referrer)
-          console.log("href", document.location.href)
-          console.log("aO", window.location.ancestorOrigin)
-          console.log("ao2", document.location.ancestorOrigins[document.location.ancestorOrigins.length - 1])
+      const listenFromDynamically = async (formData) => {
+        async function init(formData) {
+          const formHtml = await getFormHtml(formData.formID, formData.qid)
+          const qids = parseOutQids(formHtml,formData.qid)
+          return generateAllListeners(qids)
         }
 
         async function getFormHtml(formID){
-          // const response = await fetch(
+          const response = await fetch(`${parent}/${formID}`)
+          const data = await response.text()
+          return data
         }
 
-        function parseOutQids(html){
+        //Jotform always adds fields 1 and 2, and then you also don't want to listen to the widget itself.
+        function parseOutQids(html, thisQid){
+          const idsToIgnore = [1, 2, thisQid]
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, "text/html")
-        }
-
-        // initialization of the widget
-        function init(formData) {
-          console.log("Hello world!");
-          console.log(formData)
+          const allQids = []
+          doc.querySelectorAll("[id^='cid_']").forEach((node) => allQids.push(parseInt(node.id.split("_").at(-1))))
+          return allQids.filter(e => !idsToIgnore.includes(e))
         }
         
-        // get widget data
-        function getData() {
-          return {
-            valid: true,
-            value: "TEST"
-          };
+        function generateAllListeners(qids){
+            return new Promise(function(resolve, reject){
+                qids.forEach(function(qid){
+                    JFCustomWidget.listenFromField(`input_${qids}`, 'change', function(value){
+                        resolve({question: qid, value})
+                    })
+                })
+            })
         }
       }
 
       // always subscribe to ready event and implement widget related code
       // inside callback function , it is the best practice while developing widgets
       JFCustomWidget.subscribe("ready", function (data) {
-        console.log(data)
-        var widget = new tableExampleForCleaningDepot();
-        widget.init(data);
 
-        JFCustomWidget.subscribe("submit", function () {
-          JFCustomWidget.sendSubmit(widget.getData());
-        });
+        let questionAnswerData = {}
+       function keepListening(){
+
+      let widget = listenFromDynamically(data)
+              widget.init()
+              .then(function(answerValue){
+                const {question, value} = answerValue;
+                questionAnswerData.question = value
+                          keepListening();
+                  })}
+        listenFromDynamically(data)
+
+                            JFCustomWidget.subscribe('submit', function() {
+                        // JFCustomWidget.sendSubmit();
+                        console.log({questionAnswerData})
+                    })
       });
     </script>
   </body>
