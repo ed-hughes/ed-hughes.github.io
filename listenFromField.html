@@ -34,6 +34,9 @@
           console.log("getFrameData", JFCustomWidget.getFrameData())
           console.log("getFormTrackerID", JFCustomWidget.getFormTrackerID())
           console.log("getAllQueryString", JFCustomWidget.getAllQueryString())
+          console.log("getQueryString", JFCustomWidget.getQueryString())
+          const parentUrl = (window.location != window.parent.location) ? document.referrer : document.location.href;
+          console.log({parentUrl})
         }
 
         // initialization of the widget
