@@ -13,7 +13,9 @@
     <script type="text/javascript">
       function tableExampleForCleaningDepot() {
         // get widget parameters if any using getWidgetSettings for all, or getWidgetSetting('name') for a specific one.
-        // const params = JFCustomWidget.getWidgetSettings();
+        const params = JFCustomWidget.getWidgetSettings();
+        const parent = params.ref
+        const thisQid = params.qid
 
         // exposed functions
         this.init = init;
@@ -39,6 +41,16 @@
           console.log("ref", document.referrer)
           console.log("href", document.location.href)
           console.log("aO", window.location.ancestorOrigin)
+          console.log("url", parent.document.URL)
+        }
+
+        async function getFormHtml(formID){
+          // const response = await fetch(
+        }
+
+        function parseOutQids(html){
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, "text/html")
         }
 
         // initialization of the widget
