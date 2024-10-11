@@ -17,12 +17,14 @@
         async function init(formData) {
           const formHtml = await getFormHtml(formData.formID, formData.qid)
           const qids = parseOutQids(formHtml,formData.qid)
+          console.log({qids})
           return generateAllListeners(qids)
         }
 
         async function getFormHtml(formID){
           const response = await fetch(`${parent}/${formID}`)
           const data = await response.text()
+          console.log({data})
           return data
         }
 
@@ -39,6 +41,7 @@
         function generateAllListeners(qids){
             return new Promise(function(resolve, reject){
                 qids.forEach(function(qid){
+                  console.log({qid})
                     JFCustomWidget.listenFromField(`input_${qids}`, 'change', function(value){
                         resolve({question: qid, value})
                     })
@@ -53,17 +56,18 @@
 
         let questionAnswerData = {}
        function triggerListening(){
+        console.log("triggered")
 
       let widget = listenFromDynamically(data)
               widget.init()
               .then(function(answerValue){
+                console.log("resolved", answerValue)
                 const {question, value} = answerValue;
                 questionAnswerData.question = value
                           triggerListening();
                   })}
-        listenFromDynamically(data)
 
-                            JFCustomWidget.subscribe('submit', function() {
+JFCustomWidget.subscribe('submit', function() {
                         // JFCustomWidget.sendSubmit();
                         console.log({questionAnswerData})
                     })
