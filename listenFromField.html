@@ -28,11 +28,16 @@
           })
 
 
+        function getAllFormFields(){
+          console.log("Settings", JFCustomWidget.getWidgetSettings())
+        }
+
         // initialization of the widget
         function init(formData) {
           console.log("Hello world!");
+          getAllFormFields()
         }
-
+        
         // get widget data
         function getData() {
           return {
