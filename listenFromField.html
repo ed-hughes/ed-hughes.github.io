@@ -14,12 +14,9 @@
 
 
       const listenFromDynamically = async (formData) => {
-        async function init(formData) {
-          const formHtml = await getFormHtml(formData.formID, formData.qid)
-          const qids = parseOutQids(formHtml,formData.qid)
-          console.log({qids})
-          return generateAllListeners(qids)
-        }
+        const formHtml = await getFormHtml(formData.formID, formData.qid)
+        const qids = parseOutQids(formHtml,formData.qid)
+        console.log({qids})
 
         async function getFormHtml(formID){
           const response = await fetch(`${parent}/${formID}`)
@@ -55,23 +52,23 @@
       JFCustomWidget.subscribe("ready", function (data) {
 
         let questionAnswerData = {}
-       function triggerListening(){
-        console.log("triggered")
+        listenFromDynamically()
+      //  function triggerListening(){
+      //   console.log("triggered")
 
-      let widget = listenFromDynamically(data)
-              widget.init()
-              .then(function(answerValue){
-                console.log("resolved", answerValue)
-                const {question, value} = answerValue;
-                questionAnswerData.question = value
-                          triggerListening();
-                  })}
+      // let widget = listenFromDynamically(data)
+      //         widget.init()
+      //         .then(function(answerValue){
+      //           console.log("resolved", answerValue)
+      //           const {question, value} = answerValue;
+      //           questionAnswerData.question = value
+      //                     triggerListening();
+      //             })}
 
 JFCustomWidget.subscribe('submit', function() {
                         // JFCustomWidget.sendSubmit();
                         console.log({questionAnswerData})
                     })
-      triggerListening();
       });
     </script>
   </body>
