@@ -4,7 +4,6 @@
     <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="expires" content="0" />
-    <script async="" src="https://next-api.patientprism.com/v1/snippet/9c97f794-ea26-45a1-89d4-ca1e439b2dc8"></script>
     <meta http-equiv="pragma" content="no-cache" />
   </head>
   <style></style>
@@ -63,14 +62,13 @@
               };
 
               console.log(`The data that would be sent to prism: ${JSON.stringify(prismFormattedData, null, 2)}`)
-              window.$prism.submission.send(data, id, options);
           })
 
           // Commenting out the below blocks the submit event, you wouldn't want to do this in reality. But I've done this here so you can see the prismFormttedData logged out
-          return {
-            valid: true,
-            value: "TEST"
-          };
+          // return {
+          //   valid: true,
+          //   value: "TEST"
+          // };
         }
       }
 
