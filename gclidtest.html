@@ -63,14 +63,14 @@
               };
 
               console.log(`The data that would be sent to prism: ${JSON.stringify(prismFormattedData, null, 2)}`)
-              //window.$prism.submission.send(data, id, options);
+              window.$prism.submission.send(data, id, options);
           })
 
           // Commenting out the below blocks the submit event, you wouldn't want to do this in reality. But I've done this here so you can see the prismFormttedData logged out
-          // return {
-          //   valid: true,
-          //   value: "TEST"
-          // };
+          return {
+            valid: true,
+            value: "TEST"
+          };
         }
       }
 
