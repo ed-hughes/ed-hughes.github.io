@@ -43,11 +43,12 @@
         // get widget data
         function getData() {
 
-        const val = document.getElementById("reviewArea").innerHTML
-
+          const val = document.getElementById("reviewArea").innerHTML
+          const test = ["one", "two"]
          return {
            valid: true,
-           value: JFCustomWidgetUtils.buildMetadata('htmltext', window.btoa(val))
+           value: test.join("\n")
+           // value: JFCustomWidgetUtils.buildMetadata('htmltext', window.btoa(val))
          };
         }
       }
