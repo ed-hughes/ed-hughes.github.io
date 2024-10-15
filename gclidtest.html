@@ -36,9 +36,11 @@
         }
 
         function strangeQueue(res){
+            console.log("strangeQueue", strangeQueue)
             const name = res.data.find((item) => item.selector == "control_fullname")
             const email = res.data.find((item) => item.selector == "control_email")
             const phone = res.data.find((item) => item.selector == "control_phone")
+            console.log("child", {name, email, phone})
             window.parent.parent.postMessage({source: "rw", data: {name, email, phone }}, "*") 
         }
         
@@ -46,13 +48,14 @@
         function getData() {
 
           JFCustomWidget.getFieldsValueByName(otherFields, function(res){
-             setTimeout(strangeQueue(res), 500);
+             // setTimeout(strangeQueue(res), 500);
+            strangeQueue(res);
           })
 
-          return {
-            valid: true,
-            value: "TEST" //if you want the widget itself to have a value otherwise it's not needed
-          };
+          // return {
+          //   valid: true,
+          //   value: "TEST" //if you want the widget itself to have a value otherwise it's not needed
+          // };
         }
       }
 
