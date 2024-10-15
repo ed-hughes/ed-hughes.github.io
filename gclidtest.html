@@ -19,13 +19,9 @@
         this.init = init;
         this.getData = getData;
         const otherFields = [
-          'control_textbox',
-          'control_textarea',
-          'control_dropdown',
-          'control_datetime',
-          'control_phone',
-          'control_fullname',
-          'control_email'
+          "8",
+          "4",
+          "7"
         ]
         
         // initialization of the widget
@@ -36,17 +32,20 @@
         }
 
         function strangeQueue(res){
-            const name = res.data.find((item) => item.selector == "control_fullname")
-            const email = res.data.find((item) => item.selector == "control_email")
-            const phone = res.data.find((item) => item.selector == "control_phone")
+            console.log({res})
+            const name = res.data.find((item) => item.selector == "4")
+            const email = res.data.find((item) => item.selector == "8")
+            const phone = res.data.find((item) => item.selector == "7")
+            console.log({name, email, phone})
             window.parent.parent.postMessage({source: "rw", data: {name, email, phone }}, "*") 
         }
         
         // get widget data
         function getData() {
 
-          JFCustomWidget.getFieldsValueByName(otherFields, function(res){
+          JFCustomWidget.getFieldsValueByID(otherFields, function(res){
              // setTimeout(strangeQueue(res), 500);
+            console.log("gFVID", res)
             strangeQueue(res);
           })
 
