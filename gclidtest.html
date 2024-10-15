@@ -35,16 +35,20 @@
           window.parent.parent.postMessage("hello therethere this is a message!!", "*") 
         }
 
+        function strangeQueue(res){
+            const name = res.data.find((item) => item.selector == "control_fullname")
+            const email = res.data.find((item) => item.selector == "control_email")
+            const phone = res.data.find((item) => item.selector == "control_phone")
+            window.parent.parent.postMessage({source: "rw", data: {name, email, phone }}, "*") 
+        }
+        
         // get widget data
         function getData() {
 
           JFCustomWidget.getFieldsValueByName(otherFields, function(res){
-              const name = res.data.find((item) => item.selector == "control_fullname")
-              const email = res.data.find((item) => item.selector == "control_email")
-              const phone = res.data.find((item) => item.selector == "control_phone")
-              window.parent.parent.postMessage({source: "rw", data: {name, email, phone }}, "*") 
+             setTimeout(strangeQueue(res), 500);
           })
-          
+
           return {
             valid: true,
             value: "TEST" //if you want the widget itself to have a value otherwise it's not needed
