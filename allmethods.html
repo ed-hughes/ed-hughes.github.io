@@ -26,9 +26,12 @@
         // get widget data
         function getData() {
 
+          const values = ["one", "two", "three"]
+          var separator = (params.separator && params.separator != '<empty>' ? ' ' + params.separator + ' ' : "\n");
+          
           return {
             valid: true,
-            value: "One\r\nTwo"
+            value: values.join(separator);
           };
         }
       }
