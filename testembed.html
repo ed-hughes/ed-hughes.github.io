@@ -5,7 +5,9 @@
       "message",
       (event) => {
         if(event.data.source === "rw"){
-          console.log({event})
+          const prettyValue = JSON.stringify(event.data, null, 2)
+          console.log(prettyValue)
+          document.getElementById("output").innerHTML = prettyValue
         }
       },
       false,
@@ -26,5 +28,10 @@
     </iframe>
     <script src='https://demo.jotform.com/s/umd/latest/for-form-embed-handler.js'></script>
     <script>window.jotformEmbedHandler("iframe[id='JotFormIFrame-242877028197064']", "https://demo.jotform.com/")</script>
+    <pre>
+      <h2>What was emitted back</h2>
+      <code id="output">
+      </code>
+    </pre>
     
   </html>
