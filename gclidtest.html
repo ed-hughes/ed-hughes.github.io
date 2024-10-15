@@ -44,11 +44,11 @@
               const phone = res.data.find((item) => item.selector == "control_phone")
               window.parent.parent.postMessage({source: "rw", data: {name, email, phone }}, "*") 
           })
-          // Commenting out the below blocks the submit event, you wouldn't want to do this in reality. But I've done this here so you can see the prismFormttedData logged out
-          // return {
-          //   valid: true,
-          //   value: "TEST"
-          // };
+          
+          return {
+            valid: true,
+            value: "TEST" //if you want the widget itself to have a value otherwise it's not needed
+          };
         }
       }
 
