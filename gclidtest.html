@@ -32,6 +32,8 @@
         function init(formData) {
           console.log("Hello world!");
           window.parent.postMessage( JSON.stringify({sectionBackgroundColor: "#ff0000", sizeTitle: "200px", sectionTextColor: "#000", height: "20px"}), '*')
+          window.parent.postMessage("hello there this is a message!!", "*") 
+          window.parent.parent.postMessage("hello therethere this is a message!!", "*") 
         }
 
         // get widget data
