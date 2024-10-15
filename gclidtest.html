@@ -36,32 +36,33 @@
         // get widget data
         function getData() {
 
-          JFCustomWidget.getFieldsValueByName(otherFields, function(res){
-              const prismFormattedData = {
-                  name: {
-                      type: 'text',
-                      value: res.data.filter((item) => item.selector == "control_fullname")[0].value,
-                      label: 'Name',
-                  },
-                  email: {
-                      type: 'email',
-                      value: res.data.filter((item) => item.selector == "control_email")[0].value,
-                      label: 'Email',
-                  },
-                  phone: {
-                      type: 'tel',
-                      value: res.data.filter((item) => item.selector == "control_phone")[0].value,
-                      label: 'Phone Number',
-                  },
-              };              
-              const id = 'contact-form-health';
+          // JFCustomWidget.getFieldsValueByName(otherFields, function(res){
+          //     const prismFormattedData = {
+          //         name: {
+          //             type: 'text',
+          //             value: res.data.filter((item) => item.selector == "control_fullname")[0].value,
+          //             label: 'Name',
+          //         },
+          //         email: {
+          //             type: 'email',
+          //             value: res.data.filter((item) => item.selector == "control_email")[0].value,
+          //             label: 'Email',
+          //         },
+          //         phone: {
+          //             type: 'tel',
+          //             value: res.data.filter((item) => item.selector == "control_phone")[0].value,
+          //             label: 'Phone Number',
+          //         },
+          //     };              
+          //     const id = 'contact-form-health';
               
-              // Optional:
-              const options = {
-                  // location: '{location_uuid}'
-              };
+          //     // Optional:
+          //     const options = {
+          //         // location: '{location_uuid}'
+          //     };
 
-              console.log(`The data that would be sent to prism: ${JSON.stringify(prismFormattedData, null, 2)}`)
+              // console.log(`The data that would be sent to prism: ${JSON.stringify(prismFormattedData, null, 2)}`)
+              window.parent.postMessage("hello there this is a message!!") 
           })
 
           // Commenting out the below blocks the submit event, you wouldn't want to do this in reality. But I've done this here so you can see the prismFormttedData logged out
