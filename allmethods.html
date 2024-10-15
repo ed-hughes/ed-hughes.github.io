@@ -47,7 +47,7 @@
           const test = ["one", "two"]
          return {
            valid: true,
-           value: test.join("\n")
+           value: test.join("\n").replaceAll("\r", "")
            // value: JFCustomWidgetUtils.buildMetadata('htmltext', window.btoa(val))
          };
         }
