@@ -9,23 +9,8 @@
   <style></style>
   <body>
     <div id="reviewArea">
-      <table>
-  <tr>
-    <th>Company</th>
-    <th>Contact</th>
-    <th>Country</th>
-  </tr>
-  <tr>
-    <td>Alfreds Futterkiste</td>
-    <td>Maria Anders</td>
-    <td>Germany</td>
-  </tr>
-  <tr>
-    <td>Centro comercial Moctezuma</td>
-    <td>Francisco Chang</td>
-    <td>Mexico</td>
-  </tr>
-</table>
+      <div>one</div>
+      <div>two</div>
     </div>
     <script type="text/javascript">
       function AllMethods() {
@@ -47,8 +32,8 @@
           const test = ["one", "two"]
          return {
            valid: true,
-           value: test.join("\n").replaceAll("\r", "")
-           // value: JFCustomWidgetUtils.buildMetadata('htmltext', window.btoa(val))
+           // value: test.join("\n").replaceAll("\r", "")
+           value: JFCustomWidgetUtils.buildMetadata('htmltext', window.btoa(val))
          };
         }
       }
