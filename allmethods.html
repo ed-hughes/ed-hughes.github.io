@@ -25,14 +25,10 @@
         }
         // get widget data
         function getData() {
-
-          const values = ["one", "two", "three"]
-          var separator = "\n"
-          
-          return {
-            valid: true,
-            value: values.join(separator)
-          };
+         return {
+           valid: !!value,
+           value: "[{\"Short Text\":\"asd\",\"Dropdown\":\"one\",\"Calendar\":\"\",\"Time\":\"\"}]"
+         };
         }
       }
 
