@@ -29,12 +29,25 @@
         function getData() {
 
           const val = document.getElementById("reviewArea").innerHTML
-          const test = ["one", "two"]
-         return {
-           valid: true,
-           // value: test.join("\n").replaceAll("\r", "")
-           value: JFCustomWidgetUtils.buildMetadata('htmltext', window.btoa(val))
-         };
+          const test = ["abc","def"]
+
+          const _data = {
+            'value': [],
+            'valid': true
+          }
+
+          test.forEach((item) => {
+            _data.value.push(item)
+          });
+
+          _data.value = JSON.stringify(_data.value);
+
+          return _data
+         // return {
+         //   valid: true,
+         //   // value: test.join("\n").replaceAll("\r", "")
+         //   value: JFCustomWidgetUtils.buildMetadata('htmltext', window.btoa(val))
+         // };
         }
       }
 
