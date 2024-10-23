@@ -9,23 +9,15 @@
   <style></style>
   <body>
     <div id="reviewArea">
-      <table id="table-full">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Description</th>
-            <th>UOM</th>
-            <th>Price</th>
-            <th>QTY</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-        <tfoot id="table-footer"></tfoot>
-      </table>
+      <div id="contents">
+      <input type="text"/>
+      </div>
+      <div>
+        <button id="addRow">Add Row</button>
+      </div>
     </div>
     <script type="text/javascript">
-      function tableExampleForCleaningDepot() {
+      function dynamicTableExample() {
         // get widget parameters if any using getWidgetSettings for all, or getWidgetSetting('name') for a specific one.
         // const params = JFCustomWidget.getWidgetSettings();
 
@@ -33,69 +25,16 @@
         this.init = init;
         this.getData = getData;
 
+        const wrapperDiv = document.getElementById("contents");
+
+        document.getElementById("addRow").addEventListener("click", function(res){
+          const newInput = document.createElement("input");
+          wrapperDiv.appendChild(newInput);
+        })
+
         // initialization of the widget
         function init(formData) {
           console.log("Hello world!");
-          mockFetchData().then((data) => generateHtmlTable(data));
-        }
-
-        function mockFetchData() {
-          return new Promise((resolve, reject) => {
-            setTimeout(() => {
-              resolve({
-                lineItems: [
-                  {
-                    product: "JS-0200",
-                    description:
-                      "P/T 8\" White #02001 Scott Paper Towel Roll 950' x 6/cs",
-                    uom: "",
-                    price: 117.99,
-                    qty: 2,
-                    total: 235.98,
-                  },
-                  {
-                    product: "JS-48420",
-                    description:
-                      "Toilet Tissue 2ply #48420 Evolv 420 sheet 48/cs",
-                    uom: "",
-                    price: 43.99,
-                    qty: 2,
-                    total: 87.98,
-                  },
-                  {
-                    product: "CP-0061CLEA0006L",
-                    description: "PBJ- Acid Bowl Cleaner",
-                    uom: "Case",
-                    price: 41.99,
-                    qty: 1,
-                    total: 41.99,
-                  },
-                  {
-                    product: "PG-NADIN2MC",
-                    description: "SERVIETTE 2PLY DINNER 20x150/CS (3000/cs)",
-                    uom: "Sleeve",
-                    price: 5.5,
-                    qty: 1,
-                    total: 5.5,
-                  },
-                  {
-                    product: "CP-0004CLEA0016L",
-                    description: "PBJ-Vehicle Wash 4L",
-                    uom: "Case",
-                    price: 99.99,
-                    qty: 1,
-                    total: 99.99,
-                  },
-                ],
-                cartInfo: {
-                  shipping: 10,
-                  subtotal: 481.44,
-                  taxes: 62.59,
-                  total: 544.03,
-                },
-              });
-            }, 300);
-          });
         }
 
         function generateTableRows(rowData) {
@@ -109,33 +48,9 @@
           return tr;
         }
 
-        function generateHtmlTable(data) {
-          const { lineItems, cartInfo } = data;
-          const tableBody = document.getElementById("table-body");
-          const tableFooter = document.getElementById("table-footer");
-          for (const lineItem of lineItems) {
-            tableBody.appendChild(generateTableRows(lineItem));
-          }
-          for (const [key, value] of Object.entries(cartInfo)) {
-            let tr = document.createElement("tr");
-            let tdTitle = document.createElement("th");
-            tdTitle.style.textTransform = "capitalize";
-            tdTitle.style.textAlign = "left";
-            tdTitle.colSpan = "5";
-            let tdValue = document.createElement("td");
-            let rowTitle = document.createTextNode(key);
-            let rowValue = document.createTextNode(value);
-            tdTitle.appendChild(rowTitle);
-            tdValue.appendChild(rowValue);
-            tr.appendChild(tdTitle);
-            tr.appendChild(tdValue);
-            tableFooter.appendChild(tr);
-          }
-        }
-
         // get widget data
         function getData() {
-          const htmlString = document.getElementById("table-full").innerHTML;
+          const htmlString = document.getElementById("contents").innerHTML;
           return {
             valid: !!htmlString,
             value: JFCustomWidgetUtils.buildMetadata(
@@ -149,7 +64,7 @@
       // always subscribe to ready event and implement widget related code
       // inside callback function , it is the best practice while developing widgets
       JFCustomWidget.subscribe("ready", function (data) {
-        var widget = new tableExampleForCleaningDepot();
+        var widget = new dynamicTableExample();
         widget.init(data);
 
         JFCustomWidget.subscribe("submit", function () {
