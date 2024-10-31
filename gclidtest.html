@@ -30,7 +30,8 @@
           console.log("Hello world!");
           // window.parent.postMessage( JSON.stringify({sectionBackgroundColor: "#ff0000", sizeTitle: "200px", sectionTextColor: "#000", height: "20px"}), '*')
           window.parent.parent.postMessage("hello therethere this is a message!!", "*") 
-          console.log(window.JFFormUserHelper.emailAnswerFinder())
+          console.log(window.parent.JFFormUserHelper)
+          console.log(window.parent.JFFormUserHelper.user)
         }
 
         function strangeQueue(res){
