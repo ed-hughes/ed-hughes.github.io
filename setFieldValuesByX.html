@@ -19,6 +19,10 @@
         // exposed functions
         this.init = init;
         this.getData = getData;
+
+        // initialization of the widget
+        function init(formData) {
+          console.log("Hello world!");
         const otherFields = [
           {label: 'control_textbox', value: "i'm a texbox value"},
           {label: 'control_scale', value: "4"},
@@ -36,10 +40,6 @@
           // 'control_time',
         ]
         
-        // initialization of the widget
-        function init(formData) {
-          console.log("Hello world!");
-
           console.log({otherFields})
           JFCustomWidget.setFieldsValueByLabel(otherFields)
         }
