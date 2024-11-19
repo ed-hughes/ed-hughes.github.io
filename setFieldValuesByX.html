@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+    <script src="https://demo.jotform.com/s/umd/f5e61623280/for-formuser.js"></script>
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="pragma" content="no-cache" />
+  </head>
+  <style></style>
+  <body>
+    <div id="reviewArea">
+    </div>
+    <script type="text/javascript">
+      function GCLIDExample() {
+        // get widget parameters if any using getWidgetSettings for all, or getWidgetSetting('name') for a specific one.
+        // const params = JFCustomWidget.getWidgetSettings();
+
+        // exposed functions
+        this.init = init;
+        this.getData = getData;
+        const otherFields = [
+          {label: 'control_textbox', value: "i'm a texbox value"},
+          {label: 'control_scale', value: "4"},
+          {label: 'control_radio', value: "Type option 1"},
+          {label: 'control_checkbox', value: "Type option 2"},
+          {label: 'control_dropdown', value: "two"},
+          {label: 'control_rating', value: "4"},
+          {label: 'control_datetime', value: "09-01-2024"},
+          {label: 'control_fullname', value: {first: "Ed", last: "Hughes"}},
+          {label: 'control_address', value: {addr_line1: "line 1", city: "London", state: "state value", postal: "AA000AA"}},
+          {label: 'control_email', value: "testing@jotform.com"},
+          {label: 'control_textarea', value: "loreum ipsum ...."},
+          {label: 'control_number', value: "333"}
+          // 'control_phone',
+          // 'control_time',
+        ]
+        
+        // initialization of the widget
+        function init(formData) {
+          console.log("Hello world!");
+
+          console.log({otherFields})
+          JFCustomWidget.setFieldsValueByLabel(otherFields)
+        }
+        
+        // get widget data
+        function getData() {
+
+          return {
+            valid: true,
+            value: "TEST" //if you want the widget itself to have a value otherwise it's not needed
+          };
+        }
+      }
+
+      // always subscribe to ready event and implement widget related code
+      // inside callback function , it is the best practice while developing widgets
+      JFCustomWidget.subscribe("ready", function (data) {
+        var widget = new GCLIDExample();
+        widget.init(data);
+
+        JFCustomWidget.subscribe("submit", function () {
+          JFCustomWidget.sendSubmit(widget.getData());
+        });
+      });
+    </script>
+  </body>
+</html>
