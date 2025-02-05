@@ -8,7 +8,7 @@
           const prettyValue = JSON.stringify(event.data, null, 2)
           console.log(prettyValue)
           document.getElementById("output").innerHTML = prettyValue
-          const customEvent = new CustomEvent("prism_message", { detail: { name: "custom event" } })
+          const customEvent = new CustomEvent("prism_message", { detail: { ...event.data.data } })
           window.dispatchEvent(customEvent);
         }
       },
