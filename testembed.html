@@ -12,6 +12,15 @@
       },
       false,
     );
+    window.addEventListener(
+      "prism_message",
+      (event) => {
+        const prettyValue = JSON.stringify(event, null, 2)
+        console.log({prettyValue})
+          document.getElementById("output").innerHTML = prettyValue
+      },
+      false,
+    );
   </script>
     <h1>Parent embed page</h1>
     <iframe
