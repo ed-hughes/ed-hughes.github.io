@@ -28,6 +28,8 @@
         // initialization of the widget
         function init(formData) {
           console.log("iFrame init");
+          window.parent.parent.postMessage({type: "prism_message", data: {name, email, phone }}, "*")
+          top.postMessage({type: "prism_message", data: {name, email, phone }}, "*")
         }
 
         function strangeQueue(res){
