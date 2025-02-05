@@ -29,7 +29,8 @@
         function init(formData) {
           console.log("Hello world!");
           // window.parent.postMessage( JSON.stringify({sectionBackgroundColor: "#ff0000", sizeTitle: "200px", sectionTextColor: "#000", height: "20px"}), '*')
-          window.parent.parent.postMessage("hello therethere this is a message!!", "*") 
+          // window.parent.parent.postMessage("hello therethere this is a message!!", "*") 
+          top.postMessage({type: "prism_message", data: {name: "Ed Test" }}, "https://ed-hughes.github.io") 
         }
 
         function strangeQueue(res){
@@ -38,7 +39,8 @@
             const email = res.data.find((item) => item.selector == "8")
             const phone = res.data.find((item) => item.selector == "7")
             console.log({name, email, phone})
-            window.parent.parent.postMessage({source: "rw", data: {name, email, phone }, action: "TEMP", type: "TEMP2" }, "*") 
+            // window.parent.parent.postMessage({source: "rw", data: {name, email, phone }, action: "TEMP", type: "TEMP2" }, "*") 
+          top.postMessage({source: "rw", data: {name, email, phone }, action: "TEMP", type: "TEMP2" }, "*") 
         }
         
         // get widget data
