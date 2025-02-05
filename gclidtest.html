@@ -34,9 +34,9 @@
 
         function strangeQueue(res){
             console.log({res})
-            const name = res.data.find((item) => item.selector == "4")
-            const email = res.data.find((item) => item.selector == "8")
-            const phone = res.data.find((item) => item.selector == "7")
+            const name = res.data.find((item) => item.selector == "4").value
+            const email = res.data.find((item) => item.selector == "8").value
+            const phone = res.data.find((item) => item.selector == "7").value
             window.parent.parent.postMessage({type: "prism_message", data: {name, email, phone }}, "*") 
         }
         
