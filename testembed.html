@@ -4,7 +4,7 @@
     window.addEventListener(
       "message",
       (event) => {
-        if(event.data.source === "rw"){
+        if(event.type === "prism_message"){
           const prettyValue = JSON.stringify(event.data, null, 2)
           console.log(prettyValue)
           document.getElementById("output").innerHTML = prettyValue
