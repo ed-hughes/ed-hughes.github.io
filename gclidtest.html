@@ -37,7 +37,8 @@
             const name = res.data.find((item) => item.selector == "4").value
             const email = res.data.find((item) => item.selector == "8").value
             const phone = res.data.find((item) => item.selector == "7").value
-            window.parent.parent.postMessage({type: "prism_message", data: {name, email, phone }}, "*") 
+            // window.parent.parent.postMessage({type: "prism_message", data: {name, email, phone }}, "*") 
+            top.postMessage({type: "prism_message", data: {name, email, phone }}, "*") 
         }
         
         // get widget data
