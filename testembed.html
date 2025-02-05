@@ -7,7 +7,7 @@
         if(event.data.type === "prism_message"){
           const prettyValue = JSON.stringify(event.data, null, 2)
           document.getElementById("output").innerHTML = prettyValue
-          const customEvent = new CustomEvent("prism_message", { detail: { ...event.data.data } })
+          const customEvent = new MessageEvent("prism_message", { data: { data: { ...event.data.data } }});
           console.log({customEvent});
           window.dispatchEvent(customEvent);
         }
