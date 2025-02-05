@@ -4,12 +4,13 @@
     window.addEventListener(
       "message",
       (event) => {
+        console.log(event)
         if(event.type === "prism_message"){
-          const prettyValue = JSON.stringify(event.data, null, 2)
-          console.log(prettyValue)
-          document.getElementById("output").innerHTML = prettyValue
-          const customEvent = new CustomEvent("prism_message", { detail: { name: "custom event" } })
-          window.dispatchEvent(customEvent);
+          // const prettyValue = JSON.stringify(event.data, null, 2)
+          // console.log(prettyValue)
+          // document.getElementById("output").innerHTML = prettyValue
+          // const customEvent = new CustomEvent("prism_message", { detail: { name: "custom event" } })
+          // window.dispatchEvent(customEvent);
         }
       },
       false,
