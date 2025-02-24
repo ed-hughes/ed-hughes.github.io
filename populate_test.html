@@ -29,6 +29,7 @@
         // exposed functions
         this.init = init;
         this.getData = getData;
+        this.handlePopulateEvent = handlePopulateEvent;
 
         function init(formData) {
           console.log("iFrame init");
@@ -57,7 +58,7 @@
         });
 
         JFCustomWidget.subscribe("populate", function (data) {
-          console.log({data})
+          widget.handlePopulateEvent(data);
         });
       });
     </script>
