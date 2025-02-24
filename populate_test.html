@@ -34,6 +34,10 @@
           console.log("iFrame init");
         }
 
+        function handlePopulateEvent(data){
+          document.getElementById("pet-select").value = data.value
+        }
+
         function getData() {
           return {
             valid: true,
