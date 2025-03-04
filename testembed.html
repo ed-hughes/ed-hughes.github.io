@@ -5,7 +5,8 @@
       "message",
       (event) => {
         if(event.data.action === "submission-completed"){
-          const submissionID = document.getElementById("submissionid").innerHTML;
+          const iframeElement = document.querySelectorAll('iframe[id^="JotFormIFrame"]')[0];
+          const submissionID = iframeElement.getElementById("submissionid").innerHTML;
           document.getElementById("output").innerHTML = submissionID;
         }
       },
