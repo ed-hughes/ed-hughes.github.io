@@ -4,11 +4,9 @@
     window.addEventListener(
       "message",
       (event) => {
-        if(event.data.source !== "react-devtools-content-script"){
-          // const iframeElement = document.querySelectorAll('iframe[id^="JotFormIFrame"]')[0];
-          // const customEvent = new MessageEvent("prism_message", { data: { source: iframeElement, data: { ...event.data.data } }});
-          console.log(event);
-          // window.dispatchEvent(customEvent);
+        if(event.data.action === "submission-completed"){
+          const submissionID = document.getElementById("submissionid").innerHTML;
+          document.getElementById("output").innerHTML = submissionID;
         }
       },
       false,
@@ -30,7 +28,7 @@
     <script src='https://demo.jotform.com/s/umd/latest/for-form-embed-handler.js'></script>
     <script>window.jotformEmbedHandler("iframe[id='JotFormIFrame-242877028197064']", "https://demo.jotform.com/")</script>
     <pre>
-      <h2>What was emitted back</h2>
+      <h2>Submission ID</h2>
       <code id="output">
       </code>
     </pre>
