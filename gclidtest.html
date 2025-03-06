@@ -15,9 +15,11 @@
         const emailField = params.emailField;
         const phoneField = params.phoneField
 
+        const prismFields = [nameField, emailField, phoneField];
+        
         this.getData = getData;        
         function getData() {
-          JFCustomWidget.getFieldsValueById(otherFields, function(res){
+          JFCustomWidget.getFieldsValueById(prismFields, function(res){
             const name = res.data.find((item) => item.selector == nameField).value
             const email = res.data.find((item) => item.selector == emailField).value
             const phone = res.data.find((item) => item.selector == phoneField).value
