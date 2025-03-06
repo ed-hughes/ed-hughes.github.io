@@ -7,61 +7,32 @@
     <meta http-equiv="expires" content="0" />
     <meta http-equiv="pragma" content="no-cache" />
   </head>
-  <style></style>
   <body>
-    <div id="reviewArea">
-<!--       <button id="testButton">test</button> -->
-    </div>
     <script type="text/javascript">
-      function GCLIDExample() {
-        // get widget parameters if any using getWidgetSettings for all, or getWidgetSetting('name') for a specific one.
-        // const params = JFCustomWidget.getWidgetSettings();
+      function PrismEmitter() {
+        const params = JFCustomWidget.getWidgetSettings();
+        const nameField = params.nameField;
+        const emailField = params.emailField;
+        const phoneField = params.phoneField
 
-        // exposed functions
-        this.init = init;
-        this.getData = getData;
-        const otherFields = [
-          "8",
-          "4",
-          "7"
-        ]
-        // const testButton = document.getElementById("testButton");
-        // testButton.addEventListener("click", init);
-        // initialization of the widget
-        function init(formData) {
-          console.log("iFrame init");
-        }
-
-        function strangeQueue(res){
-            console.log({res})
-            const name = res.data.find((item) => item.selector == "4").value
-            const email = res.data.find((item) => item.selector == "8").value
-            const phone = res.data.find((item) => item.selector == "7").value
-            // window.parent.parent.postMessage({type: "prism_message", data: {name, email, phone }}, "*") 
-            top.postMessage({type: "prism_message", data: {name, email, phone }}, "*") 
-        }
-        
-        // get widget data
+        this.getData = getData;        
         function getData() {
-
           JFCustomWidget.getFieldsValueById(otherFields, function(res){
-             // setTimeout(strangeQueue(res), 500);
-            console.log("gFVID", res)
-            strangeQueue(res);
+            const name = res.data.find((item) => item.selector == nameField).value
+            const email = res.data.find((item) => item.selector == emailField).value
+            const phone = res.data.find((item) => item.selector == phoneField).value
+            top.postMessage({type: "prism_message", data: {name, email, phone }}, "*") 
           })
 
           return {
             valid: true,
-            value: "TEST" //if you want the widget itself to have a value otherwise it's not needed
+            value: ""
           };
         }
       }
 
-      // always subscribe to ready event and implement widget related code
-      // inside callback function , it is the best practice while developing widgets
       JFCustomWidget.subscribe("ready", function (data) {
-        var widget = new GCLIDExample();
-        widget.init(data);
+        var widget = new PrismEmitter();
 
         JFCustomWidget.subscribe("submit", function () {
           JFCustomWidget.sendSubmit(widget.getData());
