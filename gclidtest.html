@@ -9,29 +9,29 @@
   </head>
   <body>
     <script type="text/javascript">
-      (function(){
         function PrismEmitter() {
-        const params = JFCustomWidget.getWidgetSettings();
-        const nameField = params.nameField;
-        const emailField = params.emailField;
-        const phoneField = params.phoneField
+          JFCustomWidget.makeInvisibleWidgetContainer();
+          const params = JFCustomWidget.getWidgetSettings();
+          const nameField = params.nameField;
+          const emailField = params.emailField;
+          const phoneField = params.phoneField
 
-        const prismFields = [nameField, emailField, phoneField];
-        
-        this.getData = getData;        
-        this.init = init;
-
-        function init(){
-          console.log("init");
-        }
-        
-        function getData() {
-          JFCustomWidget.getFieldsValueById(prismFields, function(res){
-            const name = res.data.find((item) => item.selector == nameField).value
-            const email = res.data.find((item) => item.selector == emailField).value
-            const phone = res.data.find((item) => item.selector == phoneField).value
-            top.postMessage({type: "prism_message", data: {name, email, phone }}, "*") 
-          })
+          const prismFields = [nameField, emailField, phoneField];
+            
+          this.getData = getData;        
+          this.init = init;
+  
+          function init(){
+            console.log("init");
+          }
+          
+          function getData() {
+            JFCustomWidget.getFieldsValueById(prismFields, function(res){
+              const name = res.data.find((item) => item.selector == nameField).value
+              const email = res.data.find((item) => item.selector == emailField).value
+              const phone = res.data.find((item) => item.selector == phoneField).value
+              top.postMessage({type: "prism_message", data: {name, email, phone }}, "*") 
+            })
 
           return {
             valid: true,
@@ -47,7 +47,7 @@
         JFCustomWidget.subscribe("submit", function () {
           JFCustomWidget.sendSubmit(widget.getData());
         });
-      });})();
+      })
     </script>
   </body>
 </html>
