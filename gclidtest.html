@@ -9,7 +9,8 @@
   </head>
   <body>
     <script type="text/javascript">
-      function PrismEmitter() {
+      (function(){
+        function PrismEmitter() {
         const params = JFCustomWidget.getWidgetSettings();
         const nameField = params.nameField;
         const emailField = params.emailField;
@@ -46,7 +47,7 @@
         JFCustomWidget.subscribe("submit", function () {
           JFCustomWidget.sendSubmit(widget.getData());
         });
-      });
+      });})();
     </script>
   </body>
 </html>
