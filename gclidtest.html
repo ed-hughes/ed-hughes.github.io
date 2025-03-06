@@ -1,16 +1,15 @@
 <!doctype html>
 <html>
   <head>
-    <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
-    <script src="https://demo.jotform.com/s/umd/f5e61623280/for-formuser.js"></script>
+    <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="expires" content="0" />
     <meta http-equiv="pragma" content="no-cache" />
   </head>
   <body>
     <script type="text/javascript">
+      JFCustomWidgetUtils.domReady(function() {
         function PrismEmitter() {
-          JFCustomWidget.makeInvisibleWidgetContainer();
           const params = JFCustomWidget.getWidgetSettings();
           const nameField = params.nameField;
           const emailField = params.emailField;
@@ -22,6 +21,7 @@
           this.init = init;
   
           function init(){
+            JFCustomWidget.makeInvisibleWidgetContainer();
             console.log("init");
           }
           
@@ -47,7 +47,8 @@
         JFCustomWidget.subscribe("submit", function () {
           JFCustomWidget.sendSubmit(widget.getData());
         });
-      })
+      });
+    });
     </script>
   </body>
 </html>
