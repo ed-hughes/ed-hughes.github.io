@@ -18,6 +18,12 @@
         const prismFields = [nameField, emailField, phoneField];
         
         this.getData = getData;        
+        this.init = init;
+
+        function init(){
+          console.log("init");
+        }
+        
         function getData() {
           JFCustomWidget.getFieldsValueById(prismFields, function(res){
             const name = res.data.find((item) => item.selector == nameField).value
@@ -35,7 +41,8 @@
 
       JFCustomWidget.subscribe("ready", function (data) {
         var widget = new PrismEmitter();
-
+        widget.init();
+        
         JFCustomWidget.subscribe("submit", function () {
           JFCustomWidget.sendSubmit(widget.getData());
         });
