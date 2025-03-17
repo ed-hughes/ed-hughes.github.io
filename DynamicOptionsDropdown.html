@@ -86,8 +86,7 @@
           const delimiter =
             JFCustomWidget.getWidgetSetting("delimiter") ?? ", ";
           const placeholder =
-            JFCustomWidget.getWidgetSetting("placeholder") ??
-            "Please select an option";
+            JFCustomWidget.getWidgetSetting("placeholder") ?? "";
           const sourceField = JFCustomWidget.getWidgetSetting("sourceField");
           const selectElement = document.getElementById(
               "dynamicOptionDropdown",
@@ -103,12 +102,13 @@
           this.selectElement = selectElement;
 
           function init() {
-            const defaultOption = document.createElement("option");
-            defaultOption.value = "";
-            defaultOption.textContent = placeholder;
-            defaultOption.disabled = true;
-            defaultOption.selected = true;
-            selectElement.appendChild(defaultOption);
+            if(placeholder){
+              const defaultOption = document.createElement("option");
+              defaultOption.value = "";
+              defaultOption.textContent = placeholder;
+              selectElement.appendChild(defaultOption);
+              defaultOption.selected = true;
+            }
           }
 
           function handlePopulateEvent(populateEventData) {
