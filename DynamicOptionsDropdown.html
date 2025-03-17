@@ -17,11 +17,11 @@
           function init(){
             const selectElement = document.getElementById("dynamicOptionDropdown");
             const defaultOption = document.createElement("option"); 
-            option.value = "";
-            option.textContent = placeholder;
-            option.disabled = true;
-            option.selected = true;
-            selectElement.appendChild(option);
+            defaultOption.value = "";
+            defaultOption.textContent = placeholder;
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            selectElement.appendChild(defaultOption);
           }
 
           function handlePopulateEvent(populateEventData){
@@ -30,7 +30,7 @@
               const selectElement = document.getElementById("dynamicOptionDropdown");
               if(Array.isArray(splitValues)){
                 splitValues.forEach(optionText => {
-                    const option = document.createElement("option");
+                    let option = document.createElement("option");
                     option.value = optionText;
                     option.textContent = optionText;
                     selectElement.appendChild(option);
