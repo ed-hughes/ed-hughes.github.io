@@ -39,7 +39,7 @@
           function handlePopulateEvent(populateEventData) {
             if(!populateEventData){return}
             
-            const splitValues = value.split(populateEventData);
+            const splitValues = populateEventData.split(delimiter);
             console.log({splitValues});
             
             const selectElement = document.getElementById(
