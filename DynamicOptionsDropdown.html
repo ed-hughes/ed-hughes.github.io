@@ -13,7 +13,13 @@
           const placeholder =
             JFCustomWidget.getWidgetSetting("placeholder") ??
             "Please select an option";
+          const sourceField = JFCustomWidget.getWidgetSetting("sourceField");
 
+          JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
+              console.log(`CHANGE EVENT: ${value}`)
+              handlePopulateEvent(value);
+          })
+          
           this.getData = getData;
           this.init = init;
           this.handlePopulateEvent = handlePopulateEvent;
