@@ -127,14 +127,14 @@
                 docFragment.appendChild(option);
               });
 
-              this.selectElement.appendChild(docFragment);
+              selectElement.appendChild(docFragment);
             }
           }
 
           function getData() {
             return {
               valid: true,
-              value: this.selectElement.value,
+              value: selectElement.value,
             };
           }
         }
