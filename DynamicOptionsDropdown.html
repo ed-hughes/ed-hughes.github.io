@@ -37,8 +37,9 @@
           }
 
           function handlePopulateEvent(populateEventData) {
-            const { value } = populateEventData;
-            const splitValues = value.split(delimiter);
+            if(!!populateEventData){return}
+            
+            const splitValues = value.split(populateEventData);
             console.log({splitValues});
             
             const selectElement = document.getElementById(
@@ -79,7 +80,7 @@
 
           JFCustomWidget.subscribe("populate", function (data) {
             console.log(`Populate: ${data}`);
-            widget.handlePopulateEvent(data);
+            widget.handlePopulateEvent(data.value);
           });
         });
       });
