@@ -14,20 +14,20 @@
             JFCustomWidget.getWidgetSetting("placeholder") ??
             "Please select an option";
           const sourceField = JFCustomWidget.getWidgetSetting("sourceField");
-
+          const selectElement = document.getElementById(
+              "dynamicOptionDropdown",
+            );
+          
           JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
-              console.log(`CHANGE EVENT: ${value}`)
               handlePopulateEvent(value);
           })
           
           this.getData = getData;
           this.init = init;
           this.handlePopulateEvent = handlePopulateEvent;
+          this.selectElement = selectElement;
 
           function init() {
-            const selectElement = document.getElementById(
-              "dynamicOptionDropdown",
-            );
             const defaultOption = document.createElement("option");
             defaultOption.value = "";
             defaultOption.textContent = placeholder;
@@ -38,13 +38,9 @@
 
           function handlePopulateEvent(populateEventData) {
             if(!populateEventData){return}
-            
+
+            const docFragment = document.createDocumentFragment();
             const splitValues = populateEventData.split(delimiter);
-            console.log({splitValues});
-            
-            const selectElement = document.getElementById(
-              "dynamicOptionDropdown",
-            );
 
             document.querySelectorAll('#dynamicOptionDropdown option').forEach(option => option.remove())
             
@@ -53,19 +49,17 @@
                 const option = document.createElement("option");
                 option.value = optionText;
                 option.textContent = optionText;
-                selectElement.appendChild(option);
-                console.log({option});
+                docFragment.appendChild(option);
               });
+
+              this.selectElement.appendChild(docFragment);
             }
           }
 
           function getData() {
-            const selectElement = document.getElementById(
-              "dynamicOptionDropdown",
-            );
             return {
               valid: true,
-              value: selectElement.value,
+              value: this.selectElement.value,
             };
           }
         }
@@ -79,14 +73,12 @@
           });
 
           JFCustomWidget.subscribe("populate", function (data) {
-            console.log(`Populate: ${JSON.stringify(data)}`);
             widget.handlePopulateEvent(data.value);
           });
         });
       });
     </script>
-  </head>
-  <style>
+          <style>
     body {
       margin: 0;
       padding: 0;
@@ -125,6 +117,14 @@
       pointer-events: none;
     }
 
+    select {
+        background: url("data:image/svg+xml,<svg height='10px' width='10px' viewBox='0 0 16 16' fill='%23000000' xmlns='http://www.w3.org/2000/svg'><path d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/></svg>") no-repeat;
+        background-position: calc(100% - 0.75rem) center !important;
+        -moz-appearance:none !important;
+        -webkit-appearance: none !important; 
+        appearance: none !important;
+    }
+
     select.form-dropdown {
       display: block;
       color: #2c3345;
@@ -142,14 +142,16 @@
       -webkit-appearance: none;
     }
 
-    .form-dropdown:hover {
+    #form-dropdown:hover {
       border-color: rgba(46, 105, 255, 0.5);
       box-shadow: 0 0 0 2px rgba(46, 105, 255, 0.25);
     }
   </style>
+  </head>
   <body>
-    <div className="dropdown-container">
-      <select className="form-dropdown" id="dynamicOptionDropdown"></select>
+    <div class="dropdown-container">
+      <select class="form-dropdown" id="dynamicOptionDropdown">
+      </select>
     </div>
   </body>
 </html>
