@@ -4,80 +4,6 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
-    <script type="text/javascript">
-      JFCustomWidgetUtils.domReady(function () {
-        function DynamicOptionsDropdown() {
-          const params = JFCustomWidget.getWidgetSettings();
-          const delimiter =
-            JFCustomWidget.getWidgetSetting("delimiter") ?? ", ";
-          const placeholder =
-            JFCustomWidget.getWidgetSetting("placeholder") ??
-            "Please select an option";
-          const sourceField = JFCustomWidget.getWidgetSetting("sourceField");
-          const selectElement = document.getElementById(
-              "dynamicOptionDropdown",
-            );
-          
-          JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
-              handlePopulateEvent(value);
-          })
-          
-          this.getData = getData;
-          this.init = init;
-          this.handlePopulateEvent = handlePopulateEvent;
-          this.selectElement = selectElement;
-
-          function init() {
-            const defaultOption = document.createElement("option");
-            defaultOption.value = "";
-            defaultOption.textContent = placeholder;
-            defaultOption.disabled = true;
-            defaultOption.selected = true;
-            selectElement.appendChild(defaultOption);
-          }
-
-          function handlePopulateEvent(populateEventData) {
-            if(!populateEventData){return}
-
-            const docFragment = document.createDocumentFragment();
-            const splitValues = populateEventData.split(delimiter);
-
-            document.querySelectorAll('#dynamicOptionDropdown option').forEach(option => option.remove())
-            
-            if (Array.isArray(splitValues)) {
-              splitValues.forEach((optionText) => {
-                const option = document.createElement("option");
-                option.value = optionText;
-                option.textContent = optionText;
-                docFragment.appendChild(option);
-              });
-
-              this.selectElement.appendChild(docFragment);
-            }
-          }
-
-          function getData() {
-            return {
-              valid: true,
-              value: this.selectElement.value,
-            };
-          }
-        }
-
-        JFCustomWidget.subscribe("ready", function (data) {
-          var widget = new DynamicOptionsDropdown();
-          widget.init();
-
-          JFCustomWidget.subscribe("submit", function () {
-            JFCustomWidget.sendSubmit(widget.getData());
-          });
-
-          JFCustomWidget.subscribe("populate", function (data) {
-            widget.handlePopulateEvent(data.value);
-          });
-        });
-      });
-    </script>
           <style>
     body {
       margin: 0;
@@ -153,5 +79,79 @@
       <select class="form-dropdown" id="dynamicOptionDropdown">
       </select>
     </div>
+        <script type="text/javascript">
+      JFCustomWidgetUtils.domReady(function () {
+        function DynamicOptionsDropdown() {
+          const params = JFCustomWidget.getWidgetSettings();
+          const delimiter =
+            JFCustomWidget.getWidgetSetting("delimiter") ?? ", ";
+          const placeholder =
+            JFCustomWidget.getWidgetSetting("placeholder") ??
+            "Please select an option";
+          const sourceField = JFCustomWidget.getWidgetSetting("sourceField");
+          const selectElement = document.getElementById(
+              "dynamicOptionDropdown",
+            );
+          
+          JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
+              handlePopulateEvent(value);
+          })
+          
+          this.getData = getData;
+          this.init = init;
+          this.handlePopulateEvent = handlePopulateEvent;
+          this.selectElement = selectElement;
+
+          function init() {
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = placeholder;
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            selectElement.appendChild(defaultOption);
+          }
+
+          function handlePopulateEvent(populateEventData) {
+            if(!populateEventData){return}
+
+            const docFragment = document.createDocumentFragment();
+            const splitValues = populateEventData.split(delimiter);
+
+            document.querySelectorAll('#dynamicOptionDropdown option').forEach(option => option.remove())
+            
+            if (Array.isArray(splitValues)) {
+              splitValues.forEach((optionText) => {
+                const option = document.createElement("option");
+                option.value = optionText;
+                option.textContent = optionText;
+                docFragment.appendChild(option);
+              });
+
+              this.selectElement.appendChild(docFragment);
+            }
+          }
+
+          function getData() {
+            return {
+              valid: true,
+              value: this.selectElement.value,
+            };
+          }
+        }
+
+        JFCustomWidget.subscribe("ready", function (data) {
+          var widget = new DynamicOptionsDropdown();
+          widget.init();
+
+          JFCustomWidget.subscribe("submit", function () {
+            JFCustomWidget.sendSubmit(widget.getData());
+          });
+
+          JFCustomWidget.subscribe("populate", function (data) {
+            widget.handlePopulateEvent(data.value);
+          });
+        });
+      });
+    </script>
   </body>
 </html>
