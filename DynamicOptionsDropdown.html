@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
           <style>
     body {
       margin: 0;
@@ -64,6 +65,9 @@
     </div>
         <script type="text/javascript">
       JFCustomWidgetUtils.domReady(function () {
+
+        var inputFieldSelect = $('#dynamicOptionDropdown');
+        
         function DynamicOptionsDropdown() {
           const params = JFCustomWidget.getWidgetSettings();
           const delimiter =
@@ -85,6 +89,12 @@
           this.selectElement = selectElement;
 
           function init() {
+
+                inputFieldSelect.on('change', function() {
+                    JFCustomWidget.sendData(getData());
+                    JFCustomWidget.hideWidgetError();
+                }); 
+            
             if(placeholder){
               const defaultOption = document.createElement("option");
               defaultOption.value = "";
