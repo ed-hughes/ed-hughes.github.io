@@ -4,7 +4,6 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
           <style>
     body {
       margin: 0;
@@ -64,7 +63,6 @@
       </select>
     </div>
         <script type="text/javascript">
-        var inputFieldSelect = $('#dynamicOptionDropdown');  
       JFCustomWidgetUtils.domReady(function () {
         
         
@@ -79,6 +77,18 @@
               "dynamicOptionDropdown",
             );
           const targetField = JFCustomWidget.getWidgetSetting("targetField");
+
+          const inputFieldSelect = document.getElementById("inputFieldSelect");
+
+        inputFieldSelect.addEventListener("change", function(event){
+          console.log("inputFieldSelectChange", event);
+           JFCustomWidget.sendData(getData());
+          const payload = [
+            {label: targetField, value: event.target.value}
+          ];
+          JFCustomWidget.setFieldsValueByLabel(payload)
+        })
+
           
           JFCustomWidget.listenFromField(sourceField, 'input', function(value) {
               console.log("inputEvent");
@@ -92,16 +102,16 @@
           this.selectElement = selectElement;
 
           function init() {
-          inputFieldSelect.on('change', function(data) {
-              console.log('inputChange', {data});
-              // JFCustomWidget.sendData(getData());
+          // inputFieldSelect.on('change', function(data) {
+          //     console.log('inputChange', {data});
+          //     // JFCustomWidget.sendData(getData());
 
-              const payload = [
-                {label: targetField, value: data.target.value}
-              ];
-              JFCustomWidget.setFieldsValueByLabel(payload)
-              JFCustomWidget.hideWidgetError();
-          }); 
+          //     const payload = [
+          //       {label: targetField, value: data.target.value}
+          //     ];
+          //     JFCustomWidget.setFieldsValueByLabel(payload)
+          //     JFCustomWidget.hideWidgetError();
+          // }); 
             
             if(placeholder){
               const defaultOption = document.createElement("option");
