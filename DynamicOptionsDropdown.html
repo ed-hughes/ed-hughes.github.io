@@ -80,11 +80,11 @@
             );
           const targetField = JFCustomWidget.getWidgetSetting("targetField");
           
-          // JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
-          //     console.log("changeEvent");
-          //     console.log(JSON.stringify(value));
-          //     handlePopulateEvent(value);
-          // })
+          JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
+              console.log("changeEvent");
+              console.log(JSON.stringify(value));
+              handlePopulateEvent(value);
+          })
           
           this.getData = getData;
           this.init = init;
@@ -117,7 +117,15 @@
             const splitValues = populateEventData.split(delimiter);
 
             document.querySelectorAll('#dynamicOptionDropdown option').forEach(option => option.remove())
-            
+
+            let defaultOption
+            if(placeholder){
+              defaultOption = document.createElement("option");
+              defaultOption.value = "";
+              defaultOption.textContent = placeholder;
+              defaultOption.selected = true;
+              docFragment.appendChild(defaultOption);
+            }
             if (Array.isArray(splitValues)) {
               splitValues.forEach((optionText) => {
                 const option = document.createElement("option");
@@ -147,9 +155,9 @@
             JFCustomWidget.sendSubmit(widget.getData());
           });
 
-          JFCustomWidget.subscribe("populate", function (data) {
-            widget.handlePopulateEvent(data.value);
-          });
+          // JFCustomWidget.subscribe("populate", function (data) {
+          //   widget.handlePopulateEvent(data.value);
+          // });
         });
       });
     </script>
