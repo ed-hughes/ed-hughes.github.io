@@ -80,8 +80,8 @@
             );
           const targetField = JFCustomWidget.getWidgetSetting("targetField");
           
-          JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
-              console.log("changeEvent");
+          JFCustomWidget.listenFromField(sourceField, 'input', function(value) {
+              console.log("inputEvent");
               console.log(JSON.stringify(value));
               handlePopulateEvent(value);
           })
