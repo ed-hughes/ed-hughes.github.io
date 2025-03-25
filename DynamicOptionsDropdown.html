@@ -87,6 +87,7 @@
           //   {label: targetField, value: event.target.value}
           // ];
           // JFCustomWidget.setFieldsValueByLabel(payload)
+          JFCustomWidget.storeToField(event.target.value, targetField);
         })
           
           this.getData = getData;
@@ -95,21 +96,6 @@
           this.selectElement = selectElement;
 
           function init() {
-          // inputFieldSelect.on('change', function(data) {
-          //     console.log('inputChange', {data});
-          //     // JFCustomWidget.sendData(getData());
-
-          //     const payload = [
-          //       {label: targetField, value: data.target.value}
-          //     ];
-          //     JFCustomWidget.setFieldsValueByLabel(payload)
-          //     JFCustomWidget.hideWidgetError();
-          // }); 
-            // JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
-            //     console.log("changeEvent");
-            //     console.log(JSON.stringify(value));
-            //     handlePopulateEvent(value);
-            // })
             if(placeholder){
               const defaultOption = document.createElement("option");
               defaultOption.value = "";
@@ -136,7 +122,7 @@
               defaultOption.value = "";
               defaultOption.textContent = placeholder;
               defaultOption.selected = true;
-              docFragment.appendChild(defaultOption);
+              selectElement.appendChild(defaultOption);
             }
             if (Array.isArray(splitValues)) {
               splitValues.forEach((optionText) => {
