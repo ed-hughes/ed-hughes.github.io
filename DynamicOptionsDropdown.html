@@ -78,12 +78,13 @@
           const selectElement = document.getElementById(
               "dynamicOptionDropdown",
             );
+          const targetField = JFCustomWidget.getWidgetSetting("targetField");
           
-          JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
-              console.log("changeEvent");
-              console.log(JSON.stringify(value));
-              handlePopulateEvent(value);
-          })
+          // JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
+          //     console.log("changeEvent");
+          //     console.log(JSON.stringify(value));
+          //     handlePopulateEvent(value);
+          // })
           
           this.getData = getData;
           this.init = init;
@@ -93,7 +94,7 @@
           function init() {
 
                 inputFieldSelect.on('change', function(data) {
-                    console.log({data});
+                    console.log('inputChange', {data});
                     JFCustomWidget.sendData(getData());
                     JFCustomWidget.hideWidgetError();
                 }); 
