@@ -95,7 +95,12 @@
 
                 inputFieldSelect.on('change', function(data) {
                     console.log('inputChange', {data});
-                    JFCustomWidget.sendData(getData());
+                    // JFCustomWidget.sendData(getData());
+
+                    const payload = [
+                      {label: targetField, value: data.target.value}
+                    ];
+                    JFCustomWidget.setFieldsValueByLabel(otherFields)
                     JFCustomWidget.hideWidgetError();
                 }); 
             
@@ -140,6 +145,7 @@
 
           function getData() {
             console.log("getData");
+            console.log(selectElement.value);
             return {
               valid: true,
               value: selectElement.value,
