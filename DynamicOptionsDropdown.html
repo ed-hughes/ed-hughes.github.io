@@ -88,13 +88,6 @@
           // ];
           // JFCustomWidget.setFieldsValueByLabel(payload)
         })
-
-          
-          JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
-              console.log("changeEvent");
-              console.log(JSON.stringify(value));
-              handlePopulateEvent(value);
-          })
           
           this.getData = getData;
           this.init = init;
@@ -112,7 +105,11 @@
           //     JFCustomWidget.setFieldsValueByLabel(payload)
           //     JFCustomWidget.hideWidgetError();
           // }); 
-            
+            // JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
+            //     console.log("changeEvent");
+            //     console.log(JSON.stringify(value));
+            //     handlePopulateEvent(value);
+            // })
             if(placeholder){
               const defaultOption = document.createElement("option");
               defaultOption.value = "";
@@ -123,6 +120,7 @@
           }
 
           function handlePopulateEvent(populateEventData) {
+            console.log("handlePopulateEvent");
             if(!populateEventData){return}
 
             console.log({populateEventData});
