@@ -90,7 +90,8 @@
 
           function init() {
 
-                inputFieldSelect.on('change', function() {
+                inputFieldSelect.on('change', function(data) {
+                    console.log({data});
                     JFCustomWidget.sendData(getData());
                     JFCustomWidget.hideWidgetError();
                 }); 
