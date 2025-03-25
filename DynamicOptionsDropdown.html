@@ -90,8 +90,8 @@
         })
 
           
-          JFCustomWidget.listenFromField(sourceField, 'input', function(value) {
-              console.log("inputEvent");
+          JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
+              console.log("changeEvent");
               console.log(JSON.stringify(value));
               handlePopulateEvent(value);
           })
