@@ -64,8 +64,10 @@
       </select>
     </div>
         <script type="text/javascript">
+          
+      JFCustomWidgetUtils.domReady(function () {
 
-      var inputFieldSelect = $('#dynamicOptionDropdown');
+              var inputFieldSelect = $('#dynamicOptionDropdown');
           inputFieldSelect.on('change', function(data) {
               console.log('inputChange', {data});
               // JFCustomWidget.sendData(getData());
@@ -76,8 +78,7 @@
               JFCustomWidget.setFieldsValueByLabel(payload)
               JFCustomWidget.hideWidgetError();
           }); 
-          
-      JFCustomWidgetUtils.domReady(function () {
+        
         function DynamicOptionsDropdown() {
           const params = JFCustomWidget.getWidgetSettings();
           const delimiter =
