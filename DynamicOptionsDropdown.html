@@ -64,10 +64,20 @@
       </select>
     </div>
         <script type="text/javascript">
-      JFCustomWidgetUtils.domReady(function () {
 
-        var inputFieldSelect = $('#dynamicOptionDropdown');
-        
+      var inputFieldSelect = $('#dynamicOptionDropdown');
+          inputFieldSelect.on('change', function(data) {
+              console.log('inputChange', {data});
+              // JFCustomWidget.sendData(getData());
+
+              const payload = [
+                {label: targetField, value: data.target.value}
+              ];
+              JFCustomWidget.setFieldsValueByLabel(otherFields)
+              JFCustomWidget.hideWidgetError();
+          }); 
+          
+      JFCustomWidgetUtils.domReady(function () {
         function DynamicOptionsDropdown() {
           const params = JFCustomWidget.getWidgetSettings();
           const delimiter =
@@ -92,18 +102,6 @@
           this.selectElement = selectElement;
 
           function init() {
-
-                inputFieldSelect.on('change', function(data) {
-                    console.log('inputChange', {data});
-                    // JFCustomWidget.sendData(getData());
-
-                    const payload = [
-                      {label: targetField, value: data.target.value}
-                    ];
-                    JFCustomWidget.setFieldsValueByLabel(otherFields)
-                    JFCustomWidget.hideWidgetError();
-                }); 
-            
             if(placeholder){
               const defaultOption = document.createElement("option");
               defaultOption.value = "";
@@ -161,9 +159,9 @@
             JFCustomWidget.sendSubmit(widget.getData());
           });
 
-          // JFCustomWidget.subscribe("populate", function (data) {
-          //   widget.handlePopulateEvent(data.value);
-          // });
+          JFCustomWidget.subscribe("populate", function (data) {
+            widget.handlePopulateEvent(data.value);
+          });
         });
       });
     </script>
