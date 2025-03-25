@@ -80,6 +80,8 @@
             );
           
           JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
+              console.log("changeEvent");
+              console.log(JSON.stringify(value));
               handlePopulateEvent(value);
           })
           
@@ -108,6 +110,8 @@
           function handlePopulateEvent(populateEventData) {
             if(!populateEventData){return}
 
+            console.log({populateEventData});
+
             const docFragment = document.createDocumentFragment();
             const splitValues = populateEventData.split(delimiter);
 
@@ -126,6 +130,7 @@
           }
 
           function getData() {
+            console.log("getData");
             return {
               valid: true,
               value: selectElement.value,
