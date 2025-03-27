@@ -95,7 +95,7 @@
           JFCustomWidget.storeToField(value_, targetField, function(value) {
                 console.log("Successfully store field to :", targetField, value);
           });
-          const event = new KeyboardEvent('keyup', {
+          const keyUpEvent = new KeyboardEvent('keyup', {
             key: 'Tab',
             keyCode: 9,
             code: 'Tab',
@@ -106,10 +106,10 @@
           
           const data = {
             type: 'keyup',
-            key: event.key,
-            keyCode: event.keyCode,
-            code: event.code,
-            which: event.which
+            key: keyUpEvent.key,
+            keyCode: keyUpEvent.keyCode,
+            code: keyUpEvent.code,
+            which: keyUpEvent.which
           };
           window.top.postMessage(data, '*');
           window.parent.postMessage(data, '*');
