@@ -87,7 +87,12 @@
           //   {label: targetField, value: event.target.value}
           // ];
           // JFCustomWidget.setFieldsValueByLabel(payload)
-          JFCustomWidget.storeToField(event.target.value, targetField);
+          const value_ = event.target.value
+          console.log({value_, targetField);
+          function callbackFunction(something) {
+            console.log("Callback function executed.", something);
+          }
+          JFCustomWidget.storeToField(event.target.value, targetField, callbackFunction);
         })
           
           this.getData = getData;
@@ -96,13 +101,13 @@
           this.selectElement = selectElement;
 
           function init() {
-            if(placeholder){
-              const defaultOption = document.createElement("option");
-              defaultOption.value = "";
-              defaultOption.textContent = placeholder;
-              selectElement.appendChild(defaultOption);
-              defaultOption.selected = true;
-            }
+            // if(placeholder){
+            //   const defaultOption = document.createElement("option");
+            //   defaultOption.value = "";
+            //   defaultOption.textContent = placeholder;
+            //   selectElement.appendChild(defaultOption);
+            //   defaultOption.selected = true;
+            // }
           }
 
           function handlePopulateEvent(populateEventData) {
@@ -116,14 +121,14 @@
 
             document.querySelectorAll('#dynamicOptionDropdown option').forEach(option => option.remove())
 
-            let defaultOption
-            if(placeholder){
-              defaultOption = document.createElement("option");
-              defaultOption.value = "";
-              defaultOption.textContent = placeholder;
-              defaultOption.selected = true;
-              selectElement.appendChild(defaultOption);
-            }
+            // let defaultOption
+            // if(placeholder){
+            //   defaultOption = document.createElement("option");
+            //   defaultOption.value = "";
+            //   defaultOption.textContent = placeholder;
+            //   defaultOption.selected = true;
+            //   selectElement.appendChild(defaultOption);
+            // }
             if (Array.isArray(splitValues)) {
               splitValues.forEach((optionText) => {
                 const option = document.createElement("option");
@@ -154,9 +159,9 @@
             JFCustomWidget.sendSubmit(widget.getData());
           });
 
-          JFCustomWidget.subscribe("populate", function (data) {
-            widget.handlePopulateEvent(data.value);
-          });
+          // JFCustomWidget.subscribe("populate", function (data) {
+          //   widget.handlePopulateEvent(data.value);
+          // });
         });
       });
     </script>
