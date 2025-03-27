@@ -6,7 +6,26 @@
     
     function init() {
       console.log("alive");
+
+      const thisField = document.getElementById("input_4");
+      const sFTriggerField = document.getElementById("input_7");
+      thisField.addEventListener("change", function(data){
+        console.log("change", data);
+        sFTriggerField.value = data;
+        var event = new KeyboardEvent('keyup', {
+          bubbles: true,
+          cancelable: true,
+          key: "Enter",
+        });
+        sFTriggerField.dispatchEvent(event);
+      })
     }
+
+//     if ('URLSearchParams' in window) {
+//   const url = new URL(window.location)
+//   url.searchParams.set("foo", "bar")
+//   history.pushState(null, '', url);
+// }
   }
 
   document.observe("dom:loaded", function() {
