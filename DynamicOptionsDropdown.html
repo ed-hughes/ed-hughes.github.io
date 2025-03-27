@@ -90,10 +90,9 @@
           // JFCustomWidget.setFieldsValueByLabel(payload)
           const value_ = event.target.value
           console.log({value_, targetField});
-          function callbackFunction(something) {
-            console.log("Callback function executed.", something)
-          }
-          JFCustomWidget.storeToField(event.target.value, targetField, callbackFunction);
+          JFCustomWidget.storeToField(event.target.value, targetField, function(value) {
+                console.log("Successfully store field to :", targetField, value);
+              });
         })
       
           JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
