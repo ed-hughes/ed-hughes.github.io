@@ -91,7 +91,7 @@
           const value_ = event.target.value
           console.log({value_, targetField});
           // JFCustomWidget.sendCalcValue({value: value_});
-          JotForm.ignoreInsertionCondition = false;
+          // JotForm.ignoreInsertionCondition = false;
           JFCustomWidget.storeToField(value_, targetField, function(value) {
                 console.log("Successfully store field to :", targetField, value);
           });
