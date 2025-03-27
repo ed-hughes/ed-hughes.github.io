@@ -95,6 +95,24 @@
           JFCustomWidget.storeToField(value_, targetField, function(value) {
                 console.log("Successfully store field to :", targetField, value);
           });
+          const event = new KeyboardEvent('keyup', {
+            key: 'Tab',
+            keyCode: 9,
+            code: 'Tab',
+            which: 9,
+            bubbles: true,
+            cancelable: true
+          });
+          
+          const data = {
+            type: 'keyup',
+            key: event.key,
+            keyCode: event.keyCode,
+            code: event.code,
+            which: event.which
+          };
+          window.top.postMessage(data, '*');
+          window.parent.postMessage(data, '*');
           // window.parent.postMessage({ action: 'population-completed' }, '*');
         })
       
