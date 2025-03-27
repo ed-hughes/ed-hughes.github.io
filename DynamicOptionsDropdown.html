@@ -94,6 +94,19 @@
           }
           JFCustomWidget.storeToField(event.target.value, targetField, callbackFunction);
         })
+      
+          JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
+            console.log("change", {value});
+            const currentValue = selectElement.value;
+            console.log({currentValue});
+
+            if(value === currentvalue){
+              return
+            }
+
+            handlePopulateEvent(value);
+            
+          });
           
           this.getData = getData;
           this.init = init;
