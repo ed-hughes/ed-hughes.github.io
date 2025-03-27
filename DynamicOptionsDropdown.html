@@ -94,6 +94,7 @@
           JFCustomWidget.storeToField(value_, targetField, function(value) {
                 console.log("Successfully store field to :", targetField, value);
           });
+          window.parent.postMessage({ action: 'population-completed' }, '*');
         })
       
           JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
