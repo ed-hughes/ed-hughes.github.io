@@ -79,6 +79,7 @@
           const targetField = JFCustomWidget.getWidgetSetting("targetField");
 
           const inputFieldSelect = document.getElementById("dynamicOptionDropdown");
+          let currentSourceValue;
 
         inputFieldSelect.addEventListener("change", function(event){
           console.log("inputFieldSelectChange", event);
@@ -97,13 +98,13 @@
       
           JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
             console.log("change", {value});
-            const currentValue = selectElement.value;
-            console.log({currentValue});
+
+            console.log({currentSourceValue});
 
             if(value === currentValue){
               return
             }
-
+            currentSourceValue = value;
             handlePopulateEvent(value);
             
           });
