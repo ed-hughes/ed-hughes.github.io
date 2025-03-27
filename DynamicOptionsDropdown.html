@@ -90,10 +90,10 @@
           // JFCustomWidget.setFieldsValueByLabel(payload)
           const value_ = event.target.value
           console.log({value_, targetField});
-          JFCustomWidget.sendCalcValue({value: value_});
-          // JFCustomWidget.storeToField(event.target.value, targetField, function(value) {
-          //       console.log("Successfully store field to :", targetField, value);
-          //     });
+          // JFCustomWidget.sendCalcValue({value: value_});
+          JFCustomWidget.storeToField(value_, targetField, function(value) {
+                console.log("Successfully store field to :", targetField, value);
+          });
         })
       
           JFCustomWidget.listenFromField(sourceField, 'change', function(value) {
