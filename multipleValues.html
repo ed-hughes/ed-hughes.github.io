@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="pragma" content="no-cache" />
+  </head>
+  <style></style>
+  <body>
+    <script type="text/javascript">
+      function AllMethods() {
+        this.init = init;
+        this.getData = getData;
+        function init(formData) {
+          console.log("Hello world!");
+        }
+        function getData() {
+          const exampleValues = ["abc","def"]
+        return {
+          valid: isValid,
+          value: exampleValues.join("\n")
+          }
+      }
+      JFCustomWidget.subscribe("ready", function (data) {
+        var widget = new AllMethods();
+        widget.init(data);
+
+        JFCustomWidget.subscribe("submit", function () {
+          JFCustomWidget.sendSubmit(widget.getData());
+        });
+      });
+    </script>
+  </body>
+</html>
