@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="pragma" content="no-cache" />
+  </head>
+  <style></style>
+  <body>
+    <script type="text/javascript">
+      function AllMethods() {
+        this.init = init;
+        this.getData = getData;
+        function init(formData) {
+          console.log("init", JSON.stringify({formData}, null, 2));
+        }
+        function getData() {
+          const exampleValues = ["abc", "def"];
+          return {
+            valid: true,
+            value: exampleValues.join("\n"),
+          };
+        }
+      }
+      JFCustomWidget.subscribe("ready", function (data) {
+        var widget = new AllMethods();
+        widget.init(data);
+
+        JFCustomWidget.subscribe("submit", function () {
+          const submitValue = widget.getData();
+          console.log({submitValue});
+          // JFCustomWidget.sendSubmit(submitValue);
+        });
+      });
+    </script>
+  </body>
+</html>
