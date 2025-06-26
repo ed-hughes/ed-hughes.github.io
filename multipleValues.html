@@ -17,9 +17,12 @@
         }
         function getData() {
           const exampleValues = ["abc", "def"];
+          const joinedValues = exampleValues.join("\n")
+          console.log({joinedValues})
+          
           return {
             valid: true,
-            value: exampleValues.join("\n"),
+            value: joinedValues
           };
         }
       }
