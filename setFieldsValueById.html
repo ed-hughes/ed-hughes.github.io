@@ -30,18 +30,21 @@
           {id: '6', value: "Type option 2"},
           {id: '7', value: "two"},
           {id: '8', value: "4"},
-          {id: '9', value: "09-01-2024"},
-          {id: '10', value: "Ed Hughes"},
-          {id: '11', value: "123 Main Street, City, State, AA0 0AA"},
           {id: '12', value: "testing@jotform.com"},
           {id: '13', value: "loreum ipsum ...."},
           {id: '14', value: "01234 578 910"},
           {id: '15', value: "333"},
-          {id: '16', value: "12:30AM"}
         ]
-        
-          console.log({otherFields})
-          JFCustomWidget.setFieldsValueById(otherFields)
+          JFCustomWidget.setFieldsValueById(otherFields);
+          JFCustomWidget.storeToField("first_10", "first name");
+          JFCustomWidget.storeToField("last_10", "last name");
+          JFCustomWidget.storeToField("input_11_addr_line1", "Line one");
+          JFCustomWidget.storeToField("input_11_addr_line2", "Line two ");
+          JFCustomWidget.storeToField("input_11_city", "CITY")
+          JFCustomWidget.storeToField("input_11_state", "state")
+          JFCustomWidget.storeToField("input_11_postal", "post")
+          JFCustomWidget.storeToField("input_16_timeInput", "12:30")
+          JFCustomWidget.storeToField("input_16_ampm", "AM")
         }
         
         // get widget data
