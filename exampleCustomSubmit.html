@@ -33,7 +33,10 @@
         
           console.log({otherFields})
           JFCustomWidget.setFieldsValueByLabel(otherFields)
-          JFCustomWidget.sendSubmit(submitValue);
+          JFCustomWidget.sendSubmit({
+              valid: true,
+              value: ""
+          });
         }
       }
       JFCustomWidget.subscribe("ready", function (data) {
@@ -41,7 +44,10 @@
         widget.init(data);
 
         JFCustomWidget.subscribe("submit", function () {
-          JFCustomWidget.sendSubmit(submitValue);
+          JFCustomWidget.sendSubmit({
+              valid: true,
+              value: ""
+          });
         });
       });
     </script>
