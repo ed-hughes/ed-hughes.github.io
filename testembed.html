@@ -15,18 +15,38 @@
     );
   </script>
     <h1>Parent embed page</h1>
-    <iframe
-      id="JotFormIFrame-242877028197064"
-      title="Demo"
-      onload="window.parent.scrollTo(0,0)"
-      allowtransparency="true"
-      allow="geolocation; microphone; camera; fullscreen"
-      src="https://demo.jotform.com/242877028197064"
-      frameborder="0"
-      style="min-width:100%;max-width:100%;height:539px;border:none;"
-      scrolling="no"
-    >
-    </iframe>
+   <script src='https://demo.jotform.com/s/umd/latest/for-embedded-agent.js'></script>
+start of text <a class="btn modal-0199ba09f2f07c7eb1f19fbf10af6009ec85" style="
+  text-transform: uppercase;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 12px 18px;
+  font-family: inherit;
+  background-color: #0075E3;
+  border: 1px solid #0075E3;
+  color: #FFFFFF;
+  border-radius: 4px;
+  text-decoration: none;
+  display: inline-block;
+">Chat to </a> more other text
+<script>
+  window.addEventListener("DOMContentLoaded", function() {
+    document.querySelector('.modal-0199ba09f2f07c7eb1f19fbf10af6009ec85').addEventListener(
+      'click',
+      function() {
+        window.AgentInitializer.initModalView({
+          rootId: "JotformAgent-0199ba09f2f07c7eb1f19fbf10af6009ec85",
+          formID: "0199ba09f2f07c7eb1f19fbf10af6009ec85",
+          queryParams: ["skipWelcome=1"],
+          domain: "https://demo.jotform.com",
+          isInitialOpen: true,
+          isDraggable: false,
+          variant: false,
+          isVoice: false
+        });
+      });
+  });
+</script>
     <script src='https://demo.jotform.com/s/umd/latest/for-form-embed-handler.js'></script>
     <script>window.jotformEmbedHandler("iframe[id='JotFormIFrame-242877028197064']", "https://demo.jotform.com/")</script>
     <pre>
