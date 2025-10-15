@@ -2,6 +2,59 @@
 <html>
   <head>
     <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+      <script src="https://api.demo.convergepay.com/hosted-payments/Checkout.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script>
+    function initiateCheckoutJS() {
+      var tokenRequest = {
+        ssl_amount: document.getElementById('ssl_amount').value
+      };
+      $.post("RequestSample.php", tokenRequest, function (data) {
+        document.getElementById('token').value = data;
+        transactionToken = data;
+      });
+      return false;
+    }
+
+    function pay() {
+      var token = document.getElementById('token').value;
+      var firstname = document.getElementById('name').value;
+      var lastname = document.getElementById('lastname').value;
+      var routing = document.getElementById('routing').value;
+      var account = document.getElementById('account').value;
+      var type = document.getElementById('type').value;
+      var agree = document.getElementById('agree').value;
+      var paymentData = {
+        ssl_txn_auth_token: token,
+        ssl_first_name: firstname,
+        ssl_last_name: lastname,
+        ssl_aba_number: routing,
+        ssl_bank_account_number: account,
+        ssl_bank_account_type: type,
+        ssl_agree: agree
+      };
+      var callback = {
+        onError: function (error) {
+          showResult("error", error);
+        },
+        onDeclined: function (response) {
+          console.log("Result Message=" + response['ssl_result_message']);
+          showResult("declined", JSON.stringify(response));
+        },
+        onApproval: function (response) {
+          console.log("Approval Code=" + response['ssl_approval_code']);
+          showResult("approval", JSON.stringify(response));
+        }
+      };
+      ConvergeEmbeddedPayment.pay(paymentData, callback);
+      return false;
+    }
+
+    function showResult(status, msg) {
+      document.getElementById('txn_status').innerHTML = "<b>" + status + "</b>";
+      document.getElementById('txn_response').innerHTML = msg;
+    }
+  </script>
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="expires" content="0" />
     <meta http-equiv="pragma" content="no-cache" />
@@ -9,6 +62,35 @@
   <style></style>
   <body>
     <button type="button" id="saveButton" onClick>Custom Save</button>
+
+
+    <html>
+
+
+  <br>
+
+  Transaction Amount: <input type="text" id="ssl_amount" name="ssl_amount" value="25.00"> <br> 
+  <button onclick="return initiateCheckoutJS();">Click to Confirm Order</button> <br> 
+  <br>
+  <br>
+  <br>
+  Session Token: <input id="token" type="text" name="token"> <br>
+  First Name: <input type="text" id="name" name="name" size="25"> <br>
+  Last Name: <input type="text" id="lastname" name="lastname" size="25"> <br>
+  Routing Number: <input id="routing" type="text" name="routing" value="490000018"> <br>
+  Bank Account Number: <input id="account" type="text" name="account" value="12345678"> <br>
+  Agree: <input id="agree" type="checkbox" name="agree" value="1"> <br>
+  <input id="type" type="hidden" name="type" value="0"> <br>
+  <input id="gettoken" type="hidden" name="gettoken" value="y">
+  <input id="addtoken" type="hidden" name="addtoken" value="y">
+  <button onclick="return pay();">Process Payment</button>
+  <br>
+  <br>
+  <br>
+  Transaction Status:<div id="txn_status"></div>
+  <br>
+  Transaction Response:<div id="txn_response"></div>
+
     <script type="text/javascript">
       function AllMethods() {
 
