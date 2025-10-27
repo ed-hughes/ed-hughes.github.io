@@ -138,6 +138,12 @@ var SigPlusWidget = function(canvasId, image) {
        //document.FORM1.sigImageData.value = str;
        console.log('callback: ' + str);
        widgetValue = 'data:image/jpeg;base64,' + str;
+            console.log("sendingData", {str);
+    JFCustomWidget.sendData({
+              valid: true,
+              value: str
+            });
+      console.log("sentData", {widgetValue, str})
     }
 
     var finishSign = function() {
@@ -164,15 +170,6 @@ var SigPlusWidget = function(canvasId, image) {
 
         jQuery('#clearSign, #finishSign, #validationInfo').hide();
         //jQuery('#loader').show();
-      console.log("sendingData");
-
-      const testResult = getData();
-      console.log({testResult})
-    JFCustomWidget.sendData({
-              valid: true,
-              value: JSON.stringify(testResult)
-            });
-      console.log("sentData", {widgetValue, testResult})
     }
 
     init();
