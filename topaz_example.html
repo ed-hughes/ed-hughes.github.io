@@ -164,11 +164,14 @@ var SigPlusWidget = function(canvasId, image) {
         jQuery('#clearSign, #finishSign, #validationInfo').hide();
         //jQuery('#loader').show();
       console.log("sendingData");
+
+      const testResult = this.getData();
+      console.log({testResult})
     JFCustomWidget.sendData({
               valid: true,
-              value: widgetValue
+              value: JSON.stringify(testResult)
             });
-      console.log("sentData", {widgetValue})
+      console.log("sentData", {widgetValue, testResult})
     }
 
     init();
