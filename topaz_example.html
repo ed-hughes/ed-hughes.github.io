@@ -47,13 +47,20 @@
 
           
           function init(formData) {
-            if (IsSigWebInstalled()) {
-              $("#stage").show();
-              $("#noTablet").hide();
-            } else {
-              $("#noTablet").show();
-              return;
-            }
+
+                      // JFCustomWidgetUtils.loadCSS(n, () => {
+                      //           f.publish("loadNewDefaultThemeCss"),
+                      //           console.log("New Default Theme custom CSS injected")
+                      //       }
+                      //       , "new_default_theme_custom_css")
+            
+            // if (IsSigWebInstalled()) {
+            //   $("#stage").show();
+            //   $("#noTablet").hide();
+            // } else {
+            //   $("#noTablet").show();
+            //   return;
+            // }
 
             // start signature capture
             $("#startSign").on("click", function () {
