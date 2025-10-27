@@ -39,7 +39,7 @@
       JFCustomWidgetUtils.domReady(function () {
         function TopazSignature() {
           const canvas = document.getElementById("sigWeb");
-          let signatureB64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAABzUlEQVR4nOyawWuScRiA++SjEMKkSxFSxzIEqUMQaBAJ3fJQEoXXwIOdC5IoE+qSldEhDxFB+lVGByU7hNUhxsbG5hBhgqDO4QaTTWQwNzb2Dzz3lx+8z/F5QXx4QfH1s3933YeIyr1z6KerNfSB2nP05Vsf0a8Fd9GPFk6g9+SOonehNQgNkEYDpNEAaezal/c4GF8+iX7n/CJ638o39O0H/LlenFxAH+u/Qv8/N0Bv/AY0QBoNkEYDpLG8x+ZxYHuH6F8PbqP/fvwd+qcbH9AXHjXRfy7x+9lvVtEbvwENkEYDpNEAaaxn9/M4uLHcQf9pfAl9eTuBPpP9id5VSKO/E5pC35pr8+ugNQgNkEYDpNEAaexEtIyD6B8/+shwhL4ePoveW+F7TiPE/w+ccrroT1/ke5TxG9AAaTRAGg2Qxv636eDAHUih7zb4rl+K8Z0nv5pDf7MXRP9y9AT91pIHvfEb0ABpNEAaDZDG+rvOd5srGR/6tw4/L/SmdQR9/8we+ux1/j4pzkbQx7/eRW/8BjRAGg2QRgOksa4evoYDf2sGfXjyAn0yzb8fQqk4+h/JX+gfPu6g7zl19MZvQAOk0QBpNECagwAAAP//bUlreDwATJQAAAAASUVORK5CYII=";
+          let signatureB64 = "";
           let isSigned = false;
           
           this.init = init;
@@ -92,6 +92,8 @@
           };
             
           function getData() {
+
+            console.log("gettingData", {signatureB64});
             return {
               valid: true,//!!signatureB64,
               value: signatureB64,
