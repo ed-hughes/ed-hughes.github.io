@@ -53,13 +53,13 @@
                       //       }
                       //       , "new_default_theme_custom_css")
             
-            // if (IsSigWebInstalled()) {
-            //   $("#stage").show();
-            //   $("#noTablet").hide();
-            // } else {
-            //   $("#noTablet").show();
-            //   return;
-            // }
+            if (IsSigWebInstalled()) {
+              $("#stage").show();
+              $("#noTablet").hide();
+            } else {
+              $("#noTablet").show();
+              return;
+            }
 
             $("#startSign").on("click", function () {
               SetDisplayXSize(canvas.width);
