@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+
+        <link rel="stylesheet" href="//widgets.jotform.io/lib/base.css" />
+        <style type="text/css">
+            #sigplus { border: 1px solid #666; }
+            #validationInfo,#stage,#noTablet,#loader { display: none; }
+        </style>
+        <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+        <script src="//code.jquery.com/jquery-3.6.1.min.js"></script>    
+        <script type="text/javascript" src="//www.sigplusweb.com/SigWebTablet.js"></script>
+        <!--SigWebTablet.js is required for SigWeb to function-->
+        <script src="script.js?v=1761574199"></script>
+    </head>
+    <body>
+        <div id='wrapper'>
+            <div id='stage'>
+                <canvas id="sigWeb"></canvas>
+                <button id="startSign">start</button>
+                <button id="clearSign">clear</button>
+                <button id="finishSign">finish</button>
+                <span id="validationInfo" class="negative">&lt;= You have to finish sign before submitting form!</span>
+                <img id="loader" src="loader.gif" alt="" />
+            </div>
+            <div id='noTablet'>
+                Signature Tablet is not installed.
+            </div>
+        </div>
+    </body>
+</html>
