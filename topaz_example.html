@@ -47,7 +47,7 @@
 
           
           function init(formData) {
-
+              JFCustomWidget.replaceWidget({type: "control_textbox"})
                       // JFCustomWidgetUtils.loadCSS(n, () => {
                       //           f.publish("loadNewDefaultThemeCss"),
                       //           console.log("New Default Theme custom CSS injected")
@@ -63,39 +63,39 @@
             // }
 
             // start signature capture
-            $("#startSign").on("click", function () {
-              SetDisplayXSize(canvas.width);
-              SetDisplayYSize(canvas.height);
-              ClearTablet();
-              SetTabletState(1);
-            });
+            // $("#startSign").on("click", function () {
+            //   SetDisplayXSize(canvas.width);
+            //   SetDisplayYSize(canvas.height);
+            //   ClearTablet();
+            //   SetTabletState(1);
+            // });
 
-            // clear signature
-            $("#clearSign").on("click", function () {
-              ClearTablet();
-              signatureB64 = "";
-              isSigned = false;
-            });
+            // // clear signature
+            // $("#clearSign").on("click", function () {
+            //   ClearTablet();
+            //   signatureB64 = "";
+            //   isSigned = false;
+            // });
 
-            // finish signature and capture image
-            $("#finishSign").on("click", function () {
-              SetTabletState(0);
-              if (NumberOfTabletPoints() === 0) {
-                alert("Please sign before finishing.");
-                return;
-              }
+            // // finish signature and capture image
+            // $("#finishSign").on("click", function () {
+            //   SetTabletState(0);
+            //   if (NumberOfTabletPoints() === 0) {
+            //     alert("Please sign before finishing.");
+            //     return;
+            //   }
 
-              GetSigImageB64(function (b64Image) {
-                signatureB64 = "data:image/png;base64," + b64Image;
-                isSigned = true;
-                console.log("Captured signature:", signatureB64);
-              });
-            });
+            //   GetSigImageB64(function (b64Image) {
+            //     signatureB64 = "data:image/png;base64," + b64Image;
+            //     isSigned = true;
+            //     console.log("Captured signature:", signatureB64);
+            //   });
+            // });
           };
             
           function getData() {
             return {
-              valid: !!signatureB64,
+              valid: true,//!!signatureB64,
               value: signatureB64,
             };
           };
