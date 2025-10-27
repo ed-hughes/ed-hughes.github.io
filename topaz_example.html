@@ -42,8 +42,9 @@ var SigPlusWidget = function(canvasId, image) {
     var signInProgress = false;
     var widgetValue = '';
     var tmr;
-
-    this.getData = function() {
+    this.getData = getData;
+  
+    function getData() {
         if(signInProgress) {
             jQuery('#validationInfo').show();
             return {
