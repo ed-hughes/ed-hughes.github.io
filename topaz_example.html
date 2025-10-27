@@ -170,7 +170,7 @@ var SigPlusWidget = function(canvasId, image) {
 };
 
         JFCustomWidget.subscribe("ready", function () {
-          const widget = new SigPlusWidget('sigWeb', data.value || '');
+          const widget = new SigPlusWidget('sigWeb', '');
           JFCustomWidget.subscribe("submit", function () {
             JFCustomWidget.sendSubmit(widget.getData());
           });
