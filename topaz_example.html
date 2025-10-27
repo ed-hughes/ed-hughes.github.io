@@ -4,17 +4,9 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" href="https://widgets.jotform.io/lib/base.css" />
     <style>
-      #sigWeb {
-        border: 1px solid #666;
-        width: 400px;
-        height: 150px;
-      }
-      #validationInfo,
-      #stage,
-      #noTablet,
-      #loader {
-        display: none;
-      }
+
+                  #sigplus { border: 1px solid #666; }
+            #validationInfo,#stage,#noTablet,#loader { display: none; }
     </style>
     <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
@@ -36,75 +28,149 @@
     </div>
 
     <script>
+
+      
       JFCustomWidgetUtils.domReady(function () {
-        function TopazSignature() {
-          const canvas = document.getElementById("sigWeb");
-          let signatureB64 = "";
-          let isSigned = false;
-          
-          this.init = init;
-          this.getData = getData;
 
-          
-          function init(formData) {
-                      // JFCustomWidgetUtils.loadCSS(n, () => {
-                      //           f.publish("loadNewDefaultThemeCss"),
-                      //           console.log("New Default Theme custom CSS injected")
-                      //       }
-                      //       , "new_default_theme_custom_css")
-            
-            if (IsSigWebInstalled()) {
-              $("#stage").show();
-              $("#noTablet").hide();
-            } else {
-              $("#noTablet").show();
-              return;
-            }
+        
+var SigPlusWidget = function(canvasId, image) {
+    var bodyWidth = 0;
+    var bodyHeight = 0;
 
-            $("#startSign").on("click", function () {
-              SetDisplayXSize(canvas.width);
-              SetDisplayYSize(canvas.height);
-              ClearTablet();
-              SetTabletState(1);
-            });
+    var timer;
 
-            // clear signature
-            $("#clearSign").on("click", function () {
-              ClearTablet();
-              signatureB64 = "";
-              isSigned = false;
-            });
+    var signInProgress = false;
+    var widgetValue = '';
+    var tmr;
 
-            // finish signature and capture image
-            $("#finishSign").on("click", function () {
-              SetTabletState(0);
-              if (NumberOfTabletPoints() === 0) {
-                alert("Please sign before finishing.");
-                return;
-              }
-
-              GetSigImageB64(function (b64Image) {
-                signatureB64 = "data:image/png;base64," + b64Image;
-                isSigned = true;
-                console.log("Captured signature:", signatureB64);
-              });
-            });
-          };
-            
-          function getData() {
-
-            console.log("gettingData", {signatureB64});
+    this.getData = function() {
+        if(signInProgress) {
+            jQuery('#validationInfo').show();
             return {
-              valid: true,//!!signatureB64,
-              value: signatureB64,
-            };
-          };
+                'value' : '',
+                'valid' : false,
+            }
         }
 
-        JFCustomWidget.subscribe("ready", function () {
-          const widget = new TopazSignature();
-          widget.init();
+        return {
+            'value' : widgetValue,
+            'valid' : widgetValue !== '',
+        };
+    };
 
+    var init = function() {
+        if(image) {
+            buildStaticPad(image);
+            return;
+        }
+
+        try {
+            GetTabletState();
+        } catch(e) {
+            console.log(e);
+            jQuery('#stage').hide();
+            jQuery('#noTablet').show();
+            resizeFrame();
+            return;
+        }
+
+        jQuery('#startSign').on('click', startSign);
+        jQuery('#clearSign').hide().on('click', clearSign);
+        jQuery('#finishSign').hide().on('click', finishSign);
+        jQuery('#stage').show();
+    };
+
+    var buildStaticPad = function(imageSrc) {
+        jQuery('#stage').html('<img src="' + imageSrc + '" />');  //.html('<img src="//jotform.com/' + imageSrc + '" alt="" />');
+    };
+
+    /**
+     * Resize widget frame
+     */
+    function resizeFrame() {  
+      JFCustomWidget.requestFrameResize({
+        'width': jQuery('#wrapper').outerWidth() + 10,
+        'height': jQuery('#wrapper').height() + 20
+      });
+    }
+
+    window.onunload = window.onbeforeunload = (function(){
+        closingSigWeb();
+    });
+
+    function closingSigWeb()
+    {
+        ClearTablet();
+        SetTabletState(0, tmr);
+    }
+
+    var clearSign = function() {
+        ClearTablet();
+    };
+
+    var startSign = function() {
+
+        var ctx = document.getElementById(canvasId).getContext('2d');         
+        SetDisplayXSize( 500 );
+        SetDisplayYSize( 100 );
+        SetTabletState(0, tmr);
+        SetJustifyMode(0);
+        ClearTablet();
+        if(tmr == null)
+        {
+            tmr = SetTabletState(1, ctx, 50);
+        }
+        else
+        {
+            SetTabletState(0, tmr);
+            tmr = null;
+            tmr = SetTabletState(1, ctx, 50);
+        }
+
+        signInProgress = true;
+        jQuery('#startSign').hide();
+        jQuery('#clearSign, #finishSign').show();
+    };
+
+    var SigImageCallback = function( str )
+    {
+       //document.FORM1.sigImageData.value = str;
+       console.log('callback: ' + str);
+       widgetValue = 'data:image/jpeg;base64,' + str;
+    }
+
+    var finishSign = function() {
+
+        if(NumberOfTabletPoints() == 0)
+        {
+            alert("Please sign before continuing");
+        }
+        else
+        {
+            SetTabletState(0, tmr);
+            //RETURN TOPAZ-FORMAT SIGSTRING
+            SetSigCompressionMode(1);
+            console.log('SigString: ' + GetSigString());
+            //this returns the signature in Topaz's own format, with biometric information
+
+            //RETURN BMP BYTE ARRAY CONVERTED TO BASE64 STRING
+            SetImageXSize(500);
+            SetImageYSize(100);
+            SetImagePenWidth(5);
+            GetSigImageB64(SigImageCallback);
+        }
+        signInProgress = false;
+
+        jQuery('#clearSign, #finishSign, #validationInfo').hide();
+        //jQuery('#loader').show();
+        JFCustomWidget.sendData(this.getData());
+    }
+
+    init();
+};
+
+        JFCustomWidget.subscribe("ready", function () {
+          const widget = new SigPlusWidget('sigWeb', data.value || '');
           JFCustomWidget.subscribe("submit", function () {
             JFCustomWidget.sendSubmit(widget.getData());
           });
