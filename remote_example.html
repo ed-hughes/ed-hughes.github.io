@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <link href="https://kendo.cdn.telerik.com/themes/12.0.1/default/default-main.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
+    <script src="js/kendo.all.min.js"></script>
+    
+  </head>
+  <style></style>
+
+  <body>
+    <div id="example">
+    <div id="grid"></div>
+    <script>
+        $(document).ready(function() {
+            $("#grid").kendoGrid({
+                dataSource: {
+                    type: "odata-v4",
+                    transport: {
+                        read: "https://demos.telerik.com/service/v2/odata/Orders"
+                    },
+                    schema: {
+                        model: {
+                            fields: {
+                                OrderID: { type: "number" },
+                                Freight: { type: "number" },
+                                ShipName: { type: "string" },
+                                ShipCountry: { type: "string" },
+                                ShipCity: { type: "string" }
+                            }
+                        }
+                    },
+                    pageSize: 20,
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true
+                },
+                height: 550,
+                filterable: true,
+                sortable: true,
+                pageable: true,
+                columns: [{
+                        field:"OrderID",
+                        filterable: false
+                    },
+                    "Freight",
+                    {
+                        field: "ShipCountry",
+                        title: "Ship Country"
+                    }, {
+                        field: "ShipName",
+                        title: "Ship Name"
+                    }, {
+                        field: "ShipCity",
+                        title: "Ship City"
+                    }
+                ]
+            });
+        });
+    </script>
+</div>
+
+
+
+</body>
+  
+  <body>
+    <div id="reviewArea">
+    </div>
+    <script type="text/javascript">
+
+
+     
+
+      // always subscribe to ready event and implement widget related code
+      // inside callback function , it is the best practice while developing widgets
+      JFCustomWidget.subscribe("ready", function (data) {
+
+
+
+JFCustomWidget.subscribe('submit', function() {
+                        // JFCustomWidget.sendSubmit();
+
+                    })
+      });
+    </script>
+  </body>
+</html>
