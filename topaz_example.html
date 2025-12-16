@@ -133,16 +133,15 @@ var SigPlusWidget = function(canvasId, image) {
         jQuery('#clearSign, #finishSign').show();
     };
 
-    var SigImageCallback = function( str )
+  var SigImageCallback = function( str )
     {
        //document.FORM1.sigImageData.value = str;
        console.log('callback: ' + str);
-       widgetValue = '<img src="data:image/jpeg;base64,' + 'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAB0ElEQVR4nOzaz2vScRzHcb9lJ8u6JEah0a9bRJcKgxIKqdCQ7OShCBKJoCBSokMgXcpDeOgHUpcwhA4aKQkhBmLzMjaYDjfZwS8OHDIG22CX/WL/wPP+5gPv5/HxAeHF56Jfv84bmzcdVCZwFv3Lue/o0a3j6B+23ehHRj50d3cJPXd3Dn0fqkHpAOl0gHQ6QDrrdbKKB610BT1bGqNvTEXR10cX0CejJf7802X0enke3fgb0AHS6QDpdIB0zuYdFx4ULk2g5xph9MrjQ+jv20P0Yv8fen7hK3q8eRHd+BvQAdLpAOl0gHTWbOgvHvQettE91zrot5oP0AvnY+hHQwfQW51V9Le+LrrxN6ADpNMB0ukA6azxjx4eBOon0fM/I+ivYsvoH/sv0O+95O/36WM19GHmCrrxN6ADpNMB0ukA6awnjQQe3Hfw8/uy14Mec19Gz8b5f4Nfv4vokWk/+tOdPLrxN6ADpNMB0ukA6azqn0d48Om/F33xKr//Y19fQX8+eIe+dph/J5x58wz9lB1EN/4GdIB0OkA6HSCdZfv5OX0wvIueSA3Q7YMn0GufC+i39/N7R65v/J5SKjmDbvwN6ADpdIB0OkC6vQAAAP//xGpiZnzEG2QAAAAASUVORK5CYII=
-' + '"/>';
+       widgetValue = 'data:image/jpeg;base64,' + str;
             console.log("sendingData", {str});
     JFCustomWidget.sendData({
               valid: true,
-              value: widgetValue
+              value: str
             });
       console.log("sentData", {widgetValue, str})
     }
