@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="pragma" content="no-cache" />
+  </head>
+  <style></style>
+  <body>
+    <div id="reviewArea">
+      <input id="example_input" type="text"/>
+    </div>
+    <script type="text/javascript">
+      function AllMethods() {
+
+        // exposed functions
+        this.init = init;
+        this.getData = getData;
+
+        // initialization of the widget
+        function init(formData) {
+          console.log("Hello world!");
+        }
+        // get widget data
+        function getData() {
+          const fieldValue = document.getElementById("example_input").value
+         return {
+           valid: !!fieldValue,
+           value: "value"
+         };
+        }
+      }
+
+      // always subscribe to ready event and implement widget related code
+      // inside callback function , it is the best practice while developing widgets
+      JFCustomWidget.subscribe("ready", function (data) {
+        var widget = new AllMethods();
+        widget.init(data);
+
+        JFCustomWidget.subscribe("submit", function () {
+          JFCustomWidget.sendSubmit(widget.getData());
+        });
+      });
+    </script>
+  </body>
+</html>
