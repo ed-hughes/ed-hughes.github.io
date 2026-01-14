@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@friendlycaptcha/sdk@0.1.36/site.min.js" defer></script>
+    <script nomodule src="https://cdn.jsdelivr.net/npm/@friendlycaptcha/sdk@0.1.36/site.compat.min.js" defer></script>
+    <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+  </head>
+  <body>
+    <div class="frc-captcha" data-sitekey="FCML407JOSD2OC5S"></div>
+
+    <script>
+      (function () {
+        let friendlyCaptchaValid = false;
+
+        JFCustomWidgetUtils.domReady(function () {
+          const widgetEl = document.querySelector(".frc-captcha");
+          if (!widgetEl) return;
+
+          widgetEl.addEventListener("frc:widget.complete", function (event) {
+            console.log("Widget completed:", event.detail.response);
+            friendlyCaptchaValid = true;
+            JFCustomWidget.hideWidgetError();
+          });
+
+          widgetEl.addEventListener("frc:widget.error", function (event) {
+            console.error("Widget error:", event.detail.error);
+            friendlyCaptchaValid = false;
+            JFCustomWidget.showWidgetError(event.detail.error);
+          });
+
+          widgetEl.addEventListener("frc:widget.expire", function () {
+            friendlyCaptchaValid = false;
+            JFCustomWidget.showWidgetError("The widget expired. Please try again.");
+          });
+
+          function FriendlyCaptcha() {
+            this.init = function () {
+              console.log("Widget init");
+            };
+
+            this.getData = function () {
+              return {
+                valid: friendlyCaptchaValid,
+                value: ""
+              };
+            };
+          }
+
+          JFCustomWidget.subscribe("ready", function (data) {
+            const widget = new FriendlyCaptcha();
+            widget.init(data);
+
+            JFCustomWidget.subscribe("submit", function () {
+              JFCustomWidget.sendSubmit(widget.getData());
+            });
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
