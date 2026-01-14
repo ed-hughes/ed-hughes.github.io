@@ -40,6 +40,12 @@
             };
 
             this.getData = function () {
+
+              if(friendlyCaptchaValid){
+                JFCustomWidget.hideWidgetError();
+              }else{
+                JFCustomWidget.showWidgetError("Please fill in the captcha");
+              }
               return {
                 valid: friendlyCaptchaValid,
                 value: ""
