@@ -42,9 +42,7 @@
 
         function init(formData) {
           console.log("DBCC", { formData });
-          selectCompany.then((data) => {
-            console.log({ data });
-          });
+          selectCompany();
         }
 
         function fillJotformFields(data) {
