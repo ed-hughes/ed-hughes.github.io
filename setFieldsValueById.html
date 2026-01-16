@@ -14,39 +14,27 @@
     </div>
 
     <div id="search-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Bedrijf zoeken</h2>
-          <span class="close" id="close-modal">&times;</span>
-        </div>
-        <div class="search-form">
-          <input
-            type="text"
-            id="search-input"
-            class="search-input"
-            placeholder="Voer bedrijfsnaam in..."
-            autocomplete="off"
-          />
-          <button type="button" id="search-button" class="search-button">
-            Zoeken
-          </button>
-        </div>
-        <div id="search-results" class="results-container"></div>
+      <div class="search-form">
+        <input
+          type="text"
+          id="search-input"
+          class="search-input"
+          placeholder="Voer bedrijfsnaam in..."
+          autocomplete="off"
+        />
+        <button type="button" id="search-button" class="search-button">
+          Zoeken
+        </button>
       </div>
+      <div id="search-results" class="results-container"></div>
     </div>
 
     <script>
-      const modal = document.getElementById("search-modal");
-      const closeBtn = document.getElementById("close-modal");
-      const lookupButton = document.getElementById("kvk-lookup-button");
       const searchButton = document.getElementById("search-button");
       const searchInput = document.getElementById("search-input");
       const searchResults = document.getElementById("search-results");
 
       console.log({
-        modal: !!modal,
-        closeBtn: !!closeBtn,
-        lookupButton: !!lookupButton,
         searchButton: !!searchButton,
         searchInput: !!searchInput,
         searchResults: !!searchResults,
@@ -62,7 +50,6 @@
         function init(formData) {
           console.log("DBCC", { formData });
 
-          lookupButton.addEventListener("click", openModal);
           searchButton.addEventListener("click", searchCompanies);
 
           searchInput.addEventListener("keypress", function (event) {
