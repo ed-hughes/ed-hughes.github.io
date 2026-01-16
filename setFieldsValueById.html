@@ -36,13 +36,41 @@
     </div>
 
     <script>
+      const modal = document.getElementById("search-modal");
+      const closeBtn = document.getElementById("close-modal");
+      const lookupButton = document.getElementById("kvk-lookup-button");
+      const searchButton = document.getElementById("search-button");
+      const searchInput = document.getElementById("search-input");
+      const searchResults = document.getElementById("search-results");
+
+      console.log({
+        modal: !!modal,
+        closeBtn: !!closeBtn,
+        lookupButton: !!lookupButton,
+        searchButton: !!searchButton,
+        searchInput: !!searchInput,
+        searchResults: !!searchResults,
+      });
+
       function DBCC() {
+        const API_BASE_URL =
+          "https://klikopmorgen-backend.klikopmorgen-backend.workers.dev/kvk-lookup";
+
         this.init = init;
         this.getData = getData;
 
         function init(formData) {
           console.log("DBCC", { formData });
-          selectCompany();
+
+          lookupButton.addEventListener("click", openModal);
+          searchButton.addEventListener("click", searchCompanies);
+
+          searchInput.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              searchCompanies();
+            }
+          });
         }
 
         function fillJotformFields(data) {
@@ -83,17 +111,96 @@
 
           JFCustomWidget.setFieldsValueById(fieldData);
         }
+        async function searchCompanies() {
+          const companyName = searchInput.value.trim();
 
-        async function selectCompany() {
+          if (!companyName) {
+            return;
+          }
+
+          try {
+            const response = await fetch(
+              API_BASE_URL + "/search?name=" + encodeURIComponent(companyName),
+            );
+            const data = await response.json();
+
+            if (!data.success) {
+              const errorMessage = data.message || "Fout bij zoeken";
+              return;
+            }
+
+            if (!data.companies || data.companies.length === 0) {
+              return;
+            }
+
+            displayCompanies(data.companies);
+          } catch (error) {
+            console.error("Search error:", error);
+          }
+        }
+
+        function displayCompanies(companies) {
+          console.log("displayCompanies", { companies });
+          const list = document.createElement("ul");
+          list.className = "company-list";
+
+          companies.forEach((company) => {
+            const item = document.createElement("li");
+            item.className = "company-item";
+
+            const addressParts = [];
+            if (company.address && company.address.street)
+              addressParts.push(company.address.street);
+            if (company.address && company.address.houseNumber)
+              addressParts.push(company.address.houseNumber);
+            if (company.address && company.address.postalCode)
+              addressParts.push(company.address.postalCode);
+            if (company.address && company.address.city)
+              addressParts.push(company.address.city);
+            const fullAddress = addressParts.join(" ");
+
+            item.innerHTML =
+              '<div class="company-name">' +
+              escapeHtml(company.companyName) +
+              "</div>" +
+              '<div class="company-details">' +
+              "KvK: " +
+              escapeHtml(company.kvkNumber) +
+              (company.vestigingsnummer
+                ? " | Vestiging: " + escapeHtml(company.vestigingsnummer)
+                : "") +
+              "<br>" +
+              escapeHtml(fullAddress || company.city || "") +
+              "</div>";
+
+            item.addEventListener("click", () => selectCompany(company));
+            list.appendChild(item);
+          });
+
+          searchResults.innerHTML = "";
+          searchResults.appendChild(list);
+        }
+
+        async function selectCompany(company) {
           try {
             let url =
-              "https://klikopmorgen-backend.klikopmorgen-backend.workers.dev/kvk-lookup/details?kvkNumber=74372297&vestigingsnummer=000037956744";
+              API_BASE_URL +
+              "/details?kvkNumber=" +
+              encodeURIComponent(company.kvkNumber);
+            if (company.vestigingsnummer) {
+              url +=
+                "&vestigingsnummer=" +
+                encodeURIComponent(company.vestigingsnummer);
+            }
 
             const response = await fetch(url);
             const data = await response.json();
 
+            console.log("selectCompany", JSON.stringify({ data }));
+
             if (!data.success) {
               const errorMessage = data.message || "Fout bij ophalen gegevens";
+              showError(errorMessage);
               return;
             }
 
