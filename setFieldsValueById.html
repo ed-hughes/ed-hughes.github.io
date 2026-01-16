@@ -60,6 +60,12 @@
           });
         }
 
+        function escapeHtml(text) {
+          const div = document.createElement("div");
+          div.textContent = text || "";
+          return div.innerHTML;
+        }
+
         function fillJotformFields(data) {
           const fieldData = [
             { id: "5", value: data.companyName || "" },
