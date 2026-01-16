@@ -24,24 +24,27 @@
         function init(formData) {
           console.log("Hello world!");
         const otherFields = [
-          {label: 'control_textbox', value: "i'm a texbox value"},
-          {label: 'control_scale', value: "4"},
-          {label: 'control_radio', value: "Type option 1"},
-          {label: 'control_checkbox', value: "Type option 2"},
-          {label: 'control_dropdown', value: "two"},
-          {label: 'control_rating', value: "4"},
-          {label: 'control_datetime', value: "09-01-2024"},
-          {label: 'control_fullname', value: "Ed Hughes"},
-          {label: 'control_address', value: "123 Main Street, City, State, AA0 0AA"},
-          {label: 'control_email', value: "testing@jotform.com"},
-          {label: 'control_textarea', value: "loreum ipsum ...."},
-          {label: 'control_number', value: "333"},
-          {label: 'control_phone', value: "01234 578 910"},
-          {label: 'control_time', value: "12:30AM"}
+          {id: '3', value: "i'm a texbox value"},
+          {id: '4', value: "4"},
+          {id: '5', value: "Type option 1"},
+          {id: '6', value: "Type option 2"},
+          {id: '7', value: "two"},
+          {id: '8', value: "4"},
+          {id: '12', value: "testing@jotform.com"},
+          {id: '13', value: "loreum ipsum ...."},
+          {id: '14', value: "01234 578 910"},
+          {id: '15', value: "333"},
         ]
-        
-          console.log({otherFields})
-          JFCustomWidget.setFieldsValueByLabel(otherFields)
+          JFCustomWidget.setFieldsValueById(otherFields);
+          JFCustomWidget.storeToField("first_10", "first name");
+          JFCustomWidget.storeToField("last_10", "last name");
+          JFCustomWidget.storeToField("input_11_addr_line1", "Line one");
+          JFCustomWidget.storeToField("input_11_addr_line2", "Line two ");
+          JFCustomWidget.storeToField("input_11_city", "CITY")
+          JFCustomWidget.storeToField("input_11_state", "state")
+          JFCustomWidget.storeToField("input_11_postal", "post")
+          JFCustomWidget.storeToField("input_16_timeInput", "12:30")
+          JFCustomWidget.storeToField("input_16_ampm", "AM")
         }
         
         // get widget data
