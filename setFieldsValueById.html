@@ -1,60 +1,85 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KvK Widget</title>
-  <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
-</head>
-<body>
-  <div class="kvk-widget-container">
-    <button id="kvk-lookup-button" class="kvk-button" type="button">
-      KvK gegevens ophalen
-    </button>
-  </div>
-
-  <div id="search-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Bedrijf zoeken</h2>
-        <span class="close" id="close-modal">&times;</span>
-      </div>
-      <div class="search-form">
-        <input
-          type="text"
-          id="search-input"
-          class="search-input"
-          placeholder="Voer bedrijfsnaam in..."
-          autocomplete="off"
-        />
-        <button type="button" id="search-button" class="search-button">
-          Zoeken
-        </button>
-      </div>
-      <div id="search-results" class="results-container"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KvK Widget</title>
+    <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+  </head>
+  <body>
+    <div class="kvk-widget-container">
+      <button id="kvk-lookup-button" class="kvk-button" type="button">
+        KvK gegevens ophalen
+      </button>
     </div>
-  </div>
 
-  <script>
+    <div id="search-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Bedrijf zoeken</h2>
+          <span class="close" id="close-modal">&times;</span>
+        </div>
+        <div class="search-form">
+          <input
+            type="text"
+            id="search-input"
+            class="search-input"
+            placeholder="Voer bedrijfsnaam in..."
+            autocomplete="off"
+          />
+          <button type="button" id="search-button" class="search-button">
+            Zoeken
+          </button>
+        </div>
+        <div id="search-results" class="results-container"></div>
+      </div>
+    </div>
 
-    function DBCC(){
-
+    <script>
+      function DBCC() {
         this.init = init;
         this.getData = getData;
 
-        function init(formData){
-            console.log("DBCC", {formData})
+        function init(formData) {
+          console.log("DBCC", { formData });
+          selectCompany.then((data) => {
+            console.log({ data });
+          });
         }
 
-        function getData(){
-            return {
-                valid: true,
-                value: "TEST"
-            }
+        function fillJotformFields(data) {
+          const fieldData = [{ id: "5", value: data.companyName || "" }];
+
+          JFCustomWidget.setFieldsValueById(fieldData);
         }
-    }
- JFCustomWidget.subscribe("ready", function (data) {
+
+        async function selectCompany() {
+          try {
+            let url =
+              "https://klikopmorgen-backend.klikopmorgen-backend.workers.dev/kvk-lookup/details?kvkNumber=74372297&vestigingsnummer=000037956744";
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (!data.success) {
+              const errorMessage = data.message || "Fout bij ophalen gegevens";
+              return;
+            }
+
+            fillJotformFields(data);
+          } catch (error) {
+            console.error("Details error:", error);
+          }
+        }
+
+        function getData() {
+          return {
+            valid: true,
+            value: "TEST",
+          };
+        }
+      }
+      JFCustomWidget.subscribe("ready", function (data) {
         var widget = new DBCC();
         widget.init(data);
 
@@ -62,7 +87,6 @@
           JFCustomWidget.sendSubmit(widget.getData());
         });
       });
-  
-  </script>
-</body>
+    </script>
+  </body>
 </html>
