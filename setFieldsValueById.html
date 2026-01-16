@@ -46,9 +46,41 @@
         }
 
         function fillJotformFields(data) {
-          console.log("fillJotformFields", JSON.stringify(data));
-          const fieldData = [{ id: "4", value: data.companyName || "" }];
-          console.log(JSON.stringify(fieldData));
+          const fieldData = [
+            { id: "5", value: data.companyName || "" },
+            { id: "80", value: data.kvkNumber || "" },
+            {
+              id: "77",
+              value:
+                data.address && data.address.street ? data.address.street : "",
+            },
+            {
+              id: "78",
+              value:
+                data.address && data.address.postalCode
+                  ? data.address.postalCode
+                  : "",
+            },
+            {
+              id: "79",
+              value: data.address && data.address.city ? data.address.city : "",
+            },
+            {
+              id: "35",
+              value: data.address && data.address.city ? data.address.city : "",
+            },
+            { id: "81", value: data.sbiCode || "" },
+            { id: "82", value: data.sbiDescription || "" },
+            {
+              id: "85",
+              value:
+                data.address && data.address.country
+                  ? data.address.country
+                  : "",
+            },
+            { id: "34", value: data.website || "" },
+          ];
+
           JFCustomWidget.setFieldsValueById(fieldData);
         }
 
