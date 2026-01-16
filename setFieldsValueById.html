@@ -5,6 +5,260 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>KvK Widget</title>
     <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 15px;
+        color: #2c3345;
+        background: transparent;
+      }
+
+      .kvk-widget-container {
+        padding: 10px;
+      }
+
+      .kvk-button {
+        background-color: #dd1a00;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: normal;
+        font-family: inherit;
+        cursor: pointer;
+        border-radius: 4px;
+        min-width: 180px;
+        transition: background-color 0.3s ease;
+      }
+
+      .kvk-button:hover {
+        background-color: rgb(217, 56, 35);
+      }
+
+      .kvk-button:focus {
+        outline: 2px solid#DD1A00;
+        outline-offset: 2px;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .modal-content {
+        background-color: #ffffff;
+        margin: 5% auto;
+        padding: 30px;
+        border: 1px solid #e6e6e6;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        animation: slideDown 0.3s ease;
+      }
+
+      @keyframes slideDown {
+        from {
+          transform: translateY(-20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e6e6e6;
+      }
+
+      .modal-header h2 {
+        font-size: 1.5em;
+        color: #2c3345;
+        margin: 0;
+      }
+
+      .close {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+        transition: color 0.3s ease;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: #000;
+      }
+
+      .search-form {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .search-input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 15px;
+        font-family: inherit;
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: #2e69ff;
+        box-shadow: 0 0 0 3px rgba(46, 105, 255, 0.25);
+      }
+
+      .search-button {
+        background-color: #2e69ff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 15px;
+        font-family: inherit;
+        cursor: pointer;
+        border-radius: 4px;
+        min-width: 100px;
+        transition: background-color 0.3s ease;
+      }
+
+      .search-button:hover {
+        background-color: #1e59ef;
+      }
+
+      .search-button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      .results-container {
+        margin-top: 20px;
+      }
+
+      .company-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .company-item {
+        padding: 15px;
+        margin-bottom: 10px;
+        border: 1px solid #e6e6e6;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: #fff;
+        transition: all 0.3s ease;
+      }
+
+      .company-item:hover {
+        background-color: #f1f5ff;
+        border-color: #2e69ff;
+        box-shadow: 0 2px 4px rgba(46, 105, 255, 0.1);
+      }
+
+      .company-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #2c3345;
+        font-size: 15px;
+      }
+
+      .company-details {
+        font-size: 14px;
+        color: #464d5f;
+        line-height: 1.5;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px 20px;
+        color: #464d5f;
+      }
+
+      .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #2e69ff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error {
+        color: #f23a3c;
+        padding: 15px;
+        background-color: #fff4f4;
+        border: 1px solid #f23a3c;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #464d5f;
+      }
+
+      @media (max-width: 600px) {
+        .modal-content {
+          width: 95%;
+          margin: 10% auto;
+          padding: 20px;
+        }
+
+        .search-form {
+          flex-direction: column;
+        }
+
+        .search-button {
+          width: 100%;
+        }
+      }
+    </style>
   </head>
   <body>
     <div class="kvk-widget-container">
