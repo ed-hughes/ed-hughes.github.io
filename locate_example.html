@@ -110,7 +110,7 @@
           try {
             const searchParams = new URLSearchParams();
             searchParams.append("Key", serviceKey);
-            searchParamsa.append("Id", addressId);
+            searchParams.append("Id", addressId);
             
             const response = await fetch(
               `${API_RETRIEVE_URL}?${searchParams}`
