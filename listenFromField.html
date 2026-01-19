@@ -19,7 +19,7 @@
 
         // initialization of the widget
         function init(formData) {
-          console.log("Hello world!");
+          console.log("Hello world!", {formData, listenFromFieldQid});
           
            JFCustomWidget.listenFromField(listenFromFieldQid, 'change', function(value){
                         resolve({question: qid, value})
