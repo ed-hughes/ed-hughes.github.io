@@ -95,7 +95,8 @@
         const searchLimit = widgetSettings.searchLimit || 10;
         const allowedCountries = widgetSettings.allowedCountries || "GB";
         const serviceKey = widgetSettings.serviceKey;
-        
+        let isSelectingAddress = false;
+
         const API_LIST_URL = "https://api.addressy.com/Capture/Interactive/Find/v1.20/json6.ws";
         const API_RETRIEVE_URL =
           "https://api.addressy.com/Capture/Interactive/Retrieve/v1.30/json6.ws";
@@ -107,6 +108,7 @@
           console.log("init", { formData });
           searchInput.addEventListener("input", function (event) {
               console.log("searchInputEvent", event)
+              if (isSelectingAddress) return;
               retrieveListOfAddresses(event.target.value);
           });
         }
@@ -179,6 +181,7 @@ function displayAddresses(addresses) {
 
         async function selectAddress(addressId) {
           try {
+            isSelectingAddress = true;
             const searchParams = new URLSearchParams();
             searchParams.append("Key", serviceKey);
             searchParams.append("Id", addressId);
@@ -199,50 +202,14 @@ function displayAddresses(addresses) {
             setData(data.Items[0]);
           } catch (error) {
             console.error("Details error:", error);
-          }
+          } finally {
+    setTimeout(() => {
+      isSelectingAddress = false;
+    }, 100);
+  }
         }
 
         function setData(addressData){
-
-      //       {
-      // "Id": "GB|RM|B|55605138|ENG",
-      // "DomesticId": "55605138",
-      // "Language": "ENG",
-      // "LanguageAlternatives": "ENG",
-      // "Department": "",
-      // "Company": "G B G",
-      // "SubBuilding": "",
-      // "BuildingNumber": "128",
-      // "BuildingName": "Evermore",
-      // "SecondaryStreet": "",
-      // "Street": "Queen Victoria Street",
-      // "Block": "",
-      // "Neighbourhood": "",
-      // "District": "",
-      // "City": "London",
-      // "Line1": "Evermore",
-      // "Line2": "128 Queen Victoria Street",
-      // "Line3": "",
-      // "Line4": "",
-      // "Line5": "",
-      // "AdminAreaName": "City of London",
-      // "AdminAreaCode": "",
-      // "Province": "",
-      // "ProvinceName": "",
-      // "ProvinceCode": "",
-      // "PostalCode": "EC4V 4BJ",
-      // "CountryName": "United Kingdom",
-      // "CountryIso2": "GB",
-      // "CountryIso3": "GBR",
-      // "CountryIsoNumber": "826",
-      // "SortingNumber1": "74131",
-      // "SortingNumber2": "",
-      // "Barcode": "(EC4V4BJ2ZE)",
-      // "POBoxNumber": "",
-      // "Label": "G B G\nEvermore\n128 Queen Victoria Street\nLONDON\nEC4V 4BJ\nUNITED KINGDOM",
-      // "Type": "Commercial",
-      // "DataLevel": "Premise",
-      //   }
             document.getElementById('address_line_1').value = addressData.Line1;
             document.getElementById('address_line_2').value  = addressData.Line2;
             document.getElementById('city').value  = addressData.City;
