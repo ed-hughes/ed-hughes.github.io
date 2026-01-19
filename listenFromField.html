@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
+ <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="expires" content="0" />
     <meta http-equiv="pragma" content="no-cache" />
@@ -11,64 +11,38 @@
     <div id="reviewArea">
     </div>
     <script type="text/javascript">
+      function AllMethods() {
+        const listenFromFieldQid = JFCustomWidget.getWidgetSetting("listenFromFieldQid");
+        // exposed functions
+        this.init = init;
+        this.getData = getData;
 
-
-      const listenFromDynamically = async (formData) => {
-        const formHtml = await getFormHtml(formData.formID, formData.qid)
-        const qids = parseOutQids(formHtml,formData.qid)
-        console.log({qids})
-
-        async function getFormHtml(formID){
-          const response = await fetch(`${parent}/${formID}`)
-          const data = await response.text()
-          console.log({data})
-          return data
-        }
-
-        //Jotform always adds fields 1 and 2, and then you also don't want to listen to the widget itself.
-        function parseOutQids(html, thisQid){
-          const idsToIgnore = [1, 2, thisQid]
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, "text/html")
-          const allQids = []
-          doc.querySelectorAll("[id^='cid_']").forEach((node) => allQids.push(parseInt(node.id.split("_").at(-1))))
-          return allQids.filter(e => !idsToIgnore.includes(e))
-        }
-        
-        function generateAllListeners(qids){
-            return new Promise(function(resolve, reject){
-                qids.forEach(function(qid){
-                  console.log({qid})
-                    JFCustomWidget.listenFromField(`input_${qids}`, 'change', function(value){
+        // initialization of the widget
+        function init(formData) {
+          console.log("Hello world!");
+          
+           JFCustomWidget.listenFromField(listenFromFieldQid, 'change', function(value){
                         resolve({question: qid, value})
-                    })
-                })
-            })
+          })
+        }
+        // get widget data
+        function getData() {
+         return {
+           valid: true,
+           value: "value"
+         };
         }
       }
 
       // always subscribe to ready event and implement widget related code
       // inside callback function , it is the best practice while developing widgets
       JFCustomWidget.subscribe("ready", function (data) {
+        var widget = new AllMethods();
+        widget.init(data);
 
-        let questionAnswerData = {}
-        listenFromDynamically(data)
-      //  function triggerListening(){
-      //   console.log("triggered")
-
-      // let widget = listenFromDynamically(data)
-      //         widget.init()
-      //         .then(function(answerValue){
-      //           console.log("resolved", answerValue)
-      //           const {question, value} = answerValue;
-      //           questionAnswerData.question = value
-      //                     triggerListening();
-      //             })}
-
-JFCustomWidget.subscribe('submit', function() {
-                        // JFCustomWidget.sendSubmit();
-                        console.log({questionAnswerData})
-                    })
+        JFCustomWidget.subscribe("submit", function () {
+          JFCustomWidget.sendSubmit(widget.getData());
+        });
       });
     </script>
   </body>
