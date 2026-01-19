@@ -62,7 +62,7 @@
           try {
             const searchParams = new URLSearchParams();
             searchParams.append("Key", serviceKey);
-            searchParamsa.append("Text", searchTerm);
+            searchParams.append("Text", searchTerm);
             
             const response = await fetch(
               `${API_LIST_URL}?${searchParams}`
