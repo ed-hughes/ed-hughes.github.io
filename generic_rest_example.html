@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+
+  <style>
+    .search-wrapper {
+      position: relative;
+    }
+
+    .search-input {
+      padding: 0.6rem 0.75rem;
+      font-size: 14px;
+      border: 1px solid #d0d5dd;
+      border-radius: 6px;
+      width: 100%;
+    }
+
+    .results-container {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    .result-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    .result-item {
+      padding: 0.6rem 0.75rem;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-item:hover {
+      background: #f8fafc;
+    }
+
+    .highlight {
+      font-weight: 600;
+      color: #4f46e5;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="search-wrapper">
+    <input
+      id="searchInput"
+      class="search-input"
+      type="text"
+      placeholder="Start typing to search…"
+    />
+    <div id="results" class="results-container"></div>
+  </div>
+
+  <script>
+    function RetailerLookupWidget() {
+      const input = document.getElementById("searchInput");
+      const resultsEl = document.getElementById("results");
+
+      let selectedItem = null;
+      let isSelecting = false;
+
+      const settings = JFCustomWidget.getWidgetSettings();
+      const apiUrl = settings.apiUrl;
+      const searchLimit = Number(settings.searchLimit || 10);
+      const displayField = settings.displayField || "title";
+      const valueField = settings.valueField || "id";
+
+      this.init = init;
+      this.getData = getData;
+
+      function init() {
+        input.addEventListener("input", async (e) => {
+          if (isSelecting) return;
+
+          const term = e.target.value.trim();
+          if (!term) {
+            clearResults();
+            return;
+          }
+
+          const data = await fetchData();
+          const filtered = filterResults(data, term);
+          renderResults(filtered);
+        });
+      }
+
+      async function fetchData() {
+        try {
+          const res = await fetch(apiUrl);
+          return await res.json();
+        } catch (err) {
+          console.error("API error:", err);
+          return [];
+        }
+      }
+
+      function filterResults(items, term) {
+        return items
+          .filter(item =>
+            String(item[displayField])
+              .toLowerCase()
+              .includes(term.toLowerCase())
+          )
+          .slice(0, searchLimit);
+      }
+
+      function renderResults(items) {
+        if (!items.length) {
+          clearResults();
+          return;
+        }
+
+        const ul = document.createElement("ul");
+        ul.className = "result-list";
+
+        items.forEach(item => {
+          const li = document.createElement("li");
+          li.className = "result-item";
+          li.innerHTML = highlightMatch(
+            String(item[displayField]),
+            input.value
+          );
+
+          li.addEventListener("click", () => selectItem(item));
+          ul.appendChild(li);
+        });
+
+        resultsEl.innerHTML = "";
+        resultsEl.appendChild(ul);
+      }
+
+      function selectItem(item) {
+        isSelecting = true;
+        selectedItem = item;
+        input.value = item[displayField];
+        clearResults();
+
+        setTimeout(() => (isSelecting = false), 100);
+      }
+
+      function clearResults() {
+        resultsEl.innerHTML = "";
+      }
+
+      function highlightMatch(text, term) {
+        const regex = new RegExp(`(${term})`, "ig");
+        return text.replace(regex, `<span class="highlight">$1</span>`);
+      }
+
+      function getData() {
+        return {
+          valid: !!selectedItem,
+          value: selectedItem
+            ? JSON.stringify({
+                id: selectedItem[valueField],
+                label: selectedItem[displayField],
+                raw: selectedItem
+              })
+            : ""
+        };
+      }
+    }
+
+    JFCustomWidget.subscribe("ready", () => {
+      const widget = new RetailerLookupWidget();
+      widget.init();
+
+      JFCustomWidget.subscribe("submit", () => {
+        JFCustomWidget.sendSubmit(widget.getData());
+      });
+    });
+  </script>
+</body>
+</html>
