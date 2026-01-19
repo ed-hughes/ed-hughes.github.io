@@ -45,7 +45,7 @@
           console.log("init", { formData });
           searchInput.addEventListener("input", function (event) {
               console.log("searchInputEvent", event)
-              retrieveListOfAddresses();
+              retrieveListOfAddresses(event.target.value);
           });
         }
 
