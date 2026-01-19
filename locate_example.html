@@ -136,37 +136,44 @@
           }
         }
 
-        function displayAddresses(addresses) {
-    //           {
-    //   "Id": "GB|RM|B|55605138|ENG",
-    //   "Type": "Address",
-    //   "Text": "G B G Evermore 128 Queen Victoria Street",
-    //   "Highlight": "0-1,2-3,4-5",
-    //   "Description": "London EC4V 4BJ"
-    // }
-          console.log("displayAddresses", { addresses });
-          const list = document.createElement("ul");
-          list.className = "address-list";
+function displayAddresses(addresses) {
+  if (!addresses || !addresses.length) {
+    searchResults.innerHTML = "";
+    return;
+  }
 
-          addresses.forEach((address) => {
-            const item = document.createElement("li");
-            item.id = address.Id;
-            item.className = "address-item";
-            item.innerHTML =
-              '<div class="address-name">' +
-              escapeHtml(address.Text) +
-              "</div>" +
-              '<div class="address-details">' +
-              escapeHtml(address.Description) +
-              "</div>";
+  const list = document.createElement("ul");
+  list.className = "address-list";
 
-            item.addEventListener("click", () => selectAddress(address.Id));
-            list.appendChild(item);
-          });
+  addresses.forEach((address) => {
+    const item = document.createElement("li");
+    item.className = "address-item";
+    item.id = address.Id;
 
-          searchResults.innerHTML = "";
-          searchResults.appendChild(list);
-        }
+    const highlights = parseHighlight(address.Highlight);
+
+    const textHtml = applyHighlight(address.Text || "", highlights.text);
+    const descHtml = applyHighlight(
+      address.Description || "",
+      highlights.description
+    );
+
+    item.innerHTML = `
+      <div class="address-name">${textHtml}</div>
+      <div class="address-details">${descHtml}</div>
+    `;
+
+    item.addEventListener("click", () =>
+      selectAddress(address.Id)
+    );
+
+    list.appendChild(item);
+  });
+
+  searchResults.innerHTML = "";
+  searchResults.appendChild(list);
+}
+
 
         async function selectAddress(addressId) {
           try {
