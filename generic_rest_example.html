@@ -6,6 +6,19 @@
   <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
 
   <style>
+
+    .loading,
+.no-results {
+  padding: 0.6rem 0.75rem;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.result-item.active {
+  background: #eef2ff;
+}
+
+    
     .search-wrapper {
       position: relative;
     }
@@ -71,123 +84,190 @@
   </div>
 
   <script>
-    function RetailerLookupWidget() {
-      const input = document.getElementById("searchInput");
-      const resultsEl = document.getElementById("results");
+  function RetailerLookupWidget() {
+    const input = document.getElementById("searchInput");
+    const resultsEl = document.getElementById("results");
 
-      let selectedItem = null;
-      let isSelecting = false;
+    let selectedItem = null;
+    let isSelecting = false;
+    let allResults = [];
+    let activeIndex = -1;
 
-      const settings = JFCustomWidget.getWidgetSettings();
-      const apiUrl = settings.apiUrl;
-      const searchLimit = Number(settings.searchLimit || 10);
-      const displayField = settings.displayField || "title";
-      const valueField = settings.valueField || "id";
+    const settings = JFCustomWidget.getWidgetSettings();
+    const apiUrl = settings.apiUrl;
+    const searchLimit = Number(settings.searchLimit || 10);
+    const displayField = settings.displayField || "title";
+    const valueField = settings.valueField || "id";
 
-      this.init = init;
-      this.getData = getData;
+    this.init = init;
+    this.getData = getData;
 
-      function init() {
-        input.addEventListener("input", async (e) => {
-          if (isSelecting) return;
+    function init() {
+      input.addEventListener("input", onInput);
+      input.addEventListener("keydown", onKeyDown);
+      document.addEventListener("click", onClickOutside);
+    }
 
-          const term = e.target.value.trim();
-          if (!term) {
-            clearResults();
-            return;
-          }
+    async function onInput(e) {
+      if (isSelecting) return;
 
-          const data = await fetchData();
-          const filtered = filterResults(data, term);
-          renderResults(filtered);
-        });
-      }
-
-      async function fetchData() {
-        try {
-          const res = await fetch(apiUrl);
-          return await res.json();
-        } catch (err) {
-          console.error("API error:", err);
-          return [];
-        }
-      }
-
-      function filterResults(items, term) {
-        return items
-          .filter(item =>
-            String(item[displayField])
-              .toLowerCase()
-              .includes(term.toLowerCase())
-          )
-          .slice(0, searchLimit);
-      }
-
-      function renderResults(items) {
-        if (!items.length) {
-          clearResults();
-          return;
-        }
-
-        const ul = document.createElement("ul");
-        ul.className = "result-list";
-
-        items.forEach(item => {
-          const li = document.createElement("li");
-          li.className = "result-item";
-          li.innerHTML = highlightMatch(
-            String(item[displayField]),
-            input.value
-          );
-
-          li.addEventListener("click", () => selectItem(item));
-          ul.appendChild(li);
-        });
-
-        resultsEl.innerHTML = "";
-        resultsEl.appendChild(ul);
-      }
-
-      function selectItem(item) {
-        isSelecting = true;
-        selectedItem = item;
-        input.value = item[displayField];
+      const term = e.target.value.trim();
+      if (!term) {
         clearResults();
-
-        setTimeout(() => (isSelecting = false), 100);
+        return;
       }
 
-      function clearResults() {
-        resultsEl.innerHTML = "";
-      }
+      showLoading();
 
-      function highlightMatch(text, term) {
-        const regex = new RegExp(`(${term})`, "ig");
-        return text.replace(regex, `<span class="highlight">$1</span>`);
-      }
+      const data = await fetchData();
+      allResults = filterResults(data, term);
+      activeIndex = -1;
 
-      function getData() {
-        return {
-          valid: !!selectedItem,
-          value: selectedItem
-            ? JSON.stringify({
-                id: selectedItem[valueField],
-                label: selectedItem[displayField],
-                raw: selectedItem
-              })
-            : ""
-        };
+      renderResults();
+    }
+
+    async function fetchData() {
+      try {
+        const res = await fetch(apiUrl);
+        return await res.json();
+      } catch (err) {
+        console.error("API error:", err);
+        return [];
       }
     }
 
-    JFCustomWidget.subscribe("ready", () => {
-      const widget = new RetailerLookupWidget();
-      widget.init();
+    function filterResults(items, term) {
+      return items
+        .filter(item =>
+          String(item[displayField])
+            .toLowerCase()
+            .includes(term.toLowerCase())
+        )
+        .slice(0, searchLimit);
+    }
 
-      JFCustomWidget.subscribe("submit", () => {
-        JFCustomWidget.sendSubmit(widget.getData());
+    function renderResults() {
+      resultsEl.innerHTML = "";
+
+      if (!allResults.length) {
+        resultsEl.innerHTML = `
+          <div class="result-list no-results">
+            No results found
+          </div>`;
+        return;
+      }
+
+      const ul = document.createElement("ul");
+      ul.className = "result-list";
+
+      allResults.forEach((item, index) => {
+        const li = document.createElement("li");
+        li.className = "result-item";
+        if (index === activeIndex) li.classList.add("active");
+
+        li.innerHTML = highlightMatch(
+          String(item[displayField]),
+          input.value
+        );
+
+        li.addEventListener("mousedown", () => selectItem(item));
+        ul.appendChild(li);
       });
+
+      resultsEl.appendChild(ul);
+    }
+
+    function showLoading() {
+      resultsEl.innerHTML = `
+        <div class="result-list loading">
+          Loading…
+        </div>`;
+    }
+
+    function selectItem(item) {
+      isSelecting = true;
+      selectedItem = item;
+      input.value = item[displayField];
+      clearResults();
+      setTimeout(() => (isSelecting = false), 100);
+    }
+
+    function clearResults() {
+      resultsEl.innerHTML = "";
+      allResults = [];
+      activeIndex = -1;
+    }
+
+    function highlightMatch(text, term) {
+      const regex = new RegExp(`(${term})`, "ig");
+      return text.replace(regex, `<span class="highlight">$1</span>`);
+    }
+
+    function onKeyDown(e) {
+      if (!allResults.length) return;
+
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          activeIndex =
+            activeIndex < allResults.length - 1
+              ? activeIndex + 1
+              : 0;
+          renderResults();
+          break;
+
+        case "ArrowUp":
+          e.preventDefault();
+          activeIndex =
+            activeIndex > 0
+              ? activeIndex - 1
+              : allResults.length - 1;
+          renderResults();
+          break;
+
+        case "Enter":
+          if (activeIndex >= 0) {
+            e.preventDefault();
+            selectItem(allResults[activeIndex]);
+          }
+          break;
+
+        case "Escape":
+          clearResults();
+          break;
+      }
+    }
+
+    function onClickOutside(e) {
+      if (!resultsEl.contains(e.target) && e.target !== input) {
+        clearResults();
+      }
+    }
+
+    function getData() {
+      return {
+        valid: !!selectedItem,
+        value: selectedItem
+          ? JSON.stringify({
+              id: selectedItem[valueField],
+              label: selectedItem[displayField],
+              raw: selectedItem
+            })
+          : ""
+      };
+    }
+  }
+
+  JFCustomWidget.subscribe("ready", () => {
+    const widget = new RetailerLookupWidget();
+    widget.init();
+
+    JFCustomWidget.subscribe("submit", () => {
+      JFCustomWidget.sendSubmit(widget.getData());
     });
-  </script>
+  });
+</script>
+
+
 </body>
 </html>
