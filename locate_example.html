@@ -92,8 +92,8 @@
       function LocateAddressSearch() {
 
         const widgetSettings = JFCustomWidget.getWidgetSettings();
-        const searchLimit = widgetSettings.searchLimit;
-        const allowedCountries = widgetSettings.allowedCountries;
+        const searchLimit = widgetSettings.searchLimit || 10;
+        const allowedCountries = widgetSettings.allowedCountries || "GB";
         const serviceKey = widgetSettings.serviceKey;
         
         const API_LIST_URL = "https://api.addressy.com/Capture/Interactive/Find/v1.20/json6.ws";
@@ -125,6 +125,8 @@
             const searchParams = new URLSearchParams();
             searchParams.append("Key", serviceKey);
             searchParams.append("Text", searchTerm);
+            searchParams.append("Countries", allowedCountries);
+            searchParams.append("Limit", searchLimit);
             
             const response = await fetch(
               `${API_LIST_URL}?${searchParams}`
