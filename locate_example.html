@@ -44,6 +44,7 @@
         function init(formData) {
           console.log("init", { formData });
           searchInput.addEventListener("input", function (event) {
+              console.log("searchInputEvent", event)
               retrieveListOfAddresses();
           });
         }
@@ -54,6 +55,7 @@
           return div.innerHTML;
         }
         async function retrieveListOfAddresses(searchTerm) {
+          console.log("retrieveListOfAddresses", {searchTerm});
           if (!searchTerm) {
             return;
           }
@@ -178,7 +180,6 @@
         }
   
          function getData() {
-
             const address_line_1 = document.getElementById('address_line_1').value;
             const address_line_2 = document.getElementById('address_line_2').value;
             const city = document.getElementById('city').value;
