@@ -240,6 +240,48 @@
             document.getElementById('state').value = addressData.ProvinceName;
             document.getElementById('postcode').value = addressData.PostalCode;
         }
+
+        function applyHighlight(text, ranges) {
+  if (!ranges || !ranges.length) {
+    return escapeHtml(text);
+  }
+
+  let result = "";
+  let lastIndex = 0;
+
+  ranges.forEach(([start, end]) => {
+    result += escapeHtml(text.slice(lastIndex, start));
+    result += `<span class="highlight">${escapeHtml(
+      text.slice(start, end)
+    )}</span>`;
+    lastIndex = end;
+  });
+
+  result += escapeHtml(text.slice(lastIndex));
+  return result;
+}
+
+function parseHighlight(highlightString) {
+  // Returns { text: [[start,end]], description: [[start,end]] }
+  if (!highlightString) {
+    return { text: [], description: [] };
+  }
+
+  const [textPart = "", descPart = ""] = highlightString.split(";");
+
+  const parseRanges = (part) =>
+    part
+      .split(",")
+      .map(r => r.trim())
+      .filter(Boolean)
+      .map(r => r.split("-").map(Number));
+
+  return {
+    text: parseRanges(textPart),
+    description: parseRanges(descPart)
+  };
+}
+
   
          function getData() {
             const address_line_1 = document.getElementById('address_line_1').value;
