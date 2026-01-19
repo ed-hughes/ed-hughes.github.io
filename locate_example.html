@@ -114,7 +114,6 @@
             const response = await fetch(
               `${API_RETRIEVE_URL}?${searchParams}`
             );
-            const response = await fetch(url);
             const [data] = await response.json();
 
             console.log("selectAddress", JSON.stringify({ data }));
