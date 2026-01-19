@@ -201,6 +201,7 @@ function displayAddresses(addresses) {
             }
 
             setData(data.Items[0]);
+            searchResults.innerHTML = "";
           } catch (error) {
             console.error("Details error:", error);
           } finally {
