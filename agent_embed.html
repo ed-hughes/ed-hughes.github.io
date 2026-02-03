@@ -1,17 +1,21 @@
 <html>
-<script>
-	window.addEventListener("message", e => {
-  console.log("Parent received message:", e.origin, e.data);
-});
-</script>
-<script src='https://demo.jotform.com/agent/embedjs/019c232d911b7e3181c549bb282d1bb45631/embed.js'>
-</script>
-<script>
-  window.addEventListener('load', () => {
-    const ctx = window.AgentInitializer.createJotformAgentContext(
-      '019c232d911b7e3181c549bb282d1bb45631'
-    );
-    ctx.set("Order number is 1234");
-  });
-</script>
+  <body>
+    <script>
+      // Log all messages for debugging
+      window.addEventListener("message", e => {
+        console.log("Parent received message:", e.origin, e.data);
+
+        // Only act on messages from the agent
+        if (e.origin === "https://demo.jotform.com" && e.data.chatID) {
+          // Use the chatID sent by the agent
+          const ctx = window.AgentInitializer.createJotformAgentContext(e.data.chatID);
+          ctx.set("Order number is 1234");
+          console.log("Order number sent for chatID:", e.data.chatID);
+        }
+      });
+    </script>
+
+    <!-- Load the agent embed script -->
+    <script src="https://demo.jotform.com/agent/embedjs/019c232d911b7e3181c549bb282d1bb45631/embed.js"></script>
+  </body>
 </html>
