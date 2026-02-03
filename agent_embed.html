@@ -1,3 +1,17 @@
-<html><script src='https://demo.jotform.com/agent/embedjs/019c232d911b7e3181c549bb282d1bb45631/embed.js'>
+<html>
+<script>
+	window.addEventListener("message", e => {
+  console.log("Parent received message:", e.origin, e.data);
+});
+</script>
+<script src='https://demo.jotform.com/agent/embedjs/019c232d911b7e3181c549bb282d1bb45631/embed.js'>
+</script>
+<script>
+  window.addEventListener('load', () => {
+    const ctx = window.AgentInitializer.createJotformAgentContext(
+      '019c232d911b7e3181c549bb282d1bb45631'
+    );
+    ctx.set("Order number is 1234");
+  });
 </script>
 </html>
