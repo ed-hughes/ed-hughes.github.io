@@ -102,8 +102,10 @@
       this.getData = getData;
 
       function init() {
-        // Set initial height for iframe
-        JFCustomWidget.requestFrameResize(80);
+        // Initial iframe height
+        requestAnimationFrame(() => {
+          JFCustomWidget.requestFrameResize({ height: input.offsetHeight + 20 });
+        });
 
         input.addEventListener("input", onInput);
         input.addEventListener("keydown", onKeyDown);
@@ -116,7 +118,7 @@
         const term = e.target.value.trim();
         if (!term) {
           clearResults();
-          JFCustomWidget.requestFrameResize(80); // reset height when empty
+          resizeFrame(input.offsetHeight + 20);
           return;
         }
 
@@ -142,9 +144,7 @@
       function filterResults(items, term) {
         return items
           .filter(item =>
-            String(item[displayField])
-              .toLowerCase()
-              .includes(term.toLowerCase())
+            String(item[displayField]).toLowerCase().includes(term.toLowerCase())
           )
           .slice(0, searchLimit);
       }
@@ -153,11 +153,8 @@
         resultsEl.innerHTML = "";
 
         if (!allResults.length) {
-          resultsEl.innerHTML = `
-            <div class="result-list no-results">
-              No results found
-            </div>`;
-          JFCustomWidget.requestFrameResize(input.offsetHeight + 20);
+          resultsEl.innerHTML = `<div class="result-list no-results">No results found</div>`;
+          resizeFrame(input.offsetHeight + 40);
           return;
         }
 
@@ -169,28 +166,21 @@
           li.className = "result-item";
           if (index === activeIndex) li.classList.add("active");
 
-          li.innerHTML = highlightMatch(
-            String(item[displayField]),
-            input.value
-          );
-
+          li.innerHTML = highlightMatch(String(item[displayField]), input.value);
           li.addEventListener("mousedown", () => selectItem(item));
+
           ul.appendChild(li);
         });
 
         resultsEl.appendChild(ul);
 
         // Resize iframe to fit results
-        const newHeight = input.offsetHeight + resultsEl.offsetHeight + 20;
-        JFCustomWidget.requestFrameResize(newHeight);
+        resizeFrame(input.offsetHeight + resultsEl.offsetHeight + 20);
       }
 
       function showLoading() {
-        resultsEl.innerHTML = `
-          <div class="result-list loading">
-            Loading…
-          </div>`;
-        JFCustomWidget.requestFrameResize(input.offsetHeight + 40);
+        resultsEl.innerHTML = `<div class="result-list loading">Loading…</div>`;
+        resizeFrame(input.offsetHeight + 40);
       }
 
       function selectItem(item) {
@@ -198,7 +188,7 @@
         selectedItem = item;
         input.value = item[displayField];
         clearResults();
-        JFCustomWidget.requestFrameResize(input.offsetHeight + 20); // shrink after selection
+        resizeFrame(input.offsetHeight + 20);
         setTimeout(() => (isSelecting = false), 100);
       }
 
@@ -219,32 +209,23 @@
         switch (e.key) {
           case "ArrowDown":
             e.preventDefault();
-            activeIndex =
-              activeIndex < allResults.length - 1
-                ? activeIndex + 1
-                : 0;
+            activeIndex = activeIndex < allResults.length - 1 ? activeIndex + 1 : 0;
             renderResults();
             break;
-
           case "ArrowUp":
             e.preventDefault();
-            activeIndex =
-              activeIndex > 0
-                ? activeIndex - 1
-                : allResults.length - 1;
+            activeIndex = activeIndex > 0 ? activeIndex - 1 : allResults.length - 1;
             renderResults();
             break;
-
           case "Enter":
             if (activeIndex >= 0) {
               e.preventDefault();
               selectItem(allResults[activeIndex]);
             }
             break;
-
           case "Escape":
             clearResults();
-            JFCustomWidget.requestFrameResize(input.offsetHeight + 20);
+            resizeFrame(input.offsetHeight + 20);
             break;
         }
       }
@@ -252,8 +233,14 @@
       function onClickOutside(e) {
         if (!resultsEl.contains(e.target) && e.target !== input) {
           clearResults();
-          JFCustomWidget.requestFrameResize(input.offsetHeight + 20);
+          resizeFrame(input.offsetHeight + 20);
         }
+      }
+
+      function resizeFrame(newHeight) {
+        requestAnimationFrame(() => {
+          JFCustomWidget.requestFrameResize({ height: newHeight });
+        });
       }
 
       function getData() {
