@@ -113,6 +113,18 @@ function LocateAddressSearch() {
   }
 
   function init() {
+
+     JFWidgetTranslation.setDictionary({
+        kr: {
+            "Show": "보이기",
+            "Showing": "표시 중",
+            "entries": "항목",
+            "filtered from": "에서 필터링됨",
+            "total entries": "총 항목"
+        }
+    });
+    console.log("Current dictionary:", JFWidgetTranslation.getDictionary());
+
     searchInput.addEventListener("input", e => {
       if (isSelecting) return;
       lookup(e.target.value);
@@ -223,6 +235,48 @@ JFCustomWidget.subscribe("ready", () => {
   JFCustomWidget.subscribe("submit", () => {
     JFCustomWidget.sendSubmit(widget.getData());
   });
+
+   // JFCustomWidget.subscribe('translatable', () => {
+   //      if (JFWidgetTranslation) {
+   //        const translatableData = JFWidgetTranslation.getTranslatables(() => {
+   //          const translatableTexts = [
+   //            'Show',
+   //            'Showing',
+   //            'entries',
+   //            'filtered from',
+   //            'total entries'
+   //          ];
+   //          return translatableTexts;
+   //        });
+   //        JFCustomWidget.sendTranslatables(translatableData);
+   //      }
+   //    }, { immediateCall: true });
+
+   // JFCustomWidget.subscribe('translate', translationData => {
+   //      if (!JFWidgetTranslation) return;
+   //        const textsToTranslate = [
+   //          'Show',
+   //          'Showing',
+   //          'entries',
+   //          'filtered from',
+   //          'total entries'
+   //        ];
+
+   //        textsToTranslate.forEach(originalText => {
+   //          const translation = JFWidgetTranslation.getTranslation(
+   //            translationData,
+   //            originalText,
+   //            translationData.to
+   //          );
+
+   //          if (translation && translation !== '') {
+   //            newTranslationStore[originalText] = translation;
+   //          }
+   //        });
+   //      if (JFWidgetTranslation.translate) {
+   //        JFWidgetTranslation.translate(translationData);
+   //      }
+   //    });
 });
 </script>
 </body>
