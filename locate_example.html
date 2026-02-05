@@ -252,31 +252,31 @@ JFCustomWidget.subscribe("ready", () => {
    //      }
    //    }, { immediateCall: true });
 
-   // JFCustomWidget.subscribe('translate', translationData => {
-   //      if (!JFWidgetTranslation) return;
-   //        const textsToTranslate = [
-   //          'Show',
-   //          'Showing',
-   //          'entries',
-   //          'filtered from',
-   //          'total entries'
-   //        ];
+   JFCustomWidget.subscribe('translate', translationData => {
+        if (!JFWidgetTranslation) return;
+          const textsToTranslate = [
+            'Show',
+            'Showing',
+            'entries',
+            'filtered from',
+            'total entries'
+          ];
+ console.log("Current dictionary:", JFWidgetTranslation.getDictionary());
+          textsToTranslate.forEach(originalText => {
+            const translation = JFWidgetTranslation.getTranslation(
+              translationData,
+              originalText,
+              translationData.to
+            );
 
-   //        textsToTranslate.forEach(originalText => {
-   //          const translation = JFWidgetTranslation.getTranslation(
-   //            translationData,
-   //            originalText,
-   //            translationData.to
-   //          );
-
-   //          if (translation && translation !== '') {
-   //            newTranslationStore[originalText] = translation;
-   //          }
-   //        });
-   //      if (JFWidgetTranslation.translate) {
-   //        JFWidgetTranslation.translate(translationData);
-   //      }
-   //    });
+            if (translation && translation !== '') {
+              newTranslationStore[originalText] = translation;
+            }
+          });
+        // if (JFWidgetTranslation.translate) {
+        //   JFWidgetTranslation.translate(translationData);
+        // }
+      });
 });
 </script>
 </body>
