@@ -82,11 +82,31 @@
     border-radius: 3px;
     padding: 0 1px;
   }
+
+  .hidden {
+  display: none;
+}
+
+.manual-entry-btn {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-size: 12px;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.manual-entry-btn:hover {
+  text-decoration: underline;
+}
+
+  
 </style>
 
   </head>
   <body>
-     <div class="search-form" style="display:flex; flex-direction: column; gap:1rem;">
+    <div class="search-form" style="display:flex; flex-direction: column; gap:1rem;">
 
   <div class="address-search-wrapper">
     <input
@@ -97,16 +117,30 @@
     <div id="search-results" class="results-container"></div>
   </div>
 
-  <input type="text" id="address_line_2" placeholder="Address line 2" readonly />
-  <input type="text" id="city" placeholder="City" readonly />
-  <input type="text" id="state" placeholder="State" readonly />
-  <input type="text" id="postcode" placeholder="Postcode" readonly />
+  <button
+    type="button"
+    id="manual-entry-btn"
+    class="manual-entry-btn"
+  >
+    Enter address manually
+  </button>
 
-    </div>
+  <div id="manual-fields" class="manual-fields hidden">
+    <input type="text" id="address_line_2" placeholder="Address line 2" />
+    <input type="text" id="city" placeholder="City" />
+    <input type="text" id="state" placeholder="State" />
+    <input type="text" id="postcode" placeholder="Postcode" />
+  </div>
+
+</div>
+
 
     <script>
       const searchInput = document.getElementById("address_line_1");
       const searchResults = document.getElementById("search-results");
+      const manualBtn = document.getElementById("manual-entry-btn");
+      const manualFields = document.getElementById("manual-fields");
+
       console.log({
         searchInput: !!searchInput,
         searchResults: !!searchResults,
@@ -134,6 +168,15 @@
               if (isSelectingAddress) return;
               retrieveListOfAddresses(event.target.value);
           });
+manualBtn.addEventListener("click", () => {
+  manualFields.classList.remove("hidden");
+
+  manualFields.querySelectorAll("input").forEach(input => {
+    input.removeAttribute("readonly");
+  });
+  searchResults.innerHTML = "";
+});
+
         }
 
         function escapeHtml(text) {
@@ -233,13 +276,18 @@ function displayAddresses(addresses) {
   }
         }
 
-        function setData(addressData){
-            document.getElementById('address_line_1').value = addressData.Line1;
-            document.getElementById('address_line_2').value  = addressData.Line2;
-            document.getElementById('city').value  = addressData.City;
-            document.getElementById('state').value = addressData.ProvinceName;
-            document.getElementById('postcode').value = addressData.PostalCode;
-        }
+function setData(addressData) {
+  document.getElementById('address_line_1').value = addressData.Line1;
+  document.getElementById('address_line_2').value = addressData.Line2;
+  document.getElementById('city').value = addressData.City;
+  document.getElementById('state').value = addressData.ProvinceName;
+  document.getElementById('postcode').value = addressData.PostalCode;
+  manualFields.classList.add("hidden");
+  manualFields.querySelectorAll("input").forEach(input => {
+    input.setAttribute("readonly", "readonly");
+  });
+}
+
 
         function applyHighlight(text, ranges) {
   if (!ranges || !ranges.length) {
