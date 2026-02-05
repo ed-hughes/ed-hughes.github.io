@@ -1,363 +1,220 @@
 <!doctype html>
-<html lang="nl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
-<style>
-  .search-form input {
-    padding: 0.6rem 0.75rem;
-    font-size: 12px;
-    border: 1px solid #d0d5dd;
-    border-radius: 6px;
-    width: 100%;
-    max-width: 16rem;
-  }
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
 
-  .search-form input:focus {
-    outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
-  }
+  <style>
+    .search-form input {
+      padding: 0.6rem 0.75rem;
+      font-size: 12px;
+      border: 1px solid #d0d5dd;
+      border-radius: 6px;
+      width: 100%;
+      max-width: 16rem;
+    }
 
-.address-search-wrapper {
-  position: relative;
-  width: 100%;
-}
+    .address-search-wrapper {
+      position: relative;
+      width: 100%;
+    }
 
-  .address-search-wrapper input {
-  width: 100%;
-}
+    .results-container {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
 
+    .address-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
 
-.results-container {
-  position: absolute;
-  top: calc(100% + 4px); /* just under input */
-  left: 0;
-  right: 0;
-  z-index: 1000;
-}
+    .address-item {
+      padding: 0.6rem 0.75rem;
+      cursor: pointer;
+    }
 
+    .hidden {
+      display: none;
+    }
 
-  .address-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #fff;
-    max-height: 280px;
-    overflow-y: auto;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-  }
+    .manual-entry-btn {
+      background: none;
+      border: none;
+      color: #4f46e5;
+      font-size: 12px;
+      padding: 0;
+      cursor: pointer;
+      text-align: left;
+    }
+  </style>
+</head>
 
-  .address-item {
-    padding: 0.6rem 0.75rem;
-    cursor: pointer;
-    border-bottom: 1px solid #f1f5f9;
-  }
+<body>
+  <div class="search-form" style="display:flex; flex-direction:column; gap:1rem;">
 
-  .address-item:last-child {
-    border-bottom: none;
-  }
+    <div class="address-search-wrapper">
+      <input
+        type="text"
+        id="address_line_1"
+        placeholder="Start typing your address here..."
+      />
+      <div id="search-results" class="results-container"></div>
+    </div>
 
-  .address-item:hover {
-    background-color: #f8fafc;
-  }
+    <button type="button" id="manual-entry-btn" class="manual-entry-btn">
+      Enter address manually
+    </button>
 
-  .address-name {
-    font-weight: 500;
-    color: #111827;
-  }
-
-  .address-details {
-    font-size: 12px;
-    color: #6b7280;
-  }
-
-  .highlight {
-    font-weight: 600;
-    color: #4f46e5;
-    background: rgba(79, 70, 229, 0.12);
-    border-radius: 3px;
-    padding: 0 1px;
-  }
-
-  .hidden {
-  display: none;
-}
-
-.manual-entry-btn {
-  background: none;
-  border: none;
-  color: #4f46e5;
-  font-size: 12px;
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
-}
-
-.manual-entry-btn:hover {
-  text-decoration: underline;
-}
-
-  
-</style>
-
-  </head>
-  <body>
-    <div class="search-form" style="display:flex; flex-direction: column; gap:1rem;">
-
-  <div class="address-search-wrapper">
-    <input
-      type="text"
-      id="address_line_1"
-      placeholder="Start typing your address here..."
-    />
-    <div id="search-results" class="results-container"></div>
+    <div id="manual-fields" class="hidden">
+      <input type="text" id="address_line_2" placeholder="Address line 2" />
+      <input type="text" id="city" placeholder="City" />
+      <input type="text" id="state" placeholder="State" />
+      <input type="text" id="postcode" placeholder="Postcode" />
+    </div>
   </div>
 
-  <button
-    type="button"
-    id="manual-entry-btn"
-    class="manual-entry-btn"
-  >
-    Enter address manually
-  </button>
+<script>
+function LocateAddressSearch() {
+  const searchInput = document.getElementById("address_line_1");
+  const searchResults = document.getElementById("search-results");
+  const manualBtn = document.getElementById("manual-entry-btn");
+  const manualFields = document.getElementById("manual-fields");
 
-  <div id="manual-fields" class="manual-fields hidden">
-    <input type="text" id="address_line_2" placeholder="Address line 2" />
-    <input type="text" id="city" placeholder="City" />
-    <input type="text" id="state" placeholder="State" />
-    <input type="text" id="postcode" placeholder="Postcode" />
-  </div>
+  const settings = JFCustomWidget.getWidgetSettings();
+  const serviceKey = settings.serviceKey;
 
-</div>
+  const API_LIST_URL =
+    "https://api.addressy.com/Capture/Interactive/Find/v1.20/json6.ws";
+  const API_RETRIEVE_URL =
+    "https://api.addressy.com/Capture/Interactive/Retrieve/v1.30/json6.ws";
 
+  let isSelecting = false;
 
-    <script>
-      const searchInput = document.getElementById("address_line_1");
-      const searchResults = document.getElementById("search-results");
-      const manualBtn = document.getElementById("manual-entry-btn");
-      const manualFields = document.getElementById("manual-fields");
+  this.init = init;
+  this.getData = getData;
 
-      console.log({
-        searchInput: !!searchInput,
-        searchResults: !!searchResults,
-      });
-
-      function LocateAddressSearch() {
-
-        const widgetSettings = JFCustomWidget.getWidgetSettings();
-        const searchLimit = widgetSettings.searchLimit || 10;
-        const allowedCountries = widgetSettings.allowedCountries || "GB";
-        const serviceKey = widgetSettings.serviceKey;
-        let isSelectingAddress = false;
-
-        const API_LIST_URL = "https://api.addressy.com/Capture/Interactive/Find/v1.20/json6.ws";
-        const API_RETRIEVE_URL =
-          "https://api.addressy.com/Capture/Interactive/Retrieve/v1.30/json6.ws";
-
-        this.init = init;
-        this.getData = getData;
-
-        function init(formData) {
-          console.log("init", { formData });
-          searchInput.addEventListener("input", function (event) {
-              console.log("searchInputEvent", event)
-              if (isSelectingAddress) return;
-              retrieveListOfAddresses(event.target.value);
-          });
-manualBtn.addEventListener("click", () => {
-  manualFields.classList.remove("hidden");
-
-  manualFields.querySelectorAll("input").forEach(input => {
-    input.removeAttribute("readonly");
-  });
-  searchResults.innerHTML = "";
-});
-
-        }
-
-        function escapeHtml(text) {
-          const div = document.createElement("div");
-          div.textContent = text || "";
-          return div.innerHTML;
-        }
-        async function retrieveListOfAddresses(searchTerm) {
-          console.log("retrieveListOfAddresses", {searchTerm});
-          if (!searchTerm) {
-            return;
-          }
-          try {
-            const searchParams = new URLSearchParams();
-            searchParams.append("Key", serviceKey);
-            searchParams.append("Text", searchTerm);
-            searchParams.append("Countries", allowedCountries);
-            searchParams.append("Limit", searchLimit);
-            
-            const response = await fetch(
-              `${API_LIST_URL}?${searchParams}`
-            );
-            const data = await response.json();
-            displayAddresses(data.Items);
-          } catch (error) {
-            console.error("Search error:", error);
-          }
-        }
-
-function displayAddresses(addresses) {
-  if (!addresses || !addresses.length) {
-    searchResults.innerHTML = "";
-    return;
-  }
-
-  const list = document.createElement("ul");
-  list.className = "address-list";
-
-  addresses.forEach((address) => {
-    const item = document.createElement("li");
-    item.className = "address-item";
-    item.id = address.Id;
-
-    const highlights = parseHighlight(address.Highlight);
-
-    const textHtml = applyHighlight(address.Text || "", highlights.text);
-    const descHtml = applyHighlight(
-      address.Description || "",
-      highlights.description
-    );
-
-    item.innerHTML = `
-      <div class="address-name">${textHtml}</div>
-      <div class="address-details">${descHtml}</div>
-    `;
-
-    item.addEventListener("click", () =>
-      selectAddress(address.Id)
-    );
-
-    list.appendChild(item);
-  });
-
-  searchResults.innerHTML = "";
-  searchResults.appendChild(list);
-}
-
-
-        async function selectAddress(addressId) {
-          try {
-            isSelectingAddress = true;
-            const searchParams = new URLSearchParams();
-            searchParams.append("Key", serviceKey);
-            searchParams.append("Id", addressId);
-            
-            const response = await fetch(
-              `${API_RETRIEVE_URL}?${searchParams}`
-            );
-            const data = await response.json();
-
-            console.log("selectAddress", JSON.stringify({ data }));
-
-            if (data.Error) {
-              const errorMessage = data.Error || "Invalid lookup";
-              JFCustomWidget.showWidgetError(errorMessage);
-              return;
-            }
-
-            setData(data.Items[0]);
-            searchResults.innerHTML = "";
-          } catch (error) {
-            console.error("Details error:", error);
-          } finally {
+  function resizeWidget() {
+    // Small delay ensures DOM has updated
     setTimeout(() => {
-      isSelectingAddress = false;
-    }, 100);
+      JFCustomWidget.requestFrameResize();
+    }, 50);
   }
-        }
 
-function setData(addressData) {
-  document.getElementById('address_line_1').value = addressData.Line1;
-  document.getElementById('address_line_2').value = addressData.Line2;
-  document.getElementById('city').value = addressData.City;
-  document.getElementById('state').value = addressData.ProvinceName;
-  document.getElementById('postcode').value = addressData.PostalCode;
-  manualFields.classList.add("hidden");
-  manualFields.querySelectorAll("input").forEach(input => {
-    input.setAttribute("readonly", "readonly");
+  function init() {
+    searchInput.addEventListener("input", e => {
+      if (isSelecting) return;
+      lookup(e.target.value);
+    });
+
+    manualBtn.addEventListener("click", () => {
+      manualFields.classList.remove("hidden");
+      searchResults.innerHTML = "";
+      resizeWidget();
+    });
+  }
+
+  async function lookup(term) {
+    if (!term) {
+      searchResults.innerHTML = "";
+      resizeWidget();
+      return;
+    }
+
+    const params = new URLSearchParams({
+      Key: serviceKey,
+      Text: term,
+      Limit: 10
+    });
+
+    const res = await fetch(`${API_LIST_URL}?${params}`);
+    const data = await res.json();
+
+    renderResults(data.Items || []);
+  }
+
+  function renderResults(items) {
+    if (!items.length) {
+      searchResults.innerHTML = "";
+      resizeWidget();
+      return;
+    }
+
+    const ul = document.createElement("ul");
+    ul.className = "address-list";
+
+    items.forEach(item => {
+      const li = document.createElement("li");
+      li.className = "address-item";
+      li.textContent = item.Text;
+      li.addEventListener("mousedown", () => selectAddress(item.Id));
+      ul.appendChild(li);
+    });
+
+    searchResults.innerHTML = "";
+    searchResults.appendChild(ul);
+    resizeWidget();
+  }
+
+  async function selectAddress(id) {
+    isSelecting = true;
+
+    const params = new URLSearchParams({
+      Key: serviceKey,
+      Id: id
+    });
+
+    const res = await fetch(`${API_RETRIEVE_URL}?${params}`);
+    const data = await res.json();
+    const addr = data.Items[0];
+
+    searchInput.value = addr.Line1;
+    document.getElementById("address_line_2").value = addr.Line2;
+    document.getElementById("city").value = addr.City;
+    document.getElementById("state").value = addr.ProvinceName;
+    document.getElementById("postcode").value = addr.PostalCode;
+
+    manualFields.classList.add("hidden");
+    searchResults.innerHTML = "";
+
+    resizeWidget();
+
+    setTimeout(() => (isSelecting = false), 100);
+  }
+
+  function getData() {
+    return {
+      valid: true,
+      value: JSON.stringify({
+        address_line_1: searchInput.value,
+        address_line_2: address_line_2.value,
+        city: city.value,
+        state: state.value,
+        postcode: postcode.value
+      })
+    };
+  }
+}
+
+JFCustomWidget.subscribe("ready", () => {
+  const widget = new LocateAddressSearch();
+  widget.init();
+
+  JFCustomWidget.subscribe("submit", () => {
+    JFCustomWidget.sendSubmit(widget.getData());
   });
-}
-
-
-        function applyHighlight(text, ranges) {
-  if (!ranges || !ranges.length) {
-    return escapeHtml(text);
-  }
-
-  let result = "";
-  let lastIndex = 0;
-
-  ranges.forEach(([start, end]) => {
-    result += escapeHtml(text.slice(lastIndex, start));
-    result += `<span class="highlight">${escapeHtml(
-      text.slice(start, end)
-    )}</span>`;
-    lastIndex = end;
-  });
-
-  result += escapeHtml(text.slice(lastIndex));
-  return result;
-}
-
-function parseHighlight(highlightString) {
-  // Returns { text: [[start,end]], description: [[start,end]] }
-  if (!highlightString) {
-    return { text: [], description: [] };
-  }
-
-  const [textPart = "", descPart = ""] = highlightString.split(";");
-
-  const parseRanges = (part) =>
-    part
-      .split(",")
-      .map(r => r.trim())
-      .filter(Boolean)
-      .map(r => r.split("-").map(Number));
-
-  return {
-    text: parseRanges(textPart),
-    description: parseRanges(descPart)
-  };
-}
-
-  
-         function getData() {
-            const address_line_1 = document.getElementById('address_line_1').value;
-            const address_line_2 = document.getElementById('address_line_2').value;
-            const city = document.getElementById('city').value;
-            const state = document.getElementById('state').value;
-            const postcode = document.getElementById('postcode').value;
-
-          return {
-            valid: true,
-            value: JSON.stringify({
-                address_line_1,
-                address_line_2,
-                city,
-                state,
-                postcode
-            })
-          };
-        }
-      }
-      JFCustomWidget.subscribe("ready", function (data) {
-        var widget = new LocateAddressSearch();
-        widget.init(data);
-
-        JFCustomWidget.subscribe("submit", function () {
-          JFCustomWidget.sendSubmit(widget.getData());
-        });
-      });
-    </script>
-  </body>
+});
+</script>
+</body>
 </html>
