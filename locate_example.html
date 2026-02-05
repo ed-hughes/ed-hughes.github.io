@@ -118,11 +118,20 @@ function LocateAddressSearch() {
       lookup(e.target.value);
     });
 
-    manualBtn.addEventListener("click", () => {
-      manualFields.classList.remove("hidden");
-      searchResults.innerHTML = "";
-      resizeWidget();
+manualBtn.addEventListener("click", () => {
+  manualFields.classList.remove("hidden");
+
+  manualFields.querySelectorAll("input").forEach(input => {
+    input.removeAttribute("readonly");
+  });
+  searchResults.innerHTML = "";
+  requestAnimationFrame(() => {
+    JFCustomWidget.requestFrameResize({
+      height: document.body.offsetHeight + 5
     });
+  });
+});
+
   }
 
   async function lookup(term) {
