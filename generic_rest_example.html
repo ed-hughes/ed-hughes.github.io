@@ -193,7 +193,7 @@
         
         JFCustomWidget.sendData({
           valid: true,
-          value: item
+          value: JSON.stringify(item)
         });
       
         setTimeout(() => (isSelecting = false), 100);
