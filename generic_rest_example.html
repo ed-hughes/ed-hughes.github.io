@@ -186,11 +186,19 @@
       function selectItem(item) {
         isSelecting = true;
         selectedItem = item;
+      
         input.value = item[displayField];
         clearResults();
         resizeFrame(input.offsetHeight + 20);
+        
+        JFCustomWidget.sendData({
+          valid: true,
+          value: item
+        });
+      
         setTimeout(() => (isSelecting = false), 100);
       }
+
 
       function clearResults() {
         resultsEl.innerHTML = "";
