@@ -208,7 +208,7 @@ manualBtn.addEventListener("click", () => {
 
     manualFields.classList.add("hidden");
     searchResults.innerHTML = "";
-    window.parent.postMessage({
+    window.postMessage({
       type: 'locate-address-selected',
       address: {
         address_line_1: addr.Line1,
@@ -244,47 +244,6 @@ JFCustomWidget.subscribe("ready", () => {
   JFCustomWidget.subscribe("submit", () => {
     JFCustomWidget.sendSubmit(widget.getData());
   });
-
-   // JFCustomWidget.subscribe('translatable', () => {
-   //      if (JFWidgetTranslation) {
-   //        const translatableData = JFWidgetTranslation.getTranslatables(() => {
-   //          const translatableTexts = [
-   //            'Show',
-   //            'Showing',
-   //            'entries',
-   //            'filtered from',
-   //            'total entries'
-   //          ];
-   //          return translatableTexts;
-   //        });
-   //        JFCustomWidget.sendTranslatables(translatableData);
-   //      }
-   //    }, { immediateCall: true });
-
-   JFCustomWidget.subscribe('translate', translationData => {
-        if (!JFWidgetTranslation) return;
-          const textsToTranslate = [
-            'Show',
-            'Showing',
-            'entries',
-            'filtered from',
-            'total entries'
-          ];
- console.log("Current dictionary:", JFWidgetTranslation.getDictionary());
-          textsToTranslate.forEach(originalText => {
-            const translation = JFWidgetTranslation.getTranslation(
-              translationData,
-              originalText,
-              translationData.to
-            );
-
-            if (translation && translation !== '') {
-              newTranslationStore[originalText] = translation;
-            }
-          });
-        // if (JFWidgetTranslation.translate) {
-        //   JFWidgetTranslation.translate(translationData);
-        // }
       });
 });
 </script>
