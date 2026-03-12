@@ -113,18 +113,6 @@ function LocateAddressSearch() {
   }
 
   function init() {
-
-     JFWidgetTranslation.setDictionary({
-        kr: {
-            "Show": "보이기",
-            "Showing": "표시 중",
-            "entries": "항목",
-            "filtered from": "에서 필터링됨",
-            "total entries": "총 항목"
-        }
-    });
-    console.log("Current dictionary:", JFWidgetTranslation.getDictionary());
-
     searchInput.addEventListener("input", e => {
       if (isSelecting) return;
       lookup(e.target.value);
@@ -208,7 +196,7 @@ manualBtn.addEventListener("click", () => {
 
     manualFields.classList.add("hidden");
     searchResults.innerHTML = "";
-    window.postMessage({
+    window.top.postMessage({
       type: 'locate-address-selected',
       address: {
         address_line_1: addr.Line1,
