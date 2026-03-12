@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Address - localStorage example</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; }
+
+    #address-banner {
+      position: sticky;
+      top: 0;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 0.6rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+    }
+    #address-banner.hidden { display: none; }
+    #address-banner .label { color: #aaa; font-size: 0.75rem; }
+    #address-banner .value { flex: 1; font-weight: 500; }
+    #address-banner button {
+      background: none;
+      border: 1px solid #555;
+      color: #aaa;
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    #address-banner button:hover { color: #fff; border-color: #999; }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 1rem 1.5rem;
+    }
+    header h1 { font-size: 1.1rem; font-weight: 600; }
+
+    main {
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    iframe {
+      width: 100%;
+      min-height: 600px;
+      border: none;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="address-banner" class="hidden">
+    <span class="label">Selected address</span>
+    <span class="value" id="banner-text"></span>
+    <button id="clear-btn">Clear</button>
+  </div>
+
+  <header>
+    <h1>Address Submission</h1>
+  </header>
+
+  <main>
+    <iframe
+      src="https://demo.jotform.com/260703078848060"
+      title="Address submission form"
+    ></iframe>
+  </main>
+
+  <script>
+    const banner     = document.getElementById('address-banner');
+    const bannerText = document.getElementById('banner-text');
+    const clearBtn   = document.getElementById('clear-btn');
+
+    // ── localStorage helpers ───────────────────────────────────
+    function save(addr) {
+      localStorage.setItem('address', JSON.stringify(addr));
+    }
+
+    function load() {
+      return JSON.parse(localStorage.getItem('address'));
+    }
+
+    function clear() {
+      localStorage.removeItem('address');
+    }
+
+    // ── UI ─────────────────────────────────────────────────────
+    function showBanner(addr) {
+      bannerText.textContent = addr.address_line_1 || 'Address selected';
+      banner.classList.remove('hidden');
+    }
+
+    clearBtn.addEventListener('click', () => {
+      clear();
+      banner.classList.add('hidden');
+    });
+
+    // ── postMessage from widget ────────────────────────────────
+    window.addEventListener('message', (e) => {
+      let payload = e.data;
+      if (typeof payload === 'string') {
+        try { payload = JSON.parse(payload); } catch { return; }
+      }
+      if (!payload) return;
+
+      if (payload.type === 'locate-address-selected' && payload.address) {
+        save(payload.address);
+        showBanner(payload.address);
+      }
+    });
+
+    // ── Restore on load ────────────────────────────────────────
+    const saved = load();
+    if (saved) showBanner(saved);
+  </script>
+</body>
+</html>
