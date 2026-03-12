@@ -208,7 +208,16 @@ manualBtn.addEventListener("click", () => {
 
     manualFields.classList.add("hidden");
     searchResults.innerHTML = "";
-
+    window.parent.postMessage({
+      type: 'locate-address-selected',
+      address: {
+        address_line_1: addr.Line1,
+        address_line_2: addr.Line2,
+        city:           addr.City,
+        state:          addr.ProvinceName,
+        postcode:       addr.PostalCode
+      }
+    }, '*');
     resizeWidget();
 
     setTimeout(() => (isSelecting = false), 100);
