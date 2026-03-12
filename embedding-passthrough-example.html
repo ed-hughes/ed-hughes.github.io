@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Address Submission</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f5f5;
+      color: #111;
+    }
+
+    /* Banner */
+    #address-banner {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 0.6rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+    }
+
+    #address-banner.hidden { display: none; }
+
+    #address-banner .label {
+      color: #aaa;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    #address-banner .value {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    #address-banner button {
+      background: none;
+      border: 1px solid #555;
+      color: #aaa;
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    #address-banner button:hover { color: #fff; border-color: #999; }
+
+    /* Header */
+    header {
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 1rem 1.5rem;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    /* Form area */
+    main {
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    iframe {
+      width: 100%;
+      min-height: 600px;
+      border: none;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="address-banner" class="hidden">
+    <span class="label">Selected address</span>
+    <span class="value" id="banner-text"></span>
+    <button id="clear-btn">Clear</button>
+  </div>
+
+  <header>
+    <h1>Address Submission</h1>
+  </header>
+
+  <main>
+    <iframe
+      src="https://demo.jotform.com/260703078848060"
+      title="Address submission form"
+    ></iframe>
+  </main>
+
+  <script>
+    const banner     = document.getElementById('address-banner');
+    const bannerText = document.getElementById('banner-text');
+    const clearBtn   = document.getElementById('clear-btn');
+
+    // ── IndexedDB ──────────────────────────────────────────────
+    function openDB() {
+      return new Promise((res, rej) => {
+        const req = indexedDB.open('address-poc', 1);
+        req.onupgradeneeded = e => e.target.result.createObjectStore('data');
+        req.onsuccess = e => res(e.target.result);
+        req.onerror   = e => rej(e.target.error);
+      });
+    }
+
+    async function save(addr) {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction('data', 'readwrite');
+        tx.objectStore('data').put(addr, 'selected');
+        tx.oncomplete = res;
+        tx.onerror = e => rej(e.target.error);
+      });
+    }
+
+    async function load() {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const req = db.transaction('data', 'readonly').objectStore('data').get('selected');
+        req.onsuccess = e => res(e.target.result || null);
+        req.onerror   = e => rej(e.target.error);
+      });
+    }
+
+    async function clearSaved() {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction('data', 'readwrite');
+        tx.objectStore('data').delete('selected');
+        tx.oncomplete = res;
+        tx.onerror = e => rej(e.target.error);
+      });
+    }
+
+    // ── UI ─────────────────────────────────────────────────────
+    function showBanner(addr) {
+      bannerText.textContent = addr.address_line_1 || 'Address selected';
+      banner.classList.remove('hidden');
+    }
+
+    clearBtn.addEventListener('click', async () => {
+      await clearSaved();
+      banner.classList.add('hidden');
+    });
+
+    // ── postMessage from widget ────────────────────────────────
+    window.addEventListener('message', async (e) => {
+      let payload = e.data;
+      if (typeof payload === 'string') {
+        try { payload = JSON.parse(payload); } catch { return; }
+      }
+      if (!payload) return;
+
+      // Custom widget broadcast
+      if (payload.type === 'locate-address-selected' && payload.address) {
+        await save(payload.address);
+        showBanner(payload.address);
+        return;
+      }
+
+      // Jotform submission-completed fallback
+      if (payload.action === 'submission-completed') {
+        const fields = payload.formData || payload.data || [];
+        const field = Array.isArray(fields)
+          ? fields.find(f => { try { return JSON.parse(f.value).address_line_1; } catch { return false; } })
+          : null;
+        if (field) {
+          const addr = JSON.parse(field.value);
+          await save(addr);
+          showBanner(addr);
+        }
+      }
+    });
+
+    // ── Restore on load ────────────────────────────────────────
+    (async () => {
+      const saved = await load();
+      if (saved) showBanner(saved);
+    })();
+  </script>
+</body>
+</html>
