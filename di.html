@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Single Image Upload Test</title>
+    <title>Image Metadata Format Test</title>
     <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
     <style>
         body {
@@ -13,158 +13,56 @@
             box-sizing: border-box;
             background: transparent;
         }
-
-        .upload-area {
-            border: 2px dashed #c3cad8;
-            border-radius: 8px;
-            padding: 30px 20px;
-            text-align: center;
-            background-color: #f8f9fa;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .upload-area:hover {
-            border-color: #007bff;
-            background-color: #f1f7ff;
-        }
-
-        #file-input { display: none; }
-
-        .btn-browse {
+        p { color: #495057; font-size: 14px; }
+        .btn-submit-test {
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 20px;
             border-radius: 4px;
             font-size: 14px;
             cursor: pointer;
-            margin-top: 10px;
         }
-
-        .preview-container {
-            display: none;
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        .preview-container img {
-            max-width: 100%;
-            max-height: 250px;
-            border-radius: 8px;
-            object-fit: contain;
-        }
-
-        .btn-remove {
-            display: block;
-            margin: 10px auto 0;
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-        }
+        .btn-submit-test:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
-    <div class="upload-area" id="drop-zone">
-        <div style="font-size:32px">📸</div>
-        <div style="color:#495057;font-size:16px;margin-bottom:8px">Drag & drop an image here</div>
-        <button class="btn-browse" onclick="document.getElementById('file-input').click()">Browse Files</button>
-        <input type="file" id="file-input" accept="image/*">
-    </div>
-
-    <div class="preview-container" id="preview-container">
-        <img id="preview-img" src="" alt="Preview">
-        <button class="btn-remove" id="btn-remove">Remove</button>
-    </div>
+    <p>This widget submits a hardcoded <code>imagelinks</code> metadata value with a real hosted URL. If the submission view shows the Jotform logo as an image, the format is correct.</p>
+    <button class="btn-submit-test" id="btn">Send Test Value</button>
 
     <script>
         (function () {
-            var currentDataUri = "";
+            var testValue = JSON.stringify({
+                widget_metadata: {
+                    type: "imagelinks",
+                    value: [
+                        {
+                            name: "test-image",
+                            url: "https://www.jotform.com/resources/assets/logo-nb/min/jotform-logo-orange-400x200.png"
+                        }
+                    ]
+                }
+            });
 
             JFCustomWidget.subscribe("ready", function () {
                 JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
 
+                // Pre-fill the value so it's set before submit
+                JFCustomWidget.sendData({ value: testValue });
+
                 JFCustomWidget.subscribe("submit", function () {
-                    var isValid = !JFCustomWidget.isWidgetRequired() || currentDataUri !== "";
-
-                    if (!isValid) {
-                        JFCustomWidget.showWidgetError(JFCustomWidget.texts.required || "This field is required.");
-                    } else {
-                        JFCustomWidget.hideWidgetError();
-                    }
-
                     JFCustomWidget.sendSubmit({
-                        valid: isValid,
-                        value: currentDataUri
+                        valid: true,
+                        value: testValue
                     });
                 });
-
-                JFCustomWidget.subscribe("clear", function () {
-                    clearImage();
-                });
             });
 
-            // File input change
-            document.getElementById('file-input').addEventListener('change', function (e) {
-                var file = e.target.files[0];
-                if (!file || !file.type.startsWith('image/')) return;
-
-                var reader = new FileReader();
-                reader.onload = function (event) {
-                    setImage(event.target.result);
-                };
-                reader.readAsDataURL(file);
-                e.target.value = '';
+            // Also allow manually triggering via the button for quick testing
+            document.getElementById('btn').addEventListener('click', function () {
+                JFCustomWidget.sendData({ value: testValue });
+                alert('Test value sent — now submit the form to check the submission view.');
             });
-
-            // Drag and drop
-            var dropZone = document.getElementById('drop-zone');
-            dropZone.addEventListener('dragover', function (e) {
-                e.preventDefault();
-                dropZone.style.borderColor = '#007bff';
-            });
-            dropZone.addEventListener('dragleave', function () {
-                dropZone.style.borderColor = '#c3cad8';
-            });
-            dropZone.addEventListener('drop', function (e) {
-                e.preventDefault();
-                dropZone.style.borderColor = '#c3cad8';
-                var file = e.dataTransfer.files[0];
-                if (!file || !file.type.startsWith('image/')) return;
-
-                var reader = new FileReader();
-                reader.onload = function (event) {
-                    setImage(event.target.result);
-                };
-                reader.readAsDataURL(file);
-            });
-
-            // Remove button
-            document.getElementById('btn-remove').addEventListener('click', function () {
-                clearImage();
-            });
-
-            function setImage(dataUri) {
-                currentDataUri = dataUri;
-                document.getElementById('preview-img').src = dataUri;
-                document.getElementById('preview-container').style.display = 'block';
-                document.getElementById('drop-zone').style.display = 'none';
-                JFCustomWidget.sendData({ value: currentDataUri });
-                JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
-            }
-
-            function clearImage() {
-                currentDataUri = "";
-                document.getElementById('preview-img').src = '';
-                document.getElementById('preview-container').style.display = 'none';
-                document.getElementById('drop-zone').style.display = 'block';
-                JFCustomWidget.sendData({ value: "" });
-                JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
-            }
         })();
     </script>
 </body>
