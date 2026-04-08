@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Multiple Image Carousel Upload</title>
     <!-- Load Jotform Custom Widget API -->
-    <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+    <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+
     
     <style>
         body {
@@ -226,205 +228,228 @@
     </div>
 
     <script>
-        // Global variables
-        let uploadedImages = []; // Array to store image data
-        let currentSlide = 0;
-        let isRequired = false;
+        (function () {
+            // Global variables
+            let uploadedImages = []; // Array to store image data
+            let currentSlide = 0;
+            let isRequired = false;
 
-        // Initialize Widget
-        JFCustomWidget.subscribe("ready", function(msg) {
-            // Get widget settings
-            isRequired = JFCustomWidget.getWidgetSetting('required') === 'Yes';
-            
-            // Adjust iframe height initially
-            requestResize();
-            
-            // Subscribe to form submit event
-            JFCustomWidget.subscribe("submit", function() {
-                // Validation check
-                let isValid = true;
-                if (isRequired && uploadedImages.length === 0) {
-                    isValid = false;
-                }
-                
-                // We send the base64 data to Jotform. 
-                // Note: For large files, base64 strings might hit limits. 
-                // A production-grade solution often involves uploading to S3/Cloud first and sending URLs.
-                // However, for this widget, we send the array of image data objects.
-                let resultData = {
-                    valid: isValid,
-                    value: uploadedImages.length > 0 ? JSON.stringify(uploadedImages.map(img => ({
+            // --- Metadata Helpers ---
+
+            // Builds the imagelinks metadata string that Jotform's backend
+            // knows how to parse and render (as <img> tags wrapped in <a> tags).
+            function buildImageMetadata() {
+                if (uploadedImages.length === 0) return "";
+
+                const imageLinks = uploadedImages.map(function (img) {
+                    return {
                         name: img.name,
-                        type: img.type,
-                        size: img.size,
-                        data: img.data // Base64 string
-                    }))) : ""
-                };
-                
-                JFCustomWidget.sendSubmit(resultData);
-            });
-        });
-
-        // Request iframe resize to fit content
-        function requestResize() {
-            setTimeout(() => {
-                JFCustomWidget.requestFrameResize({
-                    height: document.body.scrollHeight + 20
+                        url: img.data  // base64 data URL
+                    };
                 });
-            }, 100);
-        }
 
-        // File Upload Handling
-        const fileInput = document.getElementById('file-input');
-        const dropZone = document.getElementById('drop-zone');
-
-        // Click to browse
-        fileInput.addEventListener('change', handleFiles);
-
-        // Drag and drop events
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            
-            if (e.dataTransfer.files.length > 0) {
-                fileInput.files = e.dataTransfer.files;
-                handleFiles({ target: fileInput });
+                // JFCustomWidgetUtils.buildMetadata formats the value so that
+                // Jotform's submission view/email knows how to render the images.
+                return JFCustomWidgetUtils.buildMetadata('imagelinks', imageLinks);
             }
-        });
 
-        function handleFiles(e) {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
+            // Sends the current image state to the form so Jotform keeps
+            // an up-to-date value while the user is still filling in the form.
+            function updateWidgetValue() {
+                JFCustomWidget.sendData({ value: buildImageMetadata() });
+            }
 
-            let filesProcessed = 0;
+            // --- Widget Initialisation ---
 
-            files.forEach(file => {
-                if (!file.type.startsWith('image/')) return; // Skip non-images
+            JFCustomWidget.subscribe("ready", function () {
+                isRequired = JFCustomWidget.isWidgetRequired();
 
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    uploadedImages.push({
-                        id: Date.now() + Math.random().toString(36).substr(2, 9),
-                        name: file.name,
-                        type: file.type,
-                        size: file.size,
-                        data: event.target.result // Base64 URL
+                requestResize();
+
+                // Handle form submission
+                JFCustomWidget.subscribe("submit", function () {
+                    var isValid = true;
+
+                    if (isRequired && uploadedImages.length === 0) {
+                        isValid = false;
+                        // Show a friendly inline error using the SDK helper
+                        JFCustomWidget.showWidgetError(
+                            JFCustomWidget.texts.required || "This field is required."
+                        );
+                    } else {
+                        JFCustomWidget.hideWidgetError();
+                    }
+
+                    JFCustomWidget.sendSubmit({
+                        valid: isValid,
+                        value: buildImageMetadata()
+                    });
+                });
+
+                // Reset images when the form is cleared
+                JFCustomWidget.subscribe("clear", function () {
+                    uploadedImages = [];
+                    currentSlide = 0;
+                    updateCarousel();
+                });
+            });
+
+            // --- Resize Helper ---
+
+            function requestResize() {
+                setTimeout(function () {
+                    JFCustomWidget.requestFrameResize({
+                        height: document.body.scrollHeight + 20
+                    });
+                }, 100);
+            }
+
+            // --- File Upload Handling ---
+
+            var fileInput = document.getElementById('file-input');
+            var dropZone = document.getElementById('drop-zone');
+
+            fileInput.addEventListener('change', handleFiles);
+
+            dropZone.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', function () {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', function (e) {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFiles({ target: fileInput });
+                }
+            });
+
+            function handleFiles(e) {
+                var files = Array.from(e.target.files).filter(function (f) {
+                    return f.type.startsWith('image/');
+                });
+
+                if (files.length === 0) return;
+
+                var filesProcessed = 0;
+
+                files.forEach(function (file) {
+                    var reader = new FileReader();
+
+                    reader.onload = function (event) {
+                        uploadedImages.push({
+                            id: Date.now() + Math.random().toString(36).substr(2, 9),
+                            name: file.name,
+                            type: file.type,
+                            size: file.size,
+                            data: event.target.result  // base64 data URL
+                        });
+
+                        filesProcessed++;
+                        if (filesProcessed === files.length) {
+                            updateCarousel();
+                            updateWidgetValue();
+                        }
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+
+                // Reset so the same file can be re-selected after deletion
+                fileInput.value = '';
+            }
+
+            // --- Carousel Logic ---
+
+            function updateCarousel() {
+                var carousel = document.getElementById('carousel');
+                var track = document.getElementById('track');
+                var thumbsContainer = document.getElementById('thumbnails');
+
+                if (uploadedImages.length === 0) {
+                    carousel.style.display = 'none';
+                    thumbsContainer.innerHTML = '';
+                    requestResize();
+                    return;
+                }
+
+                carousel.style.display = 'block';
+
+                // Keep current slide in bounds
+                if (currentSlide >= uploadedImages.length) {
+                    currentSlide = Math.max(0, uploadedImages.length - 1);
+                }
+
+                track.innerHTML = '';
+                thumbsContainer.innerHTML = '';
+
+                uploadedImages.forEach(function (img, index) {
+                    // Slide
+                    var slide = document.createElement('div');
+                    slide.className = 'carousel-slide';
+                    slide.innerHTML =
+                        '<img src="' + img.data + '" alt="' + img.name + '">' +
+                        '<button class="btn-delete" title="Remove image" data-index="' + index + '">&times;</button>' +
+                        '<div class="slide-info">' + (index + 1) + ' / ' + uploadedImages.length + '</div>';
+                    track.appendChild(slide);
+
+                    // Wire up delete button
+                    slide.querySelector('.btn-delete').addEventListener('click', function () {
+                        deleteImage(parseInt(this.getAttribute('data-index'), 10));
                     });
 
-                    filesProcessed++;
-                    if (filesProcessed === files.filter(f => f.type.startsWith('image/')).length) {
-                        updateCarousel();
-                        // Send data update to Jotform immediately
-                        updateWidgetValue();
-                    }
-                };
-                reader.readAsDataURL(file);
-            });
-            
-            // Reset input so same files can be selected again if deleted
-            fileInput.value = '';
-        }
+                    // Thumbnail
+                    var thumb = document.createElement('img');
+                    thumb.src = img.data;
+                    thumb.className = 'thumbnail' + (index === currentSlide ? ' active' : '');
+                    thumb.setAttribute('data-index', index);
+                    thumb.addEventListener('click', function () {
+                        goToSlide(parseInt(this.getAttribute('data-index'), 10));
+                    });
+                    thumbsContainer.appendChild(thumb);
+                });
 
-        // Carousel Logic
-        function updateCarousel() {
-            const carousel = document.getElementById('carousel');
-            const track = document.getElementById('track');
-            const thumbsContainer = document.getElementById('thumbnails');
-            
-            if (uploadedImages.length === 0) {
-                carousel.style.display = 'none';
-                thumbsContainer.innerHTML = '';
+                var showNav = uploadedImages.length > 1;
+                document.getElementById('btn-prev').style.display = showNav ? 'flex' : 'none';
+                document.getElementById('btn-next').style.display = showNav ? 'flex' : 'none';
+
+                goToSlide(currentSlide);
                 requestResize();
-                return;
             }
 
-            carousel.style.display = 'block';
-            
-            // Ensure current slide is within bounds
-            if (currentSlide >= uploadedImages.length) {
-                currentSlide = Math.max(0, uploadedImages.length - 1);
+            function moveSlide(direction) {
+                var newSlide = currentSlide + direction;
+                if (newSlide < 0) newSlide = uploadedImages.length - 1;
+                if (newSlide >= uploadedImages.length) newSlide = 0;
+                goToSlide(newSlide);
             }
 
-            // Build slides
-            track.innerHTML = '';
-            thumbsContainer.innerHTML = '';
+            // Expose moveSlide globally so inline onclick handlers on the nav buttons work
+            window.moveSlide = moveSlide;
 
-            uploadedImages.forEach((img, index) => {
-                // Slide
-                const slide = document.createElement('div');
-                slide.className = 'carousel-slide';
-                slide.innerHTML = `
-                    <img src="${img.data}" alt="${img.name}">
-                    <button class="btn-delete" onclick="deleteImage(${index})" title="Remove image">&times;</button>
-                    <div class="slide-info">${index + 1} / ${uploadedImages.length}</div>
-                `;
-                track.appendChild(slide);
+            function goToSlide(index) {
+                currentSlide = index;
+                var track = document.getElementById('track');
+                track.style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
 
-                // Thumbnail
-                const thumb = document.createElement('img');
-                thumb.src = img.data;
-                thumb.className = `thumbnail ${index === currentSlide ? 'active' : ''}`;
-                thumb.onclick = () => goToSlide(index);
-                thumbsContainer.appendChild(thumb);
-            });
+                document.querySelectorAll('.thumbnail').forEach(function (thumb, i) {
+                    thumb.classList.toggle('active', i === currentSlide);
+                });
+            }
 
-            // Update navigation buttons
-            document.getElementById('btn-prev').style.display = uploadedImages.length > 1 ? 'flex' : 'none';
-            document.getElementById('btn-next').style.display = uploadedImages.length > 1 ? 'flex' : 'none';
+            function deleteImage(index) {
+                uploadedImages.splice(index, 1);
+                updateCarousel();
+                updateWidgetValue();
+            }
 
-            goToSlide(currentSlide);
-            requestResize();
-        }
-
-        function moveSlide(direction) {
-            let newSlide = currentSlide + direction;
-            if (newSlide < 0) newSlide = uploadedImages.length - 1;
-            if (newSlide >= uploadedImages.length) newSlide = 0;
-            goToSlide(newSlide);
-        }
-
-        function goToSlide(index) {
-            currentSlide = index;
-            const track = document.getElementById('track');
-            track.style.transform = `translateX(-${currentSlide * 100}%)`;
-
-            // Update thumbnails
-            const thumbs = document.querySelectorAll('.thumbnail');
-            thumbs.forEach((thumb, i) => {
-                if (i === currentSlide) {
-                    thumb.classList.add('active');
-                } else {
-                    thumb.classList.remove('active');
-                }
-            });
-        }
-
-        function deleteImage(index) {
-            uploadedImages.splice(index, 1);
-            updateCarousel();
-            updateWidgetValue();
-        }
-
-        function updateWidgetValue() {
-            // Send current state to Jotform to keep data in sync
-            const value = uploadedImages.length > 0 ? JSON.stringify(uploadedImages.map(img => ({
-                name: img.name,
-                type: img.type,
-                size: img.size,
-                data: img.data
-            }))) : "";
-            
-            JFCustomWidget.sendData({ value: value });
-        }
+        })();
     </script>
 </body>
 </html>
