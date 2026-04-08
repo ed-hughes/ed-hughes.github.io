@@ -1,69 +1,80 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Image Metadata Format Test</title>
+  <head>
     <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 10px;
-            box-sizing: border-box;
-            background: transparent;
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="pragma" content="no-cache" />
+  </head>
+  <style></style>
+  <body>
+    <div id="reviewArea">
+      <label for="pet-select">Choose a pet:</label>
+      <select name="pets" id="pet-select">
+        <option value="">--Please choose an option--</option>
+        <option value="dog">Dog</option>
+        <option value="cat">Cat</option>
+        <option value="hamster">Hamster</option>
+        <option value="parrot">Parrot</option>
+        <option value="spider">Spider</option>
+        <option value="goldfish">Goldfish</option>
+      </select>
+    </div>
+
+    <!-- On-screen log panel -->
+    <div id="log" style="margin-top:12px;background:#1e1e1e;color:#d4d4d4;font-family:monospace;font-size:11px;padding:10px;border-radius:6px;white-space:pre-wrap;word-break:break-all;max-height:250px;overflow-y:auto;">Waiting for events...</div>
+
+    <script type="text/javascript">
+      function log(event, data) {
+        var el = document.getElementById('log');
+        var time = new Date().toISOString().split('T')[1].replace('Z', '');
+        el.innerHTML += '\n[' + time + '] <b style="color:#569cd6">' + event + '</b>: ' + JSON.stringify(data, null, 2);
+        el.scrollTop = el.scrollHeight;
+        console.log('[' + event + ']', data);
+      }
+
+      function PopulateEventExample() {
+        this.init = init;
+        this.getData = getData;
+        this.handlePopulateEvent = handlePopulateEvent;
+
+        function init(formData) {
+          log('init', formData);
         }
-        p { color: #495057; font-size: 14px; }
-        .btn-submit-test {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
+
+        function handlePopulateEvent(data) {
+          log('populate', data);
+          document.getElementById("pet-select").value = data.value;
         }
-        .btn-submit-test:hover { background-color: #0056b3; }
-    </style>
-</head>
-<body>
-    <p>This widget submits a hardcoded <code>imagelinks</code> metadata value with a real hosted URL. If the submission view shows the Jotform logo as an image, the format is correct.</p>
-    <button class="btn-submit-test" id="btn">Send Test Value</button>
 
-    <script>
-        (function () {
-            var testValue = JSON.stringify({
-                widget_metadata: {
-                    type: "imagelinks",
-                    value: [
-                        {
-                            name: "test-image",
-                            url: "https://www.jotform.com/resources/assets/logo-nb/min/jotform-logo-orange-400x200.png"
-                        }
-                    ]
-                }
-            });
+        function getData() {
+          return {
+            valid: true,
+            value: "TEST"
+          };
+        }
+      }
 
-            JFCustomWidget.subscribe("ready", function () {
-                JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+      JFCustomWidget.subscribe("ready", function (data) {
+        log('ready', data);
 
-                // Pre-fill the value so it's set before submit
-                JFCustomWidget.sendData({ value: testValue });
+        var widget = new PopulateEventExample();
+        widget.init(data);
 
-                JFCustomWidget.subscribe("submit", function () {
-                    JFCustomWidget.sendSubmit({
-                        valid: true,
-                        value: testValue
-                    });
-                });
-            });
+        JFCustomWidget.subscribe("submit", function () {
+          log('submit', { triggered: true });
+          JFCustomWidget.sendSubmit(widget.getData());
+        });
 
-            // Also allow manually triggering via the button for quick testing
-            document.getElementById('btn').addEventListener('click', function () {
-                JFCustomWidget.sendData({ value: testValue });
-                alert('Test value sent — now submit the form to check the submission view.');
-            });
-        })();
+        JFCustomWidget.subscribe("populate", function (data) {
+          log('populate', data);
+          widget.handlePopulateEvent(data);
+        });
+
+        JFCustomWidget.subscribe("clear", function (data) {
+          log('clear', data);
+        });
+      });
     </script>
-</body>
+  </body>
 </html>
