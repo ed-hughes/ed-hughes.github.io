@@ -5,76 +5,119 @@
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="expires" content="0" />
     <meta http-equiv="pragma" content="no-cache" />
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 13px;
+        padding: 10px;
+        background: transparent;
+      }
+      #file-input { margin-bottom: 10px; display: block; }
+      #log {
+        margin-top: 10px;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        font-family: monospace;
+        font-size: 11px;
+        padding: 10px;
+        border-radius: 6px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+    </style>
   </head>
-  <style></style>
   <body>
-    <div id="reviewArea">
-      <label for="pet-select">Choose a pet:</label>
-      <select name="pets" id="pet-select">
-        <option value="">--Please choose an option--</option>
-        <option value="dog">Dog</option>
-        <option value="cat">Cat</option>
-        <option value="hamster">Hamster</option>
-        <option value="parrot">Parrot</option>
-        <option value="spider">Spider</option>
-        <option value="goldfish">Goldfish</option>
-      </select>
-    </div>
-
-    <!-- On-screen log panel -->
-    <div id="log" style="margin-top:12px;background:#1e1e1e;color:#d4d4d4;font-family:monospace;font-size:11px;padding:10px;border-radius:6px;white-space:pre-wrap;word-break:break-all;max-height:250px;overflow-y:auto;">Waiting for events...</div>
+    <input type="file" id="file-input" accept="image/*" disabled>
+    <div id="log">Waiting for ready event...</div>
 
     <script type="text/javascript">
-      function log(event, data) {
-        var el = document.getElementById('log');
-        var time = new Date().toISOString().split('T')[1].replace('Z', '');
-        el.innerHTML += '\n[' + time + '] <b style="color:#569cd6">' + event + '</b>: ' + JSON.stringify(data, null, 2);
-        el.scrollTop = el.scrollHeight;
-        console.log('[' + event + ']', data);
-      }
+      (function () {
+        var uploadServerURL = null;
+        var formID = null;
+        var qid = null;
 
-      function PopulateEventExample() {
-        this.init = init;
-        this.getData = getData;
-        this.handlePopulateEvent = handlePopulateEvent;
-
-        function init(formData) {
-          log('init', formData);
+        function log(label, data) {
+          var el = document.getElementById('log');
+          var time = new Date().toISOString().split('T')[1].replace('Z', '');
+          var value = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+          el.innerHTML += '\n[' + time + '] <b style="color:#569cd6">' + label + '</b>: ' + value;
+          el.scrollTop = el.scrollHeight;
+          console.log('[' + label + ']', data);
         }
 
-        function handlePopulateEvent(data) {
-          log('populate', data);
-          document.getElementById("pet-select").value = data.value;
+        JFCustomWidget.subscribe("ready", function (data) {
+          log('ready', {
+            uploadServerURL: data.uploadServerURL,
+            formID: data.formID,
+            qid: data.qid,
+            value: data.value
+          });
+
+          uploadServerURL = data.uploadServerURL;
+          formID = data.formID;
+          qid = data.qid;
+
+          var fileInput = document.getElementById('file-input');
+          fileInput.disabled = false;
+
+          fileInput.addEventListener('change', function (e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            log('file-selected', { name: file.name, type: file.type, size: file.size });
+            uploadFile(file);
+          });
+
+          JFCustomWidget.subscribe("submit", function () {
+            JFCustomWidget.sendSubmit({ valid: true, value: "test" });
+          });
+
+          JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+        });
+
+        function uploadFile(file) {
+          if (!uploadServerURL) {
+            log('error', 'No uploadServerURL available');
+            return;
+          }
+
+          log('uploading', 'POST to ' + uploadServerURL);
+
+          var formData = new FormData();
+          formData.append('formID', formID);
+          formData.append('qid', qid);
+          formData.append('file', file, file.name);
+
+          fetch(uploadServerURL, {
+            method: 'POST',
+            body: formData
+          })
+          .then(function (response) {
+            log('response-status', response.status + ' ' + response.statusText);
+            // Log all response headers
+            var headers = {};
+            response.headers.forEach(function (val, key) { headers[key] = val; });
+            log('response-headers', headers);
+            return response.text();
+          })
+          .then(function (text) {
+            log('response-body-raw', text);
+            // Also try parsing as JSON in case it is
+            try {
+              var json = JSON.parse(text);
+              log('response-body-parsed', json);
+            } catch (e) {
+              log('response-body-not-json', 'Could not parse as JSON');
+            }
+            JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+          })
+          .catch(function (err) {
+            log('fetch-error', err.toString());
+            JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+          });
         }
-
-        function getData() {
-          return {
-            valid: true,
-            value: "TEST"
-          };
-        }
-      }
-
-      JFCustomWidget.subscribe("ready", function (data) {
-        log('ready', data);
-
-        var widget = new PopulateEventExample();
-        widget.init(data);
-
-        JFCustomWidget.subscribe("submit", function () {
-          log('submit', { triggered: true });
-          JFCustomWidget.sendSubmit(widget.getData());
-        });
-
-        JFCustomWidget.subscribe("populate", function (data) {
-          log('populate', data);
-          widget.handlePopulateEvent(data);
-        });
-
-        JFCustomWidget.subscribe("clear", function (data) {
-          log('clear', data);
-        });
-      });
+      })();
     </script>
   </body>
 </html>
