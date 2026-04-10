@@ -480,10 +480,7 @@
             images = extracted.map(function (item) {
               var src = item.base64 || '';
               if (!src && item.url) {
-                // Relative URL — prepend enterprise base (e.g. demo.jotform.com)
-                src = item.url.indexOf('http') === 0
-                  ? item.url
-                  : 'https://' + (data.enterprise || 'www.jotform.com') + item.url;
+                src = JFCustomWidgetUtils.fixS3UriOrigin(item.url);
               }
               return { name: item.name, base64: src };
             }).filter(function (img) { return !!img.base64; });
