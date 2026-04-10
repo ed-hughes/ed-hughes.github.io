@@ -412,6 +412,14 @@
 
       // --- File handling ---
 
+      function readAsBase64(file, onDone) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          onDone(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+
       function processFiles(files) {
         var imageFiles = Array.from(files).filter(function (f) {
           return f.type.startsWith('image/');
@@ -424,40 +432,33 @@
 
         var processed = 0;
 
+        function onImageReady() {
+          processed++;
+          if (processed === imageFiles.length) {
+            currentIndex = images.length - 1;
+            renderCarousel();
+            sendCurrentValue();
+          }
+        }
+
         imageFiles.forEach(function (file) {
           if (uploadServerURL && uploadFolder) {
-            // Try uploading to Jotform's server first
             uploadToJotform(file, function (url) {
               if (url) {
                 images.push({ name: file.name, base64: url });
+                onImageReady();
               } else {
-                // Fall back to base64
-                readAsBase64(file);
-                return;
-              }
-              processed++;
-              if (processed === imageFiles.length) {
-                currentIndex = images.length - 1;
-                renderCarousel();
-                sendCurrentValue();
+                readAsBase64(file, function (dataUri) {
+                  images.push({ name: file.name, base64: dataUri });
+                  onImageReady();
+                });
               }
             });
           } else {
-            readAsBase64(file);
-          }
-
-          function readAsBase64(f) {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-              images.push({ name: f.name, base64: e.target.result });
-              processed++;
-              if (processed === imageFiles.length) {
-                currentIndex = images.length - 1;
-                renderCarousel();
-                sendCurrentValue();
-              }
-            };
-            reader.readAsDataURL(f);
+            readAsBase64(file, function (dataUri) {
+              images.push({ name: file.name, base64: dataUri });
+              onImageReady();
+            });
           }
         });
       }
@@ -495,7 +496,6 @@
           }
         })
         .catch(function () { callback(null); });
-      }
       }
 
       // --- Event wiring ---
