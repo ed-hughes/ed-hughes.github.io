@@ -464,7 +464,6 @@
       }
 
       function uploadToJotform(file, callback) {
-        var username = 'ed'; // TODO: get from ready event when available
         var origin = uploadServerURL.replace('/upload', '');
         var url = origin + '/server.php?action=handleWidgetFiles&type=save';
 
@@ -478,10 +477,8 @@
         .then(function (res) { return res.json(); })
         .then(function (response) {
           console.log('[uploadToJotform] response:', JSON.stringify(response));
-          if (response && response.url) {
-            // Construct the full public URL
-            var fullUrl = origin + '/uploads/' + username + '/form_files/' + response.url.replace(/\\/g, '/').replace(/.*\//, '');
-            callback(fullUrl);
+          if (response && response.success && response.message) {
+            callback(response.message);
           } else {
             callback(null);
           }
