@@ -263,6 +263,16 @@
       var images = []; // [{name, base64}]
       var currentIndex = 0;
       var isRequired = false;
+      var uploadServerURL = '';
+      var uploadFolder = '';
+      var uploadField = '';
+
+      // Generate a folder ID matching Jotform's format: formID_hexTimestamp+seed
+      function generateFolder(formID) {
+        var seed = Math.floor(Math.random() * 0x75bcd15).toString(16);
+        var time = Math.floor(new Date().getTime() / 1000).toString(16);
+        return formID + '_' + time + seed;
+      }
 
       // --- Helpers ---
 
@@ -402,6 +412,14 @@
 
       // --- File handling ---
 
+      function readAsBase64(file, onDone) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          onDone(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+
       function processFiles(files) {
         var imageFiles = Array.from(files).filter(function (f) {
           return f.type.startsWith('image/');
@@ -414,22 +432,58 @@
 
         var processed = 0;
 
+        function onImageReady() {
+          processed++;
+          if (processed === imageFiles.length) {
+            currentIndex = images.length - 1;
+            renderCarousel();
+            sendCurrentValue();
+          }
+        }
+
         imageFiles.forEach(function (file) {
-          var reader = new FileReader();
-          reader.onload = function (e) {
-            images.push({
-              name: file.name,
-              base64: e.target.result
+          if (uploadServerURL && uploadFolder) {
+            uploadToJotform(file, function (url) {
+              if (url) {
+                images.push({ name: file.name, base64: url });
+                onImageReady();
+              } else {
+                readAsBase64(file, function (dataUri) {
+                  images.push({ name: file.name, base64: dataUri });
+                  onImageReady();
+                });
+              }
             });
-            processed++;
-            if (processed === imageFiles.length) {
-              currentIndex = images.length - 1;
-              renderCarousel();
-              sendCurrentValue();
-            }
-          };
-          reader.readAsDataURL(file);
+          } else {
+            readAsBase64(file, function (dataUri) {
+              images.push({ name: file.name, base64: dataUri });
+              onImageReady();
+            });
+          }
         });
+      }
+
+      function uploadToJotform(file, callback) {
+        var origin = uploadServerURL.replace('/upload', '');
+        var url = origin + '/server.php?action=handleWidgetFiles&type=save';
+
+        var formData = new FormData();
+        formData.append('file', file, file.name);
+
+        fetch(url, {
+          method: 'POST',
+          body: formData
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (response) {
+          console.log('[uploadToJotform] response:', JSON.stringify(response));
+          if (response && response.success && response.message) {
+            callback(response.message);
+          } else {
+            callback(null);
+          }
+        })
+        .catch(function () { callback(null); });
       }
 
       // --- Event wiring ---
@@ -464,6 +518,11 @@
 
       JFCustomWidget.subscribe('ready', function (data) {
         isRequired = JFCustomWidget.isWidgetRequired();
+        uploadServerURL = data.uploadServerURL || '';
+        uploadField = 'q' + data.qid + '_typeA';
+        if (uploadServerURL) {
+          uploadFolder = generateFolder(data.formID);
+        }
 
         // Static mode — widget is being viewed in tables/submission view
         // isWidgetStatic() is true when rendered in the submissions table
@@ -504,9 +563,6 @@
         JFCustomWidget.subscribe('submit', function () {
           var value = buildMetadataValue();
           var valid = !isRequired || images.length > 0;
-
-          console.log('[submit] images:', images.length);
-          console.log('[submit] value preview:', value ? value.substring(0, 300) : 'empty');
 
           if (!valid) {
             JFCustomWidget.showWidgetError(JFCustomWidget.texts.required || 'This field is required.');
