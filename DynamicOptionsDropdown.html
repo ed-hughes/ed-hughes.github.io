@@ -464,33 +464,23 @@
       }
 
       function uploadToJotform(file, callback) {
-        var params = [
-          'action=multipleUpload',
-          'field=' + encodeURIComponent(uploadField),
-          'origin=' + encodeURIComponent(window.location.origin || 'https://www.jotform.com'),
-          'folder=' + encodeURIComponent(uploadFolder),
-          'name=' + encodeURIComponent(file.name),
-          'qqfile=' + encodeURIComponent(file.name)
-        ].join('&');
+        var username = 'ed'; // TODO: get from ready event when available
+        var origin = uploadServerURL.replace('/upload', '');
+        var url = origin + '/server.php?action=handleWidgetFiles&type=save';
 
-        var url = uploadServerURL + '?' + params;
+        var formData = new FormData();
+        formData.append('file', file, file.name);
 
         fetch(url, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/octet-stream',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-File-Name': encodeURIComponent(file.name)
-          },
-          body: file
+          body: formData
         })
         .then(function (res) { return res.json(); })
         .then(function (response) {
           console.log('[uploadToJotform] response:', JSON.stringify(response));
-          if (response.success && response.message) {
-            // Construct the full URL from the upload server origin + message path
-            var origin = uploadServerURL.replace('/upload', '');
-            var fullUrl = origin + '/widget-uploads/' + uploadFolder + '/' + response.message;
+          if (response && response.url) {
+            // Construct the full public URL
+            var fullUrl = origin + '/uploads/' + username + '/form_files/' + response.url.replace(/\\/g, '/').replace(/.*\//, '');
             callback(fullUrl);
           } else {
             callback(null);
