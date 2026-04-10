@@ -38,7 +38,7 @@
 
     <script>
       (function () {
-        var formID, qid, uploadServerURL;
+        var formID, qid, uploadServerURL, folder;
 
         function log(label, data) {
           var el = document.getElementById('log');
@@ -49,11 +49,17 @@
           console.log('[' + label + ']', data);
         }
 
+        function generateFolder(formID) {
+          return formID + '_' + Math.random().toString(16).substr(2, 13);
+        }
+
         JFCustomWidget.subscribe("ready", function (data) {
           formID = data.formID;
           qid = data.qid;
           uploadServerURL = data.uploadServerURL || 'https://demo.jotform.com/upload';
-          log('ready', { formID: formID, qid: qid, uploadServerURL: uploadServerURL });
+          folder = generateFolder(formID);
+
+          log('ready', { formID: formID, qid: qid, uploadServerURL: uploadServerURL, folder: folder });
 
           document.getElementById('file-input').disabled = false;
 
@@ -73,16 +79,26 @@
         });
 
         function uploadFile(file) {
-          log('uploading', 'POSTing to ' + uploadServerURL);
+          var field = 'q' + qid + '_widget';
+          var params = [
+            'action=multipleUpload',
+            'field=' + encodeURIComponent(field),
+            'folder=' + encodeURIComponent(folder),
+            'name=' + encodeURIComponent(file.name),
+            'qqfile=' + encodeURIComponent(file.name)
+          ].join('&');
 
-          var formData = new FormData();
-          formData.append('formID', formID);
-          formData.append('qid', qid);
-          formData.append('file', file, file.name);
+          var url = uploadServerURL + '?' + params;
+          log('uploading', url);
 
-          fetch(uploadServerURL, {
+          fetch(url, {
             method: 'POST',
-            body: formData
+            headers: {
+              'Content-Type': 'application/octet-stream',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-File-Name': encodeURIComponent(file.name)
+            },
+            body: file
           })
           .then(function (res) {
             log('response-status', res.status + ' ' + res.statusText);
@@ -92,13 +108,10 @@
             log('upload-response', response);
 
             if (response.success) {
-              // Construct the full URL the same way Image Picker does
               var origin = uploadServerURL.replace('/upload', '');
               var url = origin + response.message + '?ufs=jotformWidgets';
               log('constructed-url', url);
 
-              // Now try to fetch the URL to confirm it's accessible
-              log('validating-url', 'Attempting to load image from URL...');
               var img = document.getElementById('preview-img');
               img.onload = function () {
                 log('url-valid', '✅ Image loaded successfully from URL');
