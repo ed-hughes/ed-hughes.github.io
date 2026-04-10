@@ -276,7 +276,12 @@
       function buildMetadataValue() {
         if (images.length === 0) return '';
         return JFCustomWidgetUtils.buildMetadata('imagelinks', images.map(function (img) {
-          return { name: img.name, base64: img.base64 };
+          // Always use 'url' key — pass data URI directly for base64, relative path for hosted URLs
+          var isDataUri = img.base64 && img.base64.indexOf('data:') === 0;
+          return {
+            name: img.name,
+            url: isDataUri ? img.base64 : JFCustomWidgetUtils.getS3UriRelativePath(img.base64)
+          };
         }));
       }
 
