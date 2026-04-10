@@ -7,76 +7,116 @@
     <meta http-equiv="pragma" content="no-cache" />
     <style>
       body {
-        font-family: monospace;
-        font-size: 11px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 13px;
         padding: 10px;
         background: transparent;
-        margin: 0;
       }
+      #file-input { margin-bottom: 10px; display: block; }
       #log {
+        margin-top: 10px;
         background: #1e1e1e;
         color: #d4d4d4;
+        font-family: monospace;
+        font-size: 11px;
         padding: 10px;
         border-radius: 6px;
         white-space: pre-wrap;
         word-break: break-all;
-        max-height: 400px;
+        max-height: 300px;
         overflow-y: auto;
       }
-      .key { color: #9cdcfe; }
-      .val { color: #ce9178; }
-      .label { color: #569cd6; font-weight: bold; }
-      .time { color: #6a9955; }
     </style>
   </head>
   <body>
+    <input type="file" id="file-input" accept="image/*" disabled>
     <div id="log">Waiting for ready event...</div>
-    <script>
+
+    <script type="text/javascript">
       (function () {
+        var uploadServerURL = null;
+        var formID = null;
+        var qid = null;
+
         function log(label, data) {
           var el = document.getElementById('log');
           var time = new Date().toISOString().split('T')[1].replace('Z', '');
-
-          var html = '\n<span class="time">[' + time + ']</span> <span class="label">' + label + '</span>:\n';
-
-          if (typeof data === 'object' && data !== null) {
-            Object.keys(data).forEach(function (key) {
-              var val = data[key];
-              var valStr = (typeof val === 'object') ? JSON.stringify(val) : String(val);
-              // Truncate very long values (e.g. base64) but show the start
-              if (valStr.length > 300) {
-                valStr = valStr.substring(0, 300) + '... [truncated, total length: ' + valStr.length + ']';
-              }
-              html += '  <span class="key">' + key + '</span>: <span class="val">' + valStr + '</span>\n';
-            });
-          } else {
-            html += '  ' + String(data) + '\n';
-          }
-
-          el.innerHTML += html;
+          var value = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+          el.innerHTML += '\n[' + time + '] <b style="color:#569cd6">' + label + '</b>: ' + value;
           el.scrollTop = el.scrollHeight;
           console.log('[' + label + ']', data);
         }
 
         JFCustomWidget.subscribe("ready", function (data) {
-          log('ready', data);
-          JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+          log('ready', {
+            uploadServerURL: data.uploadServerURL,
+            formID: data.formID,
+            qid: data.qid,
+            value: data.value
+          });
+
+          uploadServerURL = data.uploadServerURL;
+          formID = data.formID;
+          qid = data.qid;
+
+          var fileInput = document.getElementById('file-input');
+          fileInput.disabled = false;
+
+          fileInput.addEventListener('change', function (e) {
+            var file = e.target.files[0];
+            if (!file) return;
+            log('file-selected', { name: file.name, type: file.type, size: file.size });
+            uploadFile(file);
+          });
 
           JFCustomWidget.subscribe("submit", function () {
-            log('submit', { triggered: true });
             JFCustomWidget.sendSubmit({ valid: true, value: "test" });
           });
 
-          JFCustomWidget.subscribe("populate", function (populateData) {
-            log('populate', populateData);
-            JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
-          });
-
-          JFCustomWidget.subscribe("clear", function (clearData) {
-            log('clear', clearData);
-            JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
-          });
+          JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
         });
+
+        function uploadFile(file) {
+          if (!uploadServerURL) {
+            log('error', 'No uploadServerURL available');
+            return;
+          }
+
+          log('uploading', 'POST to ' + uploadServerURL);
+
+          var formData = new FormData();
+          formData.append('formID', formID);
+          formData.append('qid', qid);
+          formData.append('file', file, file.name);
+
+          fetch(uploadServerURL, {
+            method: 'POST',
+            body: formData
+          })
+          .then(function (response) {
+            log('response-status', response.status + ' ' + response.statusText);
+            // Log all response headers
+            var headers = {};
+            response.headers.forEach(function (val, key) { headers[key] = val; });
+            log('response-headers', headers);
+            return response.text();
+          })
+          .then(function (text) {
+            log('response-body-raw', text);
+            // Also try parsing as JSON in case it is
+            try {
+              var json = JSON.parse(text);
+              log('response-body-parsed', json);
+            } catch (e) {
+              log('response-body-not-json', 'Could not parse as JSON');
+            }
+            JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+          })
+          .catch(function (err) {
+            log('fetch-error', err.toString());
+            JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+          });
+        }
       })();
     </script>
   </body>
