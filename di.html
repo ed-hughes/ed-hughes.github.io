@@ -11,8 +11,11 @@
         font-size: 13px;
         padding: 10px;
         background: transparent;
+        margin: 0;
       }
       #file-input { margin-bottom: 10px; display: block; }
+      #preview { margin-top: 10px; display: none; }
+      #preview img { max-width: 100%; max-height: 200px; border-radius: 6px; }
       #log {
         margin-top: 10px;
         background: #1e1e1e;
@@ -30,13 +33,12 @@
   </head>
   <body>
     <input type="file" id="file-input" accept="image/*" disabled>
+    <div id="preview"><img id="preview-img" src="" alt="preview"></div>
     <div id="log">Waiting for ready event...</div>
 
-    <script type="text/javascript">
+    <script>
       (function () {
-        var uploadServerURL = null;
-        var formID = null;
-        var qid = null;
+        var formID, qid, uploadServerURL;
 
         function log(label, data) {
           var el = document.getElementById('log');
@@ -48,26 +50,12 @@
         }
 
         JFCustomWidget.subscribe("ready", function (data) {
-          log('ready', {
-            uploadServerURL: data.uploadServerURL,
-            formID: data.formID,
-            qid: data.qid,
-            value: data.value
-          });
-
-          uploadServerURL = data.uploadServerURL;
           formID = data.formID;
           qid = data.qid;
+          uploadServerURL = data.uploadServerURL || 'https://demo.jotform.com/upload';
+          log('ready', { formID: formID, qid: qid, uploadServerURL: uploadServerURL });
 
-          var fileInput = document.getElementById('file-input');
-          fileInput.disabled = false;
-
-          fileInput.addEventListener('change', function (e) {
-            var file = e.target.files[0];
-            if (!file) return;
-            log('file-selected', { name: file.name, type: file.type, size: file.size });
-            uploadFile(file);
-          });
+          document.getElementById('file-input').disabled = false;
 
           JFCustomWidget.subscribe("submit", function () {
             JFCustomWidget.sendSubmit({ valid: true, value: "test" });
@@ -76,13 +64,16 @@
           JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
         });
 
-        function uploadFile(file) {
-          if (!uploadServerURL) {
-            log('error', 'No uploadServerURL available');
-            return;
-          }
+        document.getElementById('file-input').addEventListener('change', function (e) {
+          var file = e.target.files[0];
+          if (!file) return;
+          log('file-selected', { name: file.name, type: file.type, size: file.size });
+          uploadFile(file);
+          e.target.value = '';
+        });
 
-          log('uploading', 'POST to ' + uploadServerURL);
+        function uploadFile(file) {
+          log('uploading', 'POSTing to ' + uploadServerURL);
 
           var formData = new FormData();
           formData.append('formID', formID);
@@ -93,23 +84,35 @@
             method: 'POST',
             body: formData
           })
-          .then(function (response) {
-            log('response-status', response.status + ' ' + response.statusText);
-            // Log all response headers
-            var headers = {};
-            response.headers.forEach(function (val, key) { headers[key] = val; });
-            log('response-headers', headers);
-            return response.text();
+          .then(function (res) {
+            log('response-status', res.status + ' ' + res.statusText);
+            return res.json();
           })
-          .then(function (text) {
-            log('response-body-raw', text);
-            // Also try parsing as JSON in case it is
-            try {
-              var json = JSON.parse(text);
-              log('response-body-parsed', json);
-            } catch (e) {
-              log('response-body-not-json', 'Could not parse as JSON');
+          .then(function (response) {
+            log('upload-response', response);
+
+            if (response.success) {
+              // Construct the full URL the same way Image Picker does
+              var origin = uploadServerURL.replace('/upload', '');
+              var url = origin + response.message + '?ufs=jotformWidgets';
+              log('constructed-url', url);
+
+              // Now try to fetch the URL to confirm it's accessible
+              log('validating-url', 'Attempting to load image from URL...');
+              var img = document.getElementById('preview-img');
+              img.onload = function () {
+                log('url-valid', '✅ Image loaded successfully from URL');
+                document.getElementById('preview').style.display = 'block';
+                JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+              };
+              img.onerror = function () {
+                log('url-invalid', '❌ Image failed to load from URL');
+              };
+              img.src = url;
+            } else {
+              log('upload-failed', response);
             }
+
             JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
           })
           .catch(function (err) {
