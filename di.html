@@ -38,7 +38,8 @@
 
     <script>
       (function () {
-        var formID, qid, uploadServerURL, folder;
+        var widgetData;
+        var UPLOAD_URL = 'https://app-widgets.jotform.io/imagepreview/upload.php';
 
         function log(label, data) {
           var el = document.getElementById('log');
@@ -49,17 +50,9 @@
           console.log('[' + label + ']', data);
         }
 
-        function generateFolder(formID) {
-          return formID + '_' + Math.random().toString(16).substr(2, 13);
-        }
-
         JFCustomWidget.subscribe("ready", function (data) {
-          formID = data.formID;
-          qid = data.qid;
-          uploadServerURL = data.uploadServerURL || 'https://demo.jotform.com/upload';
-          folder = generateFolder(formID);
-
-          log('ready', { formID: formID, qid: qid, uploadServerURL: uploadServerURL, folder: folder });
+          widgetData = data;
+          log('ready', { formID: data.formID, enterprise: data.enterprise });
 
           document.getElementById('file-input').disabled = false;
 
@@ -79,26 +72,17 @@
         });
 
         function uploadFile(file) {
-          var field = 'q' + qid + '_widget';
-          var params = [
-            'action=multipleUpload',
-            'field=' + encodeURIComponent(field),
-            'folder=' + encodeURIComponent(folder),
-            'name=' + encodeURIComponent(file.name),
-            'qqfile=' + encodeURIComponent(file.name)
-          ].join('&');
+          log('uploading', 'POSTing to ' + UPLOAD_URL);
 
-          var url = uploadServerURL + '?' + params;
-          log('uploading', url);
+          var formData = new FormData();
+          formData.append('imageUpload', file, file.name);
+          formData.append('formID', widgetData.formID);
+          formData.append('widgetURL', window.location.href);
+          formData.append('enterprise', widgetData.enterprise || '');
 
-          fetch(url, {
+          fetch(UPLOAD_URL, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/octet-stream',
-              'X-Requested-With': 'XMLHttpRequest',
-              'X-File-Name': encodeURIComponent(file.name)
-            },
-            body: file
+            body: formData
           })
           .then(function (res) {
             log('response-status', res.status + ' ' + res.statusText);
@@ -107,9 +91,8 @@
           .then(function (response) {
             log('upload-response', response);
 
-            if (response.success) {
-              var origin = uploadServerURL.replace('/upload', '');
-              var url = origin + response.message + '?ufs=jotformWidgets';
+            if (response.success && response.url) {
+              var url = JFCustomWidgetUtils.fixS3UriOrigin(response.url);
               log('constructed-url', url);
 
               var img = document.getElementById('preview-img');
