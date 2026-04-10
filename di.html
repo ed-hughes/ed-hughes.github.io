@@ -478,10 +478,17 @@
           var extracted = JFCustomWidgetUtils.extractMetadata(data.value);
           if (extracted && extracted.length > 0) {
             images = extracted.map(function (item) {
-              return { name: item.name, base64: item.base64 || item.url };
-            });
+              var src = item.base64 || '';
+              if (!src && item.url) {
+                // Relative URL — prepend enterprise base (e.g. demo.jotform.com)
+                src = item.url.indexOf('http') === 0
+                  ? item.url
+                  : 'https://' + (data.enterprise || 'www.jotform.com') + item.url;
+              }
+              return { name: item.name, base64: src };
+            }).filter(function (img) { return !!img.base64; });
             currentIndex = 0;
-            renderCarousel();
+            if (images.length > 0) renderCarousel();
           }
         }
 
