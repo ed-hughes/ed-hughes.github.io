@@ -16,6 +16,7 @@
       #file-input { margin-bottom: 10px; display: block; }
       #preview { margin-top: 10px; display: none; }
       #preview img { max-width: 100%; max-height: 200px; border-radius: 6px; }
+      #status { margin-top: 8px; font-size: 12px; color: #666; }
       #log {
         margin-top: 10px;
         background: #1e1e1e;
@@ -33,31 +34,60 @@
   </head>
   <body>
     <input type="file" id="file-input" accept="image/*" disabled>
+    <div id="status"></div>
     <div id="preview"><img id="preview-img" src="" alt="preview"></div>
     <div id="log">Waiting for ready event...</div>
 
     <script>
       (function () {
-        var widgetData;
-        var UPLOAD_URL = 'https://app-widgets.jotform.io/imagepreview/upload.php';
+        var currentBase64 = null;
+        var currentFileName = null;
 
         function log(label, data) {
           var el = document.getElementById('log');
           var time = new Date().toISOString().split('T')[1].replace('Z', '');
           var value = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+          // Truncate long base64 strings in the log
+          if (value.length > 200) value = value.substring(0, 200) + '... [truncated]';
           el.innerHTML += '\n[' + time + '] <b style="color:#569cd6">' + label + '</b>: ' + value;
           el.scrollTop = el.scrollHeight;
           console.log('[' + label + ']', data);
         }
 
+        function buildValue() {
+          if (!currentBase64 || !currentFileName) return '';
+          return JFCustomWidgetUtils.buildMetadata('imagelinks', [{
+            name: currentFileName,
+            base64: currentBase64
+          }]);
+        }
+
         JFCustomWidget.subscribe("ready", function (data) {
-          widgetData = data;
-          log('ready', { formID: data.formID, enterprise: data.enterprise });
+          log('ready', { formID: data.formID, value: data.value ? 'has value' : 'no value' });
+
+          // Restore existing value on edit
+          if (data.value && JFCustomWidgetUtils.hasMetadata(data.value)) {
+            var extracted = JFCustomWidgetUtils.extractMetadata(data.value);
+            if (extracted && extracted[0]) {
+              var item = extracted[0];
+              currentFileName = item.name;
+              currentBase64 = item.base64 || item.url;
+              log('restored', { name: currentFileName });
+              document.getElementById('preview-img').src = currentBase64;
+              document.getElementById('preview').style.display = 'block';
+              document.getElementById('status').textContent = 'Image: ' + currentFileName;
+            }
+          }
 
           document.getElementById('file-input').disabled = false;
 
           JFCustomWidget.subscribe("submit", function () {
-            JFCustomWidget.sendSubmit({ valid: true, value: "test" });
+            var value = buildValue();
+            log('submit', { hasValue: !!value });
+            JFCustomWidget.sendSubmit({
+              valid: !JFCustomWidget.isWidgetRequired() || !!value,
+              value: value
+            });
           });
 
           JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
@@ -66,56 +96,40 @@
         document.getElementById('file-input').addEventListener('change', function (e) {
           var file = e.target.files[0];
           if (!file) return;
-          log('file-selected', { name: file.name, type: file.type, size: file.size });
-          uploadFile(file);
+          log('file-selected', { name: file.name, size: file.size });
+
+          var reader = new FileReader();
+          reader.onload = function (event) {
+            currentBase64 = event.target.result; // full data URI e.g. "data:image/png;base64,..."
+            currentFileName = file.name;
+
+            // Show preview immediately using blob URL
+            document.getElementById('preview-img').src = currentBase64;
+            document.getElementById('preview').style.display = 'block';
+            document.getElementById('status').textContent = 'Image: ' + currentFileName;
+
+            log('base64-ready', 'length: ' + currentBase64.length);
+
+            // Send data to form immediately
+            var value = buildValue();
+            JFCustomWidget.sendData({ value: value });
+            log('sent-data', 'metadata sent to form');
+
+            JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+          };
+          reader.readAsDataURL(file);
           e.target.value = '';
         });
 
-        function uploadFile(file) {
-          log('uploading', 'POSTing to ' + UPLOAD_URL);
-
-          var formData = new FormData();
-          formData.append('imageUpload', file, file.name);
-          formData.append('formID', widgetData.formID);
-          formData.append('widgetURL', window.location.href);
-          formData.append('enterprise', widgetData.enterprise || '');
-
-          fetch(UPLOAD_URL, {
-            method: 'POST',
-            body: formData
-          })
-          .then(function (res) {
-            log('response-status', res.status + ' ' + res.statusText);
-            return res.json();
-          })
-          .then(function (response) {
-            log('upload-response', response);
-
-            if (response.success && response.url) {
-              var url = JFCustomWidgetUtils.fixS3UriOrigin(response.url);
-              log('constructed-url', url);
-
-              var img = document.getElementById('preview-img');
-              img.onload = function () {
-                log('url-valid', '✅ Image loaded successfully from URL');
-                document.getElementById('preview').style.display = 'block';
-                JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
-              };
-              img.onerror = function () {
-                log('url-invalid', '❌ Image failed to load from URL');
-              };
-              img.src = url;
-            } else {
-              log('upload-failed', response);
-            }
-
-            JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
-          })
-          .catch(function (err) {
-            log('fetch-error', err.toString());
-            JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
-          });
-        }
+        JFCustomWidget.subscribe("clear", function () {
+          currentBase64 = null;
+          currentFileName = null;
+          document.getElementById('preview').style.display = 'none';
+          document.getElementById('preview-img').src = '';
+          document.getElementById('status').textContent = '';
+          JFCustomWidget.sendData({ value: '' });
+          JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+        });
       })();
     </script>
   </body>
