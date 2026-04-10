@@ -276,12 +276,12 @@
       function buildMetadataValue() {
         if (images.length === 0) return '';
         return JFCustomWidgetUtils.buildMetadata('imagelinks', images.map(function (img) {
-          // Always use 'url' key — pass data URI directly for base64, relative path for hosted URLs
           var isDataUri = img.base64 && img.base64.indexOf('data:') === 0;
-          return {
-            name: img.name,
-            url: isDataUri ? img.base64 : JFCustomWidgetUtils.getS3UriRelativePath(img.base64)
-          };
+          if (isDataUri) {
+            return { name: img.name, base64: img.base64 };
+          } else {
+            return { name: img.name, url: JFCustomWidgetUtils.getS3UriRelativePath(img.base64) };
+          }
         }));
       }
 
@@ -504,6 +504,9 @@
         JFCustomWidget.subscribe('submit', function () {
           var value = buildMetadataValue();
           var valid = !isRequired || images.length > 0;
+
+          console.log('[submit] images:', images.length);
+          console.log('[submit] value preview:', value ? value.substring(0, 300) : 'empty');
 
           if (!valid) {
             JFCustomWidget.showWidgetError(JFCustomWidget.texts.required || 'This field is required.');
