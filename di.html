@@ -221,6 +221,17 @@
       text-align: center;
     }
     .error-msg.visible { display: block; }
+
+    /* View-only mode — no delete, no add, no thumbnails strip actions */
+    body.view-only .carousel__delete { display: none; }
+    body.view-only .thumbnail-add { display: none; }
+    body.view-only .thumbnails { background: #111; }
+
+    /* Static/table mode — single image, compact */
+    body.static-mode .carousel__stage { height: 160px; }
+    body.static-mode .thumbnails { display: none; }
+    body.static-mode .carousel__delete { display: none; }
+    body.static-mode .thumbnail-add { display: none; }
   </style>
 </head>
 <body>
@@ -449,7 +460,20 @@
       JFCustomWidget.subscribe('ready', function (data) {
         isRequired = JFCustomWidget.isWidgetRequired();
 
-        // Restore saved value
+        // Static mode — widget is being viewed in tables/submission view
+        // isWidgetStatic() is true when rendered in the submissions table
+        var isStatic = JFCustomWidget.isWidgetStatic();
+
+        // Edit mode — form loaded with an existing submission value
+        var isEditMode = data.isEditMode || (data.value && data.value.length > 0);
+
+        if (isStatic) {
+          document.body.classList.add('static-mode', 'view-only');
+        } else if (isEditMode) {
+          document.body.classList.add('view-only');
+        }
+
+        // Restore saved value (edit mode or static)
         if (data.value && JFCustomWidgetUtils.hasMetadata(data.value)) {
           var extracted = JFCustomWidgetUtils.extractMetadata(data.value);
           if (extracted && extracted.length > 0) {
@@ -459,6 +483,13 @@
             currentIndex = 0;
             renderCarousel();
           }
+        }
+
+        // In static mode with no value — show nothing
+        if (isStatic && images.length === 0) {
+          document.getElementById('drop-zone').style.display = 'none';
+          resize();
+          return;
         }
 
         JFCustomWidget.subscribe('submit', function () {
@@ -477,6 +508,7 @@
         JFCustomWidget.subscribe('clear', function () {
           images = [];
           currentIndex = 0;
+          document.body.classList.remove('view-only');
           renderCarousel();
           sendCurrentValue();
         });
