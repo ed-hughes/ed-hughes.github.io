@@ -486,6 +486,7 @@
         })
         .then(function (res) { return res.json(); })
         .then(function (response) {
+          console.log('[uploadToJotform] response:', JSON.stringify(response));
           if (response.success && response.message) {
             // Construct the full URL from the upload server origin + message path
             var origin = uploadServerURL.replace('/upload', '');
