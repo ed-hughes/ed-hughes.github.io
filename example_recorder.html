@@ -1,0 +1,799 @@
+<!doctype html>
+<html>
+<head>
+  <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+  <meta http-equiv="cache-control" content="no-cache" />
+  <meta http-equiv="expires" content="0" />
+  <meta http-equiv="pragma" content="no-cache" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: transparent;
+      padding: 12px;
+      color: #1a1a2e;
+    }
+
+    /* ── Idle State: Permission / Start ── */
+    .recorder-idle {
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 40px 20px;
+      text-align: center;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+      position: relative;
+    }
+    .recorder-idle:hover {
+      border-color: #ef4444;
+      background: #fef2f2;
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.08);
+    }
+    .recorder-idle__icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+    }
+    .recorder-idle__icon svg {
+      width: 28px;
+      height: 28px;
+      fill: #fff;
+    }
+    .recorder-idle__title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+    .recorder-idle__hint {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+    .recorder-idle__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+    }
+    .recorder-idle__btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
+    }
+    .recorder-idle__btn:active { transform: translateY(0); }
+
+    /* ── Recording / Preview Panel ── */
+    .recorder-panel {
+      display: none;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #0a0a0a;
+      position: relative;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .recorder-panel__viewport {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .recorder-panel__viewport video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Live recording indicator */
+    .rec-badge {
+      display: none;
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.06em;
+      z-index: 5;
+      align-items: center;
+      gap: 7px;
+    }
+    .rec-badge.visible {
+      display: inline-flex;
+    }
+    .rec-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: pulse-dot 1s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Timer */
+    .rec-timer {
+      display: none;
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      z-index: 5;
+    }
+    .rec-timer.visible { display: block; }
+
+    /* ── Controls bar ── */
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 16px;
+      background: linear-gradient(180deg, #111 0%, #0a0a0a 100%);
+    }
+
+    .ctrl-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+    }
+    .ctrl-btn:hover { transform: scale(1.08); }
+    .ctrl-btn:active { transform: scale(0.96); }
+    .ctrl-btn svg { pointer-events: none; }
+
+    /* Record / Stop button — the big one */
+    .ctrl-btn--record {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2), 0 4px 16px rgba(239, 68, 68, 0.3);
+    }
+    .ctrl-btn--record svg { fill: #fff; width: 22px; height: 22px; }
+    .ctrl-btn--record.recording {
+      background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15), 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .ctrl-btn--record.recording svg { fill: #dc2626; }
+
+    /* Secondary buttons */
+    .ctrl-btn--secondary {
+      width: 44px;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .ctrl-btn--secondary svg { fill: #fff; width: 18px; height: 18px; }
+    .ctrl-btn--secondary:hover { background: rgba(255, 255, 255, 0.15); }
+
+    /* Danger secondary */
+    .ctrl-btn--danger {
+      width: 44px;
+      height: 44px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+    .ctrl-btn--danger svg { fill: #ef4444; width: 18px; height: 18px; }
+    .ctrl-btn--danger:hover { background: rgba(239, 68, 68, 0.25); }
+
+    /* Accept (green) */
+    .ctrl-btn--accept {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2), 0 4px 16px rgba(34, 197, 94, 0.3);
+    }
+    .ctrl-btn--accept svg { fill: #fff; width: 24px; height: 24px; }
+
+    .hidden { display: none !important; }
+
+    /* ── Saved state ── */
+    .saved-panel {
+      display: none;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #0a0a0a;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    }
+    .saved-panel__viewport {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      background: #000;
+    }
+    .saved-panel__viewport video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .saved-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: linear-gradient(180deg, #111 0%, #0a0a0a 100%);
+    }
+    .saved-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .saved-check {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .saved-check svg { fill: #fff; width: 14px; height: 14px; }
+    .saved-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .saved-duration {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .saved-bar__btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .saved-bar__btn:hover { background: rgba(255, 255, 255, 0.15); }
+    .saved-bar__btn svg { fill: currentColor; width: 14px; height: 14px; }
+
+    /* ── Error ── */
+    .error-msg {
+      display: none;
+      color: #dc2626;
+      font-size: 12px;
+      margin-top: 8px;
+      text-align: center;
+    }
+    .error-msg.visible { display: block; }
+
+    /* ── View-only / Static modes ── */
+    body.view-only .saved-bar__btn { display: none; }
+    body.static-mode .saved-panel__viewport { height: 200px; }
+    body.static-mode .saved-bar__btn { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Idle: start screen ── -->
+  <div class="recorder-idle" id="idle-screen">
+    <div class="recorder-idle__icon">
+      <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+    </div>
+    <div class="recorder-idle__title">Record a video</div>
+    <div class="recorder-idle__hint">Use your camera to record a video response.<br>Click below to start.</div>
+    <button class="recorder-idle__btn" type="button" id="start-btn">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+      Start Camera
+    </button>
+  </div>
+
+  <div class="error-msg" id="error-msg"></div>
+
+  <!-- ── Recording panel ── -->
+  <div class="recorder-panel" id="recorder-panel">
+    <div class="recorder-panel__viewport">
+      <video id="live-preview" autoplay muted playsinline></video>
+      <video id="playback-video" class="hidden" playsinline></video>
+      <div class="rec-badge" id="rec-badge"><span class="rec-dot"></span>REC</div>
+      <div class="rec-timer" id="rec-timer">0:00</div>
+    </div>
+    <div class="controls" id="controls-live">
+      <!-- Cancel camera -->
+      <button class="ctrl-btn ctrl-btn--secondary" id="btn-cancel" title="Cancel">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+      <!-- Record / Stop -->
+      <button class="ctrl-btn ctrl-btn--record" id="btn-record" title="Record">
+        <svg viewBox="0 0 24 24" id="icon-record"><circle cx="12" cy="12" r="8"/></svg>
+      </button>
+      <!-- Flip camera (mobile) -->
+      <button class="ctrl-btn ctrl-btn--secondary hidden" id="btn-flip" title="Flip camera">
+        <svg viewBox="0 0 24 24"><path d="M9 12c0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3-3 1.34-3 3zm11.07-2.83c-.11-.21-.12-.46-.01-.68l.78-1.55c.17-.34.03-.76-.31-.93s-.76-.03-.93.31l-.78 1.55c-.54 1.07-.23 2.37.73 3.1l-.02.03c-.96.73-1.27 2.03-.73 3.1l.78 1.55c.12.23.35.37.62.37.1 0 .21-.02.31-.07.34-.17.48-.59.31-.93l-.78-1.55c-.11-.22-.1-.47.01-.68.11-.21.33-.34.57-.34h.65c.38 0 .69-.31.69-.69s-.31-.69-.69-.69h-.65c-.24 0-.46-.13-.57-.34zM12 5c-3.87 0-7 3.13-7 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zM4.93 9.17c.11.21.12.46.01.68-.11.21-.33.34-.57.34H3.72c-.38 0-.69.31-.69.69s.31.69.69.69h.65c.24 0 .46.13.57.34.11.21.1.47-.01.68l-.78 1.55c-.17.34-.03.76.31.93.1.05.21.07.31.07.27 0 .5-.14.62-.37l.78-1.55c.54-1.07.23-2.37-.73-3.1l.02-.03c.96-.73 1.27-2.03.73-3.1l-.78-1.55c-.17-.34-.59-.48-.93-.31s-.48.59-.31.93l.78 1.55z"/></svg>
+      </button>
+    </div>
+    <!-- Review controls (after recording stops) -->
+    <div class="controls hidden" id="controls-review">
+      <!-- Discard -->
+      <button class="ctrl-btn ctrl-btn--danger" id="btn-discard" title="Discard & re-record">
+        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      </button>
+      <!-- Play / Pause -->
+      <button class="ctrl-btn ctrl-btn--secondary" id="btn-play" title="Play">
+        <svg viewBox="0 0 24 24" id="icon-play"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <!-- Accept -->
+      <button class="ctrl-btn ctrl-btn--accept" id="btn-accept" title="Accept recording">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Saved state ── -->
+  <div class="saved-panel" id="saved-panel">
+    <div class="saved-panel__viewport">
+      <video id="saved-video" playsinline controls></video>
+    </div>
+    <div class="saved-bar">
+      <div class="saved-info">
+        <div class="saved-check">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
+        <div>
+          <div class="saved-text">Recording saved</div>
+          <div class="saved-duration" id="saved-duration"></div>
+        </div>
+      </div>
+      <button class="saved-bar__btn" id="btn-rerecord" type="button">
+        <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        Re-record
+      </button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      /* ── State ── */
+      var stream = null;
+      var mediaRecorder = null;
+      var chunks = [];
+      var recordedBlob = null;
+      var recordedBase64 = null;
+      var isRecording = false;
+      var isRequired = false;
+      var timerInterval = null;
+      var seconds = 0;
+      var finalDuration = 0;
+      var facingMode = 'user';
+      var uploadServerURL = '';
+      var uploadFolder = '';
+
+      /* ── DOM refs ── */
+      var idleScreen    = document.getElementById('idle-screen');
+      var recorderPanel = document.getElementById('recorder-panel');
+      var savedPanel    = document.getElementById('saved-panel');
+      var livePreview   = document.getElementById('live-preview');
+      var playbackVideo = document.getElementById('playback-video');
+      var savedVideo    = document.getElementById('saved-video');
+      var recBadge      = document.getElementById('rec-badge');
+      var recTimer      = document.getElementById('rec-timer');
+      var controlsLive  = document.getElementById('controls-live');
+      var controlsReview= document.getElementById('controls-review');
+      var btnRecord     = document.getElementById('btn-record');
+      var btnCancel     = document.getElementById('btn-cancel');
+      var btnFlip       = document.getElementById('btn-flip');
+      var btnDiscard    = document.getElementById('btn-discard');
+      var btnPlay       = document.getElementById('btn-play');
+      var btnAccept     = document.getElementById('btn-accept');
+      var btnRerecord   = document.getElementById('btn-rerecord');
+      var iconRecord    = document.getElementById('icon-record');
+
+      /* ── Jotform helpers ── */
+      function generateFolder(formID) {
+        var seed = Math.floor(Math.random() * 0x75bcd15).toString(16);
+        var time = Math.floor(new Date().getTime() / 1000).toString(16);
+        return formID + '_' + time + seed;
+      }
+
+      function showError(msg) {
+        var el = document.getElementById('error-msg');
+        el.textContent = msg;
+        el.classList.add('visible');
+        setTimeout(function () { el.classList.remove('visible'); }, 5000);
+      }
+
+      function resize() {
+        setTimeout(function () {
+          JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+        }, 50);
+      }
+
+      function buildMetadataValue() {
+        if (!recordedBase64) return '';
+        var filename = 'recording-' + Date.now() + '.webm';
+        var isDataUri = recordedBase64.indexOf('data:') === 0;
+        if (isDataUri) {
+          return JFCustomWidgetUtils.buildMetadata('videorecording', [{ name: filename, base64: recordedBase64 }]);
+        } else {
+          return JFCustomWidgetUtils.buildMetadata('videorecording', [{ name: filename, url: JFCustomWidgetUtils.getS3UriRelativePath(recordedBase64) }]);
+        }
+      }
+
+      function sendCurrentValue() {
+        JFCustomWidget.sendData({ value: buildMetadataValue() });
+      }
+
+      /* ── Timer ── */
+      function formatTime(s) {
+        var m = Math.floor(s / 60);
+        var sec = s % 60;
+        return m + ':' + (sec < 10 ? '0' : '') + sec;
+      }
+
+      function startTimer() {
+        seconds = 0;
+        recTimer.textContent = '0:00';
+        timerInterval = setInterval(function () {
+          seconds++;
+          recTimer.textContent = formatTime(seconds);
+        }, 1000);
+      }
+
+      function stopTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        finalDuration = seconds;
+      }
+
+      /* ── Camera ── */
+      function startCamera() {
+        return navigator.mediaDevices.getUserMedia({
+          video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: true
+        }).then(function (s) {
+          stream = s;
+          livePreview.srcObject = stream;
+
+          // Show flip button if multiple cameras likely (mobile)
+          if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            btnFlip.classList.remove('hidden');
+          }
+        });
+      }
+
+      function stopCamera() {
+        if (stream) {
+          stream.getTracks().forEach(function (t) { t.stop(); });
+          stream = null;
+        }
+        livePreview.srcObject = null;
+      }
+
+      /* ── Show / hide panels ── */
+      function showIdle() {
+        stopCamera();
+        idleScreen.style.display = 'block';
+        recorderPanel.style.display = 'none';
+        savedPanel.style.display = 'none';
+        resize();
+      }
+
+      function showRecorder() {
+        idleScreen.style.display = 'none';
+        recorderPanel.style.display = 'block';
+        savedPanel.style.display = 'none';
+        controlsLive.classList.remove('hidden');
+        controlsReview.classList.add('hidden');
+        livePreview.classList.remove('hidden');
+        playbackVideo.classList.add('hidden');
+        recBadge.classList.remove('visible');
+        recTimer.classList.remove('visible');
+
+        // Reset record button look
+        btnRecord.classList.remove('recording');
+        iconRecord.innerHTML = '<circle cx="12" cy="12" r="8"/>';
+        resize();
+      }
+
+      function showReview() {
+        controlsLive.classList.add('hidden');
+        controlsReview.classList.remove('hidden');
+        livePreview.classList.add('hidden');
+        playbackVideo.classList.remove('hidden');
+        recBadge.classList.remove('visible');
+        recTimer.classList.remove('visible');
+
+        playbackVideo.src = URL.createObjectURL(recordedBlob);
+        playbackVideo.currentTime = 0;
+        resize();
+      }
+
+      function showSaved() {
+        idleScreen.style.display = 'none';
+        recorderPanel.style.display = 'none';
+        savedPanel.style.display = 'block';
+        savedVideo.src = URL.createObjectURL(recordedBlob);
+        document.getElementById('saved-duration').textContent = formatTime(finalDuration);
+        resize();
+      }
+
+      /* ── Recording ── */
+      function startRecording() {
+        chunks = [];
+        var mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+          ? 'video/webm;codecs=vp9,opus'
+          : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+            ? 'video/webm;codecs=vp8,opus'
+            : 'video/webm';
+
+        mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
+        mediaRecorder.ondataavailable = function (e) {
+          if (e.data && e.data.size > 0) chunks.push(e.data);
+        };
+        mediaRecorder.onstop = function () {
+          recordedBlob = new Blob(chunks, { type: mimeType });
+          stopTimer();
+          stopCamera();
+          showReview();
+        };
+
+        mediaRecorder.start(100);
+        isRecording = true;
+
+        recBadge.classList.add('visible');
+        recTimer.classList.add('visible');
+        startTimer();
+
+        btnRecord.classList.add('recording');
+        iconRecord.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2"/>';
+        btnRecord.title = 'Stop';
+        btnCancel.classList.add('hidden');
+        btnFlip.classList.add('hidden');
+      }
+
+      function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+        isRecording = false;
+      }
+
+      function blobToBase64(blob, cb) {
+        var reader = new FileReader();
+        reader.onload = function () { cb(reader.result); };
+        reader.readAsDataURL(blob);
+      }
+
+      /* ── Upload to Jotform ── */
+      function uploadToJotform(blob, callback) {
+        var origin = uploadServerURL.replace('/upload', '');
+        var url = origin + '/server.php?action=handleWidgetFiles&type=save';
+        var formData = new FormData();
+        formData.append('file', blob, 'recording-' + Date.now() + '.webm');
+
+        fetch(url, { method: 'POST', body: formData })
+          .then(function (res) { return res.json(); })
+          .then(function (response) {
+            if (response && response.success && response.message) {
+              callback(response.message);
+            } else {
+              callback(null);
+            }
+          })
+          .catch(function () { callback(null); });
+      }
+
+      /* ── Buttons ── */
+
+      // Start camera from idle screen
+      document.getElementById('start-btn').addEventListener('click', function () {
+        startCamera().then(function () {
+          showRecorder();
+        }).catch(function (err) {
+          showError('Camera access denied. Please allow camera & microphone permissions.');
+          console.error('[VideoRecorder]', err);
+        });
+      });
+
+      // Record / Stop toggle
+      btnRecord.addEventListener('click', function () {
+        if (!isRecording) {
+          startRecording();
+        } else {
+          stopRecording();
+        }
+      });
+
+      // Cancel (back to idle)
+      btnCancel.addEventListener('click', function () {
+        showIdle();
+      });
+
+      // Flip camera
+      btnFlip.addEventListener('click', function () {
+        facingMode = facingMode === 'user' ? 'environment' : 'user';
+        stopCamera();
+        startCamera().catch(function () {
+          facingMode = facingMode === 'user' ? 'environment' : 'user';
+          startCamera();
+        });
+      });
+
+      // Discard recording
+      btnDiscard.addEventListener('click', function () {
+        recordedBlob = null;
+        recordedBase64 = null;
+        playbackVideo.src = '';
+        startCamera().then(function () {
+          showRecorder();
+        });
+      });
+
+      // Play / Pause review
+      btnPlay.addEventListener('click', function () {
+        if (playbackVideo.paused) {
+          playbackVideo.play();
+          document.getElementById('icon-play').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+          btnPlay.title = 'Pause';
+        } else {
+          playbackVideo.pause();
+          document.getElementById('icon-play').innerHTML = '<path d="M8 5v14l11-7z"/>';
+          btnPlay.title = 'Play';
+        }
+      });
+
+      playbackVideo.addEventListener('ended', function () {
+        document.getElementById('icon-play').innerHTML = '<path d="M8 5v14l11-7z"/>';
+        btnPlay.title = 'Play';
+      });
+
+      // Accept recording
+      btnAccept.addEventListener('click', function () {
+        if (uploadServerURL && uploadFolder) {
+          uploadToJotform(recordedBlob, function (url) {
+            if (url) {
+              recordedBase64 = url;
+            } else {
+              blobToBase64(recordedBlob, function (b64) { recordedBase64 = b64; });
+            }
+            showSaved();
+            sendCurrentValue();
+          });
+        } else {
+          blobToBase64(recordedBlob, function (b64) {
+            recordedBase64 = b64;
+            showSaved();
+            sendCurrentValue();
+          });
+        }
+      });
+
+      // Re-record
+      btnRerecord.addEventListener('click', function () {
+        recordedBlob = null;
+        recordedBase64 = null;
+        savedVideo.src = '';
+        sendCurrentValue();
+        startCamera().then(function () {
+          showRecorder();
+        }).catch(function () {
+          showIdle();
+        });
+      });
+
+      /* ── Jotform widget lifecycle ── */
+
+      JFCustomWidget.subscribe('ready', function (data) {
+        isRequired = JFCustomWidget.isWidgetRequired();
+        uploadServerURL = data.uploadServerURL || '';
+        if (uploadServerURL) {
+          uploadFolder = generateFolder(data.formID);
+        }
+
+        var isStatic = JFCustomWidget.isWidgetStatic();
+        var isEditMode = data.isEditMode || (data.value && data.value.length > 0);
+
+        if (isStatic) {
+          document.body.classList.add('static-mode', 'view-only');
+        } else if (isEditMode) {
+          document.body.classList.add('view-only');
+        }
+
+        // Restore saved value
+        if (data.value && JFCustomWidgetUtils.hasMetadata(data.value)) {
+          var extracted = JFCustomWidgetUtils.extractMetadata(data.value);
+          if (extracted && extracted.length > 0) {
+            var item = extracted[0];
+            var src = item.base64 || '';
+            if (!src && item.url) {
+              src = JFCustomWidgetUtils.fixS3UriOrigin(item.url);
+            }
+            if (src) {
+              recordedBase64 = src;
+              // Create a blob-like URL for playback
+              savedVideo.src = src;
+              finalDuration = 0; // Unknown for restored
+              document.getElementById('saved-duration').textContent = 'Saved recording';
+
+              idleScreen.style.display = 'none';
+              savedPanel.style.display = 'block';
+            }
+          }
+        }
+
+        // Static mode with no value — show nothing
+        if (isStatic && !recordedBase64) {
+          idleScreen.style.display = 'none';
+          resize();
+          return;
+        }
+
+        JFCustomWidget.subscribe('submit', function () {
+          var value = buildMetadataValue();
+          var valid = !isRequired || !!recordedBase64;
+
+          if (!valid) {
+            JFCustomWidget.showWidgetError(JFCustomWidget.texts.required || 'This field is required.');
+          } else {
+            JFCustomWidget.hideWidgetError();
+          }
+
+          JFCustomWidget.sendSubmit({ valid: valid, value: value });
+        });
+
+        JFCustomWidget.subscribe('clear', function () {
+          recordedBlob = null;
+          recordedBase64 = null;
+          savedVideo.src = '';
+          document.body.classList.remove('view-only');
+          showIdle();
+          sendCurrentValue();
+        });
+
+        resize();
+      });
+
+    })();
+  </script>
+</body>
+</html>
