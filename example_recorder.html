@@ -33,8 +33,7 @@
       box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.07);
     }
     .recorder-idle__icon {
-      width: 56px; height: 56px;
-      border-radius: 50%;
+      width: 56px; height: 56px; border-radius: 50%;
       background: linear-gradient(135deg, #ef4444, #dc2626);
       display: flex; align-items: center; justify-content: center;
       margin: 0 auto 14px;
@@ -63,8 +62,7 @@
     }
 
     .waveform-area {
-      position: relative;
-      height: 100px;
+      position: relative; height: 80px;
       background: linear-gradient(180deg, #0f0f14, #141420);
       overflow: hidden;
     }
@@ -96,20 +94,15 @@
       color: #475569; font-size: 13px; font-weight: 500; pointer-events: none;
     }
 
-    /* ── Live transcript area ── */
+    /* ── Live transcript ── */
     .transcript-area {
-      padding: 12px 16px;
-      min-height: 60px;
-      max-height: 140px;
-      overflow-y: auto;
-      background: #12121a;
+      padding: 12px 16px; min-height: 60px; max-height: 160px;
+      overflow-y: auto; background: #12121a;
       border-top: 1px solid rgba(255,255,255,0.05);
-      scrollbar-width: thin;
-      scrollbar-color: #333 transparent;
+      scrollbar-width: thin; scrollbar-color: #333 transparent;
     }
     .transcript-area::-webkit-scrollbar { width: 4px; }
     .transcript-area::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-
     .transcript-label {
       font-size: 10px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.08em; color: #64748b; margin-bottom: 6px;
@@ -155,101 +148,62 @@
     .ctrl-btn--secondary svg { fill: #fff; width: 16px; height: 16px; }
     .ctrl-btn--secondary:hover { background: rgba(255,255,255,0.14); }
 
-    .ctrl-btn--danger {
-      width: 40px; height: 40px;
-      background: rgba(239,68,68,0.12);
-      border: 1px solid rgba(239,68,68,0.2);
-    }
-    .ctrl-btn--danger svg { fill: #ef4444; width: 16px; height: 16px; }
-    .ctrl-btn--danger:hover { background: rgba(239,68,68,0.22); }
-
-    .ctrl-btn--accept {
-      width: 52px; height: 52px;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      box-shadow: 0 0 0 3px rgba(34,197,94,0.18), 0 4px 14px rgba(34,197,94,0.3);
-    }
-    .ctrl-btn--accept svg { fill: #fff; width: 22px; height: 22px; }
-
     .hidden { display: none !important; }
 
     /* ── Saved ── */
     .saved-panel {
       display: none; border-radius: 14px; overflow: hidden;
-      background: #0f0f14; box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     }
-    .saved-player { padding: 14px 16px; }
-    .saved-player audio { width: 100%; height: 40px; border-radius: 8px; }
-
-    .saved-transcript {
-      padding: 0 16px 14px;
-      max-height: 160px;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: #333 transparent;
+    .saved-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #e2e8f0;
     }
-    .saved-transcript::-webkit-scrollbar { width: 4px; }
-    .saved-transcript::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-    .saved-transcript-label {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.08em; color: #64748b; margin-bottom: 6px;
-    }
-    .saved-transcript-text {
-      font-size: 13px; line-height: 1.55; color: #cbd5e1;
-      white-space: pre-wrap; word-wrap: break-word;
-    }
-    .saved-transcript-edit {
-      width: 100%;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-size: 13px; line-height: 1.55;
-      color: #e2e8f0;
-      font-family: inherit;
-      resize: vertical;
-      min-height: 60px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .saved-transcript-edit:focus { border-color: rgba(99,102,241,0.5); }
-
-    .saved-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 16px 14px;
-      border-top: 1px solid rgba(255,255,255,0.05);
-    }
-    .saved-info { display: flex; align-items: center; gap: 10px; }
     .saved-check {
-      width: 26px; height: 26px; border-radius: 50%;
+      width: 28px; height: 28px; border-radius: 50%;
       background: linear-gradient(135deg, #22c55e, #16a34a);
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .saved-check svg { fill: #fff; width: 13px; height: 13px; }
-    .saved-text { font-size: 13px; font-weight: 600; color: #e2e8f0; }
-    .saved-duration { font-size: 11px; color: #64748b; font-weight: 500; }
+    .saved-check svg { fill: #fff; width: 14px; height: 14px; }
+    .saved-header-text { font-size: 14px; font-weight: 600; color: #1e293b; }
 
-    .saved-bar__btn {
-      display: flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #e2e8f0; padding: 6px 12px; border-radius: 8px;
-      font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
-      transition: background 0.2s;
+    .saved-transcript-wrap { padding: 14px 16px; }
+    .saved-transcript-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 6px;
     }
-    .saved-bar__btn:hover { background: rgba(255,255,255,0.14); }
-    .saved-bar__btn svg { fill: currentColor; width: 13px; height: 13px; }
+    .saved-transcript-edit {
+      width: 100%; background: #fff;
+      border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 10px 12px; font-size: 13px; line-height: 1.55;
+      color: #1e293b; font-family: inherit;
+      resize: vertical; min-height: 60px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .saved-transcript-edit:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
 
-    /* ── Browser support warning ── */
+    .saved-actions {
+      display: flex; justify-content: flex-end;
+      padding: 0 16px 14px; gap: 8px;
+    }
+    .saved-actions__btn {
+      display: flex; align-items: center; gap: 6px;
+      background: #fff; border: 1px solid #e2e8f0;
+      color: #475569; padding: 7px 14px; border-radius: 8px;
+      font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .saved-actions__btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .saved-actions__btn svg { fill: currentColor; width: 13px; height: 13px; }
+
+    /* ── Browser warning ── */
     .speech-warning {
-      display: none;
-      padding: 8px 12px;
-      background: rgba(234, 179, 8, 0.1);
-      border: 1px solid rgba(234, 179, 8, 0.2);
-      border-radius: 8px;
-      font-size: 11px;
-      color: #ca8a04;
-      text-align: center;
-      margin-bottom: 10px;
+      display: none; padding: 10px 14px;
+      background: #fef3c7; border: 1px solid #fde68a;
+      border-radius: 10px; font-size: 12px; color: #92400e;
+      text-align: center; margin-bottom: 10px; line-height: 1.4;
     }
     .speech-warning.visible { display: block; }
 
@@ -260,17 +214,17 @@
     }
     .error-msg.visible { display: block; }
 
-    /* ── View-only / Static ── */
-    body.view-only .saved-bar__btn { display: none; }
-    body.view-only .saved-transcript-edit { pointer-events: none; opacity: 0.7; }
-    body.static-mode .saved-bar__btn { display: none; }
-    body.static-mode .saved-transcript-edit { pointer-events: none; opacity: 0.7; }
+    /* ── View-only ── */
+    body.view-only .saved-actions { display: none; }
+    body.view-only .saved-transcript-edit { pointer-events: none; background: #f8fafc; color: #475569; }
+    body.static-mode .saved-actions { display: none; }
+    body.static-mode .saved-transcript-edit { pointer-events: none; background: #f8fafc; color: #475569; }
   </style>
 </head>
 <body>
 
   <div class="speech-warning" id="speech-warning">
-    Live transcription requires Chrome or Edge. Audio recording will still work in other browsers.
+    This widget requires Chrome or Edge for speech-to-text. Your browser does not support the Web Speech API.
   </div>
 
   <!-- Idle -->
@@ -278,11 +232,11 @@
     <div class="recorder-idle__icon">
       <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
     </div>
-    <div class="recorder-idle__title">Record &amp; transcribe audio</div>
-    <div class="recorder-idle__hint">Your speech will be transcribed in real time</div>
+    <div class="recorder-idle__title">Voice to text</div>
+    <div class="recorder-idle__hint">Speak your answer and it will be transcribed automatically</div>
     <button class="recorder-idle__btn" type="button" id="start-btn">
       <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-      Start Recording
+      Start Speaking
     </button>
   </div>
 
@@ -294,62 +248,39 @@
       <canvas id="waveform"></canvas>
       <div class="rec-badge" id="rec-badge"><span class="rec-dot"></span>REC</div>
       <div class="rec-timer" id="rec-timer">0:00</div>
-      <div class="waveform-idle-text" id="waveform-idle-text">Ready to record</div>
+      <div class="waveform-idle-text" id="waveform-idle-text">Ready</div>
     </div>
-
-    <!-- Live transcript -->
     <div class="transcript-area" id="transcript-area">
       <div class="transcript-label">Live Transcript</div>
       <div class="transcript-text" id="live-transcript">
-        <span class="transcript-placeholder">Start speaking…</span>
+        <span class="transcript-placeholder">Start speaking&#8230;</span>
       </div>
     </div>
-
-    <!-- Live controls -->
     <div class="controls" id="controls-live">
       <button class="ctrl-btn ctrl-btn--secondary" id="btn-cancel" title="Cancel">
         <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
-      <button class="ctrl-btn ctrl-btn--record" id="btn-record" title="Record">
+      <button class="ctrl-btn ctrl-btn--record" id="btn-record" title="Start">
         <svg viewBox="0 0 24 24" id="icon-record"><circle cx="12" cy="12" r="8"/></svg>
       </button>
       <div style="width:40px"></div>
-    </div>
-
-    <!-- Review controls -->
-    <div class="controls hidden" id="controls-review">
-      <button class="ctrl-btn ctrl-btn--danger" id="btn-discard" title="Discard">
-        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-      </button>
-      <button class="ctrl-btn ctrl-btn--secondary" id="btn-play" title="Play">
-        <svg viewBox="0 0 24 24" id="icon-play"><path d="M8 5v14l11-7z"/></svg>
-      </button>
-      <button class="ctrl-btn ctrl-btn--accept" id="btn-accept" title="Accept">
-        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-      </button>
     </div>
   </div>
 
   <!-- Saved -->
   <div class="saved-panel" id="saved-panel">
-    <div class="saved-player">
-      <audio id="saved-audio" controls></audio>
-    </div>
-    <div class="saved-transcript" id="saved-transcript-area">
-      <div class="saved-transcript-label">Transcript (editable)</div>
-      <textarea class="saved-transcript-edit" id="saved-transcript-edit" rows="3" placeholder="No transcript available"></textarea>
-    </div>
-    <div class="saved-bar">
-      <div class="saved-info">
-        <div class="saved-check">
-          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-        </div>
-        <div>
-          <div class="saved-text">Recording saved</div>
-          <div class="saved-duration" id="saved-duration"></div>
-        </div>
+    <div class="saved-header">
+      <div class="saved-check">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
       </div>
-      <button class="saved-bar__btn" id="btn-rerecord" type="button">
+      <div class="saved-header-text">Transcription complete</div>
+    </div>
+    <div class="saved-transcript-wrap">
+      <div class="saved-transcript-label">Your answer (editable)</div>
+      <textarea class="saved-transcript-edit" id="saved-transcript-edit" rows="3" placeholder="No speech detected"></textarea>
+    </div>
+    <div class="saved-actions">
+      <button class="saved-actions__btn" id="btn-rerecord" type="button">
         <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
         Re-record
       </button>
@@ -360,23 +291,14 @@
     (function () {
       /* ── State ── */
       var stream = null;
-      var mediaRecorder = null;
-      var chunks = [];
-      var recordedBlob = null;
-      var recordedBase64 = null;
       var isRecording = false;
       var isRequired = false;
       var timerInterval = null;
       var seconds = 0;
-      var finalDuration = 0;
-      var uploadServerURL = '';
-      var uploadFolder = '';
       var audioContext = null;
       var analyser = null;
       var animFrameId = null;
-      var reviewAudio = new Audio();
 
-      // Speech recognition
       var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       var recognition = null;
       var hasSpeechSupport = !!SpeechRecognition;
@@ -388,35 +310,24 @@
       }
 
       /* ── DOM ── */
-      var idleScreen      = document.getElementById('idle-screen');
-      var recorderPanel   = document.getElementById('recorder-panel');
-      var savedPanel      = document.getElementById('saved-panel');
-      var savedAudio      = document.getElementById('saved-audio');
-      var recBadge        = document.getElementById('rec-badge');
-      var recTimer        = document.getElementById('rec-timer');
-      var controlsLive    = document.getElementById('controls-live');
-      var controlsReview  = document.getElementById('controls-review');
-      var btnRecord       = document.getElementById('btn-record');
-      var btnCancel       = document.getElementById('btn-cancel');
-      var btnDiscard      = document.getElementById('btn-discard');
-      var btnPlay         = document.getElementById('btn-play');
-      var btnAccept       = document.getElementById('btn-accept');
-      var btnRerecord     = document.getElementById('btn-rerecord');
-      var iconRecord      = document.getElementById('icon-record');
-      var canvas          = document.getElementById('waveform');
-      var ctx             = canvas.getContext('2d');
-      var idleText        = document.getElementById('waveform-idle-text');
-      var liveTranscript  = document.getElementById('live-transcript');
-      var transcriptArea  = document.getElementById('transcript-area');
-      var savedTranscriptEdit = document.getElementById('saved-transcript-edit');
+      var idleScreen     = document.getElementById('idle-screen');
+      var recorderPanel  = document.getElementById('recorder-panel');
+      var savedPanel     = document.getElementById('saved-panel');
+      var recBadge       = document.getElementById('rec-badge');
+      var recTimer       = document.getElementById('rec-timer');
+      var controlsLive   = document.getElementById('controls-live');
+      var btnRecord      = document.getElementById('btn-record');
+      var btnCancel      = document.getElementById('btn-cancel');
+      var btnRerecord    = document.getElementById('btn-rerecord');
+      var iconRecord     = document.getElementById('icon-record');
+      var canvas         = document.getElementById('waveform');
+      var ctx            = canvas.getContext('2d');
+      var idleText       = document.getElementById('waveform-idle-text');
+      var liveTranscript = document.getElementById('live-transcript');
+      var transcriptArea = document.getElementById('transcript-area');
+      var savedEdit      = document.getElementById('saved-transcript-edit');
 
       /* ── Helpers ── */
-      function generateFolder(formID) {
-        var seed = Math.floor(Math.random() * 0x75bcd15).toString(16);
-        var time = Math.floor(new Date().getTime() / 1000).toString(16);
-        return formID + '_' + time + seed;
-      }
-
       function showError(msg) {
         var el = document.getElementById('error-msg');
         el.textContent = msg;
@@ -436,27 +347,9 @@
         return m + ':' + (sec < 10 ? '0' : '') + sec;
       }
 
-      function buildMetadataValue() {
-        var transcript = savedTranscriptEdit ? savedTranscriptEdit.value.trim() : finalTranscript.trim();
-        if (!recordedBase64 && !transcript) return '';
-
-        var payload = { transcript: transcript };
-        var filename = 'recording-' + Date.now() + '.webm';
-
-        if (recordedBase64) {
-          var isDataUri = recordedBase64.indexOf('data:') === 0;
-          if (isDataUri) {
-            payload.audio = { name: filename, base64: recordedBase64 };
-          } else {
-            payload.audio = { name: filename, url: JFCustomWidgetUtils.getS3UriRelativePath(recordedBase64) };
-          }
-        }
-
-        return JFCustomWidgetUtils.buildMetadata('audiorecording', [payload]);
-      }
-
       function sendCurrentValue() {
-        JFCustomWidget.sendData({ value: buildMetadataValue() });
+        var text = savedEdit ? savedEdit.value.trim() : finalTranscript.trim();
+        JFCustomWidget.sendData({ value: text });
       }
 
       /* ── Timer ── */
@@ -471,7 +364,6 @@
       function stopTimer() {
         clearInterval(timerInterval);
         timerInterval = null;
-        finalDuration = seconds;
       }
 
       /* ── Waveform ── */
@@ -502,8 +394,7 @@
         for (var i = 0; i < bufLen; i++) {
           var v = data[i] / 128.0;
           var y = (v * h) / 2;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
           x += sliceWidth;
         }
         ctx.lineTo(w, h / 2);
@@ -532,7 +423,6 @@
       /* ── Speech Recognition ── */
       function startSpeechRecognition() {
         if (!hasSpeechSupport) return;
-
         finalTranscript = '';
         interimTranscript = '';
 
@@ -545,25 +435,17 @@
           interimTranscript = '';
           for (var i = event.resultIndex; i < event.results.length; i++) {
             var t = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              finalTranscript += t + ' ';
-            } else {
-              interimTranscript += t;
-            }
+            if (event.results[i].isFinal) finalTranscript += t + ' ';
+            else interimTranscript += t;
           }
           updateLiveTranscript();
         };
 
         recognition.onerror = function (e) {
-          console.warn('[SpeechRecognition] error:', e.error);
-          // 'no-speech' and 'aborted' are non-fatal
-          if (e.error === 'not-allowed') {
-            showError('Speech recognition permission denied.');
-          }
+          if (e.error === 'not-allowed') showError('Speech recognition permission denied.');
         };
 
         recognition.onend = function () {
-          // Auto-restart if still recording (Chrome stops after ~60s of silence)
           if (isRecording && recognition) {
             try { recognition.start(); } catch (e) {}
           }
@@ -585,12 +467,11 @@
         if (interimTranscript) html += '<span class="interim">' + interimTranscript + '</span>';
         if (!html) html = '<span class="transcript-placeholder">Start speaking\u2026</span>';
         liveTranscript.innerHTML = html;
-        // Auto-scroll
         transcriptArea.scrollTop = transcriptArea.scrollHeight;
         resize();
       }
 
-      /* ── Microphone ── */
+      /* ── Microphone (for waveform only) ── */
       function startMic() {
         return navigator.mediaDevices.getUserMedia({ audio: true }).then(function (s) {
           stream = s;
@@ -622,8 +503,6 @@
         idleScreen.style.display = 'none';
         recorderPanel.style.display = 'block';
         savedPanel.style.display = 'none';
-        controlsLive.classList.remove('hidden');
-        controlsReview.classList.add('hidden');
         recBadge.classList.remove('visible');
         recTimer.classList.remove('visible');
         idleText.style.display = 'flex';
@@ -636,53 +515,24 @@
         resize();
       }
 
-      function showReview() {
-        controlsLive.classList.add('hidden');
-        controlsReview.classList.remove('hidden');
-        recBadge.classList.remove('visible');
-        recTimer.classList.remove('visible');
-        idleText.style.display = 'none';
-        stopWaveform();
-        drawFlatLine();
-        reviewAudio.src = URL.createObjectURL(recordedBlob);
-        reviewAudio.currentTime = 0;
+      function finishRecording() {
+        stopTimer();
+        stopSpeechRecognition();
+        stopMic();
 
-        // Show final transcript
-        var display = finalTranscript.trim() || '(no speech detected)';
-        liveTranscript.innerHTML = display;
-        resize();
-      }
+        var text = finalTranscript.trim();
+        savedEdit.value = text;
 
-      function showSaved() {
         idleScreen.style.display = 'none';
         recorderPanel.style.display = 'none';
         savedPanel.style.display = 'block';
-        savedAudio.src = URL.createObjectURL(recordedBlob);
-        document.getElementById('saved-duration').textContent = formatTime(finalDuration);
-        savedTranscriptEdit.value = finalTranscript.trim();
+
+        sendCurrentValue();
         resize();
       }
 
-      /* ── Recording ── */
+      /* ── Record toggle ── */
       function startRecording() {
-        chunks = [];
-        var mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
-
-        mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
-        mediaRecorder.ondataavailable = function (e) {
-          if (e.data && e.data.size > 0) chunks.push(e.data);
-        };
-        mediaRecorder.onstop = function () {
-          recordedBlob = new Blob(chunks, { type: mimeType });
-          stopTimer();
-          stopSpeechRecognition();
-          stopMic();
-          showReview();
-        };
-
-        mediaRecorder.start(100);
         isRecording = true;
         idleText.style.display = 'none';
         recBadge.classList.add('visible');
@@ -698,34 +548,15 @@
       }
 
       function stopRecording() {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
         isRecording = false;
-      }
-
-      function blobToBase64(blob, cb) {
-        var reader = new FileReader();
-        reader.onload = function () { cb(reader.result); };
-        reader.readAsDataURL(blob);
-      }
-
-      /* ── Upload ── */
-      function uploadToJotform(blob, callback) {
-        var origin = uploadServerURL.replace('/upload', '');
-        var url = origin + '/server.php?action=handleWidgetFiles&type=save';
-        var fd = new FormData();
-        fd.append('file', blob, 'recording-' + Date.now() + '.webm');
-        fetch(url, { method: 'POST', body: fd })
-          .then(function (r) { return r.json(); })
-          .then(function (r) { callback(r && r.success && r.message ? r.message : null); })
-          .catch(function () { callback(null); });
+        finishRecording();
       }
 
       /* ── Button handlers ── */
 
       document.getElementById('start-btn').addEventListener('click', function () {
-        startMic().then(showRecorder).catch(function (err) {
+        startMic().then(showRecorder).catch(function () {
           showError('Microphone access denied. Please allow microphone permissions.');
-          console.error('[AudioRecorder]', err);
         });
       });
 
@@ -736,64 +567,15 @@
 
       btnCancel.addEventListener('click', showIdle);
 
-      btnDiscard.addEventListener('click', function () {
-        recordedBlob = null;
-        recordedBase64 = null;
-        finalTranscript = '';
-        interimTranscript = '';
-        reviewAudio.src = '';
-        startMic().then(showRecorder);
-      });
-
-      btnPlay.addEventListener('click', function () {
-        if (reviewAudio.paused) {
-          reviewAudio.play();
-          document.getElementById('icon-play').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
-          btnPlay.title = 'Pause';
-        } else {
-          reviewAudio.pause();
-          document.getElementById('icon-play').innerHTML = '<path d="M8 5v14l11-7z"/>';
-          btnPlay.title = 'Play';
-        }
-      });
-
-      reviewAudio.addEventListener('ended', function () {
-        document.getElementById('icon-play').innerHTML = '<path d="M8 5v14l11-7z"/>';
-        btnPlay.title = 'Play';
-      });
-
-      btnAccept.addEventListener('click', function () {
-        if (uploadServerURL && uploadFolder) {
-          uploadToJotform(recordedBlob, function (url) {
-            recordedBase64 = url || null;
-            if (!recordedBase64) {
-              blobToBase64(recordedBlob, function (b64) {
-                recordedBase64 = b64;
-                showSaved(); sendCurrentValue();
-              });
-              return;
-            }
-            showSaved(); sendCurrentValue();
-          });
-        } else {
-          blobToBase64(recordedBlob, function (b64) {
-            recordedBase64 = b64;
-            showSaved(); sendCurrentValue();
-          });
-        }
-      });
-
-      // Update value when user edits transcript
-      savedTranscriptEdit.addEventListener('input', function () {
+      savedEdit.addEventListener('input', function () {
         sendCurrentValue();
+        resize();
       });
 
       btnRerecord.addEventListener('click', function () {
-        recordedBlob = null;
-        recordedBase64 = null;
         finalTranscript = '';
         interimTranscript = '';
-        savedAudio.src = '';
+        savedEdit.value = '';
         sendCurrentValue();
         startMic().then(showRecorder).catch(showIdle);
       });
@@ -802,8 +584,6 @@
 
       JFCustomWidget.subscribe('ready', function (data) {
         isRequired = JFCustomWidget.isWidgetRequired();
-        uploadServerURL = data.uploadServerURL || '';
-        if (uploadServerURL) uploadFolder = generateFolder(data.formID);
 
         var isStatic = JFCustomWidget.isWidgetStatic();
         var isEditMode = data.isEditMode || (data.value && data.value.length > 0);
@@ -811,65 +591,32 @@
         if (isStatic) document.body.classList.add('static-mode', 'view-only');
         else if (isEditMode) document.body.classList.add('view-only');
 
-        // Restore saved value
-        if (data.value && JFCustomWidgetUtils.hasMetadata(data.value)) {
-          var extracted = JFCustomWidgetUtils.extractMetadata(data.value);
-          if (extracted && extracted.length > 0) {
-            var item = extracted[0];
-
-            // Restore transcript
-            if (item.transcript) {
-              finalTranscript = item.transcript;
-              savedTranscriptEdit.value = item.transcript;
-            }
-
-            // Restore audio
-            if (item.audio) {
-              var src = item.audio.base64 || '';
-              if (!src && item.audio.url) src = JFCustomWidgetUtils.fixS3UriOrigin(item.audio.url);
-              if (src) {
-                recordedBase64 = src;
-                savedAudio.src = src;
-              }
-            } else {
-              // Legacy: flat structure
-              var src2 = item.base64 || '';
-              if (!src2 && item.url) src2 = JFCustomWidgetUtils.fixS3UriOrigin(item.url);
-              if (src2) {
-                recordedBase64 = src2;
-                savedAudio.src = src2;
-              }
-            }
-
-            if (recordedBase64 || finalTranscript) {
-              document.getElementById('saved-duration').textContent = 'Saved recording';
-              idleScreen.style.display = 'none';
-              savedPanel.style.display = 'block';
-            }
-          }
+        // Restore saved transcript
+        if (data.value && data.value.trim().length > 0) {
+          finalTranscript = data.value.trim();
+          savedEdit.value = finalTranscript;
+          idleScreen.style.display = 'none';
+          savedPanel.style.display = 'block';
         }
 
-        if (isStatic && !recordedBase64 && !finalTranscript) {
+        if (isStatic && !finalTranscript) {
           idleScreen.style.display = 'none';
           resize();
           return;
         }
 
         JFCustomWidget.subscribe('submit', function () {
-          var value = buildMetadataValue();
-          var valid = !isRequired || !!recordedBase64 || !!finalTranscript.trim();
+          var text = savedEdit ? savedEdit.value.trim() : finalTranscript.trim();
+          var valid = !isRequired || text.length > 0;
           if (!valid) JFCustomWidget.showWidgetError(JFCustomWidget.texts.required || 'This field is required.');
           else JFCustomWidget.hideWidgetError();
-          JFCustomWidget.sendSubmit({ valid: valid, value: value });
+          JFCustomWidget.sendSubmit({ valid: valid, value: text });
         });
 
         JFCustomWidget.subscribe('clear', function () {
-          recordedBlob = null;
-          recordedBase64 = null;
           finalTranscript = '';
           interimTranscript = '';
-          savedAudio.src = '';
-          savedTranscriptEdit.value = '';
+          savedEdit.value = '';
           document.body.classList.remove('view-only');
           showIdle();
           sendCurrentValue();
