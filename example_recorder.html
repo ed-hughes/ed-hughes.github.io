@@ -17,362 +17,327 @@
       color: #1a1a2e;
     }
 
-    /* ── Idle State: Permission / Start ── */
+    /* ── Idle ── */
     .recorder-idle {
       border: 2px dashed #cbd5e1;
-      border-radius: 16px;
-      padding: 40px 20px;
+      border-radius: 14px;
+      padding: 32px 20px;
       text-align: center;
       background: #f8fafc;
       cursor: pointer;
       transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
-      position: relative;
     }
     .recorder-idle:hover {
       border-color: #ef4444;
       background: #fef2f2;
-      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.08);
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.07);
     }
     .recorder-idle__icon {
-      width: 64px;
-      height: 64px;
+      width: 56px; height: 56px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.28);
     }
-    .recorder-idle__icon svg {
-      width: 28px;
-      height: 28px;
-      fill: #fff;
-    }
-    .recorder-idle__title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #1e293b;
-      margin-bottom: 4px;
-    }
-    .recorder-idle__hint {
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 18px;
-      line-height: 1.4;
-    }
+    .recorder-idle__icon svg { width: 24px; height: 24px; fill: #fff; }
+    .recorder-idle__title { font-size: 15px; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
+    .recorder-idle__hint { font-size: 12px; color: #94a3b8; margin-bottom: 16px; }
     .recorder-idle__btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: #fff;
-      border: none;
-      padding: 10px 24px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
+      display: inline-flex; align-items: center; gap: 7px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff; border: none; padding: 9px 22px; border-radius: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
       transition: transform 0.15s, box-shadow 0.15s;
       box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
     }
-    .recorder-idle__btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
-    }
-    .recorder-idle__btn:active { transform: translateY(0); }
+    .recorder-idle__btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35); }
 
-    /* ── Recording / Preview Panel ── */
+    /* ── Recording Panel ── */
     .recorder-panel {
       display: none;
-      border-radius: 16px;
+      border-radius: 14px;
       overflow: hidden;
-      background: #0a0a0a;
-      position: relative;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+      background: #0f0f14;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
     }
 
-    .recorder-panel__viewport {
+    .waveform-area {
       position: relative;
-      width: 100%;
-      height: 320px;
-      background: #000;
+      height: 100px;
+      background: linear-gradient(180deg, #0f0f14, #141420);
       overflow: hidden;
     }
+    canvas#waveform { width: 100%; height: 100%; }
 
-    .recorder-panel__viewport video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* Live recording indicator */
     .rec-badge {
-      display: none;
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 0.06em;
-      z-index: 5;
-      align-items: center;
-      gap: 7px;
+      display: none; position: absolute; top: 10px; left: 12px;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+      padding: 4px 10px; border-radius: 16px;
+      font-size: 11px; font-weight: 700; color: #fff;
+      letter-spacing: 0.06em; z-index: 5; align-items: center; gap: 6px;
     }
-    .rec-badge.visible {
-      display: inline-flex;
-    }
-    .rec-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #ef4444;
-      animation: pulse-dot 1s ease-in-out infinite;
-    }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
+    .rec-badge.visible { display: inline-flex; }
+    .rec-dot { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: pulse-dot 1s ease-in-out infinite; }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-    /* Timer */
     .rec-timer {
-      display: none;
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #fff;
-      font-variant-numeric: tabular-nums;
-      z-index: 5;
+      display: none; position: absolute; top: 10px; right: 12px;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+      padding: 4px 10px; border-radius: 16px;
+      font-size: 12px; font-weight: 600; color: #fff;
+      font-variant-numeric: tabular-nums; z-index: 5;
     }
     .rec-timer.visible { display: block; }
 
-    /* ── Controls bar ── */
-    .controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      padding: 16px;
-      background: linear-gradient(180deg, #111 0%, #0a0a0a 100%);
+    .waveform-idle-text {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: #475569; font-size: 13px; font-weight: 500; pointer-events: none;
     }
 
+    /* ── Live transcript area ── */
+    .transcript-area {
+      padding: 12px 16px;
+      min-height: 60px;
+      max-height: 140px;
+      overflow-y: auto;
+      background: #12121a;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    .transcript-area::-webkit-scrollbar { width: 4px; }
+    .transcript-area::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+    .transcript-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #64748b; margin-bottom: 6px;
+    }
+    .transcript-text {
+      font-size: 13px; line-height: 1.55; color: #e2e8f0;
+      white-space: pre-wrap; word-wrap: break-word;
+    }
+    .transcript-text .interim { color: #94a3b8; font-style: italic; }
+    .transcript-placeholder { font-size: 12px; color: #475569; font-style: italic; }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex; align-items: center; justify-content: center;
+      gap: 14px; padding: 14px; background: #0f0f14;
+    }
     .ctrl-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font-family: inherit;
+      display: flex; align-items: center; justify-content: center;
+      border: none; border-radius: 50%; cursor: pointer; font-family: inherit;
       transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
     }
     .ctrl-btn:hover { transform: scale(1.08); }
     .ctrl-btn:active { transform: scale(0.96); }
     .ctrl-btn svg { pointer-events: none; }
 
-    /* Record / Stop button — the big one */
     .ctrl-btn--record {
-      width: 56px;
-      height: 56px;
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2), 0 4px 16px rgba(239, 68, 68, 0.3);
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.18), 0 4px 14px rgba(239,68,68,0.3);
     }
-    .ctrl-btn--record svg { fill: #fff; width: 22px; height: 22px; }
+    .ctrl-btn--record svg { fill: #fff; width: 20px; height: 20px; }
     .ctrl-btn--record.recording {
-      background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
-      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15), 0 4px 16px rgba(0,0,0,0.3);
+      background: linear-gradient(135deg, #fff, #e2e8f0);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.12), 0 4px 14px rgba(0,0,0,0.3);
     }
     .ctrl-btn--record.recording svg { fill: #dc2626; }
 
-    /* Secondary buttons */
     .ctrl-btn--secondary {
-      width: 44px;
-      height: 44px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
     }
-    .ctrl-btn--secondary svg { fill: #fff; width: 18px; height: 18px; }
-    .ctrl-btn--secondary:hover { background: rgba(255, 255, 255, 0.15); }
+    .ctrl-btn--secondary svg { fill: #fff; width: 16px; height: 16px; }
+    .ctrl-btn--secondary:hover { background: rgba(255,255,255,0.14); }
 
-    /* Danger secondary */
     .ctrl-btn--danger {
-      width: 44px;
-      height: 44px;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.25);
+      width: 40px; height: 40px;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.2);
     }
-    .ctrl-btn--danger svg { fill: #ef4444; width: 18px; height: 18px; }
-    .ctrl-btn--danger:hover { background: rgba(239, 68, 68, 0.25); }
+    .ctrl-btn--danger svg { fill: #ef4444; width: 16px; height: 16px; }
+    .ctrl-btn--danger:hover { background: rgba(239,68,68,0.22); }
 
-    /* Accept (green) */
     .ctrl-btn--accept {
-      width: 56px;
-      height: 56px;
-      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2), 0 4px 16px rgba(34, 197, 94, 0.3);
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.18), 0 4px 14px rgba(34,197,94,0.3);
     }
-    .ctrl-btn--accept svg { fill: #fff; width: 24px; height: 24px; }
+    .ctrl-btn--accept svg { fill: #fff; width: 22px; height: 22px; }
 
     .hidden { display: none !important; }
 
-    /* ── Saved state ── */
+    /* ── Saved ── */
     .saved-panel {
-      display: none;
-      border-radius: 16px;
-      overflow: hidden;
-      background: #0a0a0a;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+      display: none; border-radius: 14px; overflow: hidden;
+      background: #0f0f14; box-shadow: 0 4px 20px rgba(0,0,0,0.12);
     }
-    .saved-panel__viewport {
-      position: relative;
+    .saved-player { padding: 14px 16px; }
+    .saved-player audio { width: 100%; height: 40px; border-radius: 8px; }
+
+    .saved-transcript {
+      padding: 0 16px 14px;
+      max-height: 160px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    .saved-transcript::-webkit-scrollbar { width: 4px; }
+    .saved-transcript::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    .saved-transcript-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #64748b; margin-bottom: 6px;
+    }
+    .saved-transcript-text {
+      font-size: 13px; line-height: 1.55; color: #cbd5e1;
+      white-space: pre-wrap; word-wrap: break-word;
+    }
+    .saved-transcript-edit {
       width: 100%;
-      height: 320px;
-      background: #000;
-    }
-    .saved-panel__viewport video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-    .saved-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      background: linear-gradient(180deg, #111 0%, #0a0a0a 100%);
-    }
-    .saved-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .saved-check {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .saved-check svg { fill: #fff; width: 14px; height: 14px; }
-    .saved-text {
-      font-size: 13px;
-      font-weight: 600;
-      color: #e2e8f0;
-    }
-    .saved-duration {
-      font-size: 12px;
-      color: #64748b;
-      font-weight: 500;
-    }
-    .saved-bar__btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #e2e8f0;
-      padding: 7px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
+      padding: 10px 12px;
+      font-size: 13px; line-height: 1.55;
+      color: #e2e8f0;
       font-family: inherit;
+      resize: vertical;
+      min-height: 60px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .saved-transcript-edit:focus { border-color: rgba(99,102,241,0.5); }
+
+    .saved-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px 14px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .saved-info { display: flex; align-items: center; gap: 10px; }
+    .saved-check {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .saved-check svg { fill: #fff; width: 13px; height: 13px; }
+    .saved-text { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+    .saved-duration { font-size: 11px; color: #64748b; font-weight: 500; }
+
+    .saved-bar__btn {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e2e8f0; padding: 6px 12px; border-radius: 8px;
+      font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
       transition: background 0.2s;
     }
-    .saved-bar__btn:hover { background: rgba(255, 255, 255, 0.15); }
-    .saved-bar__btn svg { fill: currentColor; width: 14px; height: 14px; }
+    .saved-bar__btn:hover { background: rgba(255,255,255,0.14); }
+    .saved-bar__btn svg { fill: currentColor; width: 13px; height: 13px; }
+
+    /* ── Browser support warning ── */
+    .speech-warning {
+      display: none;
+      padding: 8px 12px;
+      background: rgba(234, 179, 8, 0.1);
+      border: 1px solid rgba(234, 179, 8, 0.2);
+      border-radius: 8px;
+      font-size: 11px;
+      color: #ca8a04;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .speech-warning.visible { display: block; }
 
     /* ── Error ── */
     .error-msg {
-      display: none;
-      color: #dc2626;
-      font-size: 12px;
-      margin-top: 8px;
-      text-align: center;
+      display: none; color: #dc2626; font-size: 12px;
+      margin-top: 6px; text-align: center;
     }
     .error-msg.visible { display: block; }
 
-    /* ── View-only / Static modes ── */
+    /* ── View-only / Static ── */
     body.view-only .saved-bar__btn { display: none; }
-    body.static-mode .saved-panel__viewport { height: 200px; }
+    body.view-only .saved-transcript-edit { pointer-events: none; opacity: 0.7; }
     body.static-mode .saved-bar__btn { display: none; }
+    body.static-mode .saved-transcript-edit { pointer-events: none; opacity: 0.7; }
   </style>
 </head>
 <body>
 
-  <!-- ── Idle: start screen ── -->
+  <div class="speech-warning" id="speech-warning">
+    Live transcription requires Chrome or Edge. Audio recording will still work in other browsers.
+  </div>
+
+  <!-- Idle -->
   <div class="recorder-idle" id="idle-screen">
     <div class="recorder-idle__icon">
-      <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
     </div>
-    <div class="recorder-idle__title">Record a video</div>
-    <div class="recorder-idle__hint">Use your camera to record a video response.<br>Click below to start.</div>
+    <div class="recorder-idle__title">Record &amp; transcribe audio</div>
+    <div class="recorder-idle__hint">Your speech will be transcribed in real time</div>
     <button class="recorder-idle__btn" type="button" id="start-btn">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-      Start Camera
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+      Start Recording
     </button>
   </div>
 
   <div class="error-msg" id="error-msg"></div>
 
-  <!-- ── Recording panel ── -->
+  <!-- Recording panel -->
   <div class="recorder-panel" id="recorder-panel">
-    <div class="recorder-panel__viewport">
-      <video id="live-preview" autoplay muted playsinline></video>
-      <video id="playback-video" class="hidden" playsinline></video>
+    <div class="waveform-area">
+      <canvas id="waveform"></canvas>
       <div class="rec-badge" id="rec-badge"><span class="rec-dot"></span>REC</div>
       <div class="rec-timer" id="rec-timer">0:00</div>
+      <div class="waveform-idle-text" id="waveform-idle-text">Ready to record</div>
     </div>
+
+    <!-- Live transcript -->
+    <div class="transcript-area" id="transcript-area">
+      <div class="transcript-label">Live Transcript</div>
+      <div class="transcript-text" id="live-transcript">
+        <span class="transcript-placeholder">Start speaking…</span>
+      </div>
+    </div>
+
+    <!-- Live controls -->
     <div class="controls" id="controls-live">
-      <!-- Cancel camera -->
       <button class="ctrl-btn ctrl-btn--secondary" id="btn-cancel" title="Cancel">
         <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
-      <!-- Record / Stop -->
       <button class="ctrl-btn ctrl-btn--record" id="btn-record" title="Record">
         <svg viewBox="0 0 24 24" id="icon-record"><circle cx="12" cy="12" r="8"/></svg>
       </button>
-      <!-- Flip camera (mobile) -->
-      <button class="ctrl-btn ctrl-btn--secondary hidden" id="btn-flip" title="Flip camera">
-        <svg viewBox="0 0 24 24"><path d="M9 12c0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3-3 1.34-3 3zm11.07-2.83c-.11-.21-.12-.46-.01-.68l.78-1.55c.17-.34.03-.76-.31-.93s-.76-.03-.93.31l-.78 1.55c-.54 1.07-.23 2.37.73 3.1l-.02.03c-.96.73-1.27 2.03-.73 3.1l.78 1.55c.12.23.35.37.62.37.1 0 .21-.02.31-.07.34-.17.48-.59.31-.93l-.78-1.55c-.11-.22-.1-.47.01-.68.11-.21.33-.34.57-.34h.65c.38 0 .69-.31.69-.69s-.31-.69-.69-.69h-.65c-.24 0-.46-.13-.57-.34zM12 5c-3.87 0-7 3.13-7 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zM4.93 9.17c.11.21.12.46.01.68-.11.21-.33.34-.57.34H3.72c-.38 0-.69.31-.69.69s.31.69.69.69h.65c.24 0 .46.13.57.34.11.21.1.47-.01.68l-.78 1.55c-.17.34-.03.76.31.93.1.05.21.07.31.07.27 0 .5-.14.62-.37l.78-1.55c.54-1.07.23-2.37-.73-3.1l.02-.03c.96-.73 1.27-2.03.73-3.1l-.78-1.55c-.17-.34-.59-.48-.93-.31s-.48.59-.31.93l.78 1.55z"/></svg>
-      </button>
+      <div style="width:40px"></div>
     </div>
-    <!-- Review controls (after recording stops) -->
+
+    <!-- Review controls -->
     <div class="controls hidden" id="controls-review">
-      <!-- Discard -->
-      <button class="ctrl-btn ctrl-btn--danger" id="btn-discard" title="Discard & re-record">
+      <button class="ctrl-btn ctrl-btn--danger" id="btn-discard" title="Discard">
         <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
       </button>
-      <!-- Play / Pause -->
       <button class="ctrl-btn ctrl-btn--secondary" id="btn-play" title="Play">
         <svg viewBox="0 0 24 24" id="icon-play"><path d="M8 5v14l11-7z"/></svg>
       </button>
-      <!-- Accept -->
-      <button class="ctrl-btn ctrl-btn--accept" id="btn-accept" title="Accept recording">
+      <button class="ctrl-btn ctrl-btn--accept" id="btn-accept" title="Accept">
         <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
       </button>
     </div>
   </div>
 
-  <!-- ── Saved state ── -->
+  <!-- Saved -->
   <div class="saved-panel" id="saved-panel">
-    <div class="saved-panel__viewport">
-      <video id="saved-video" playsinline controls></video>
+    <div class="saved-player">
+      <audio id="saved-audio" controls></audio>
+    </div>
+    <div class="saved-transcript" id="saved-transcript-area">
+      <div class="saved-transcript-label">Transcript (editable)</div>
+      <textarea class="saved-transcript-edit" id="saved-transcript-edit" rows="3" placeholder="No transcript available"></textarea>
     </div>
     <div class="saved-bar">
       <div class="saved-info">
@@ -404,31 +369,48 @@
       var timerInterval = null;
       var seconds = 0;
       var finalDuration = 0;
-      var facingMode = 'user';
       var uploadServerURL = '';
       var uploadFolder = '';
+      var audioContext = null;
+      var analyser = null;
+      var animFrameId = null;
+      var reviewAudio = new Audio();
 
-      /* ── DOM refs ── */
-      var idleScreen    = document.getElementById('idle-screen');
-      var recorderPanel = document.getElementById('recorder-panel');
-      var savedPanel    = document.getElementById('saved-panel');
-      var livePreview   = document.getElementById('live-preview');
-      var playbackVideo = document.getElementById('playback-video');
-      var savedVideo    = document.getElementById('saved-video');
-      var recBadge      = document.getElementById('rec-badge');
-      var recTimer      = document.getElementById('rec-timer');
-      var controlsLive  = document.getElementById('controls-live');
-      var controlsReview= document.getElementById('controls-review');
-      var btnRecord     = document.getElementById('btn-record');
-      var btnCancel     = document.getElementById('btn-cancel');
-      var btnFlip       = document.getElementById('btn-flip');
-      var btnDiscard    = document.getElementById('btn-discard');
-      var btnPlay       = document.getElementById('btn-play');
-      var btnAccept     = document.getElementById('btn-accept');
-      var btnRerecord   = document.getElementById('btn-rerecord');
-      var iconRecord    = document.getElementById('icon-record');
+      // Speech recognition
+      var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      var recognition = null;
+      var hasSpeechSupport = !!SpeechRecognition;
+      var finalTranscript = '';
+      var interimTranscript = '';
 
-      /* ── Jotform helpers ── */
+      if (!hasSpeechSupport) {
+        document.getElementById('speech-warning').classList.add('visible');
+      }
+
+      /* ── DOM ── */
+      var idleScreen      = document.getElementById('idle-screen');
+      var recorderPanel   = document.getElementById('recorder-panel');
+      var savedPanel      = document.getElementById('saved-panel');
+      var savedAudio      = document.getElementById('saved-audio');
+      var recBadge        = document.getElementById('rec-badge');
+      var recTimer        = document.getElementById('rec-timer');
+      var controlsLive    = document.getElementById('controls-live');
+      var controlsReview  = document.getElementById('controls-review');
+      var btnRecord       = document.getElementById('btn-record');
+      var btnCancel       = document.getElementById('btn-cancel');
+      var btnDiscard      = document.getElementById('btn-discard');
+      var btnPlay         = document.getElementById('btn-play');
+      var btnAccept       = document.getElementById('btn-accept');
+      var btnRerecord     = document.getElementById('btn-rerecord');
+      var iconRecord      = document.getElementById('icon-record');
+      var canvas          = document.getElementById('waveform');
+      var ctx             = canvas.getContext('2d');
+      var idleText        = document.getElementById('waveform-idle-text');
+      var liveTranscript  = document.getElementById('live-transcript');
+      var transcriptArea  = document.getElementById('transcript-area');
+      var savedTranscriptEdit = document.getElementById('saved-transcript-edit');
+
+      /* ── Helpers ── */
       function generateFolder(formID) {
         var seed = Math.floor(Math.random() * 0x75bcd15).toString(16);
         var time = Math.floor(new Date().getTime() / 1000).toString(16);
@@ -445,18 +427,32 @@
       function resize() {
         setTimeout(function () {
           JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
-        }, 50);
+        }, 60);
+      }
+
+      function formatTime(s) {
+        var m = Math.floor(s / 60);
+        var sec = s % 60;
+        return m + ':' + (sec < 10 ? '0' : '') + sec;
       }
 
       function buildMetadataValue() {
-        if (!recordedBase64) return '';
+        var transcript = savedTranscriptEdit ? savedTranscriptEdit.value.trim() : finalTranscript.trim();
+        if (!recordedBase64 && !transcript) return '';
+
+        var payload = { transcript: transcript };
         var filename = 'recording-' + Date.now() + '.webm';
-        var isDataUri = recordedBase64.indexOf('data:') === 0;
-        if (isDataUri) {
-          return JFCustomWidgetUtils.buildMetadata('videorecording', [{ name: filename, base64: recordedBase64 }]);
-        } else {
-          return JFCustomWidgetUtils.buildMetadata('videorecording', [{ name: filename, url: JFCustomWidgetUtils.getS3UriRelativePath(recordedBase64) }]);
+
+        if (recordedBase64) {
+          var isDataUri = recordedBase64.indexOf('data:') === 0;
+          if (isDataUri) {
+            payload.audio = { name: filename, base64: recordedBase64 };
+          } else {
+            payload.audio = { name: filename, url: JFCustomWidgetUtils.getS3UriRelativePath(recordedBase64) };
+          }
         }
+
+        return JFCustomWidgetUtils.buildMetadata('audiorecording', [payload]);
       }
 
       function sendCurrentValue() {
@@ -464,12 +460,6 @@
       }
 
       /* ── Timer ── */
-      function formatTime(s) {
-        var m = Math.floor(s / 60);
-        var sec = s % 60;
-        return m + ':' + (sec < 10 ? '0' : '') + sec;
-      }
-
       function startTimer() {
         seconds = 0;
         recTimer.textContent = '0:00';
@@ -478,40 +468,150 @@
           recTimer.textContent = formatTime(seconds);
         }, 1000);
       }
-
       function stopTimer() {
         clearInterval(timerInterval);
         timerInterval = null;
         finalDuration = seconds;
       }
 
-      /* ── Camera ── */
-      function startCamera() {
-        return navigator.mediaDevices.getUserMedia({
-          video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: true
-        }).then(function (s) {
-          stream = s;
-          livePreview.srcObject = stream;
+      /* ── Waveform ── */
+      function initCanvas() {
+        var rect = canvas.parentElement.getBoundingClientRect();
+        var dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+      }
 
-          // Show flip button if multiple cameras likely (mobile)
-          if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-            btnFlip.classList.remove('hidden');
+      function drawWaveform() {
+        if (!analyser) return;
+        var bufLen = analyser.frequencyBinCount;
+        var data = new Uint8Array(bufLen);
+        analyser.getByteTimeDomainData(data);
+        var dpr = window.devicePixelRatio || 1;
+        var w = canvas.width / dpr;
+        var h = canvas.height / dpr;
+        ctx.clearRect(0, 0, w, h);
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = 'rgba(239, 68, 68, 0.5)';
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#ef4444';
+        ctx.beginPath();
+        var sliceWidth = w / bufLen;
+        var x = 0;
+        for (var i = 0; i < bufLen; i++) {
+          var v = data[i] / 128.0;
+          var y = (v * h) / 2;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+          x += sliceWidth;
+        }
+        ctx.lineTo(w, h / 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        animFrameId = requestAnimationFrame(drawWaveform);
+      }
+
+      function drawFlatLine() {
+        var dpr = window.devicePixelRatio || 1;
+        var w = canvas.width / dpr;
+        var h = canvas.height / dpr;
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = 'rgba(100, 116, 139, 0.3)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, h / 2);
+        ctx.lineTo(w, h / 2);
+        ctx.stroke();
+      }
+
+      function stopWaveform() {
+        if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+      }
+
+      /* ── Speech Recognition ── */
+      function startSpeechRecognition() {
+        if (!hasSpeechSupport) return;
+
+        finalTranscript = '';
+        interimTranscript = '';
+
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = document.documentElement.lang || 'en-US';
+
+        recognition.onresult = function (event) {
+          interimTranscript = '';
+          for (var i = event.resultIndex; i < event.results.length; i++) {
+            var t = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += t + ' ';
+            } else {
+              interimTranscript += t;
+            }
           }
+          updateLiveTranscript();
+        };
+
+        recognition.onerror = function (e) {
+          console.warn('[SpeechRecognition] error:', e.error);
+          // 'no-speech' and 'aborted' are non-fatal
+          if (e.error === 'not-allowed') {
+            showError('Speech recognition permission denied.');
+          }
+        };
+
+        recognition.onend = function () {
+          // Auto-restart if still recording (Chrome stops after ~60s of silence)
+          if (isRecording && recognition) {
+            try { recognition.start(); } catch (e) {}
+          }
+        };
+
+        try { recognition.start(); } catch (e) {}
+      }
+
+      function stopSpeechRecognition() {
+        if (recognition) {
+          try { recognition.stop(); } catch (e) {}
+          recognition = null;
+        }
+      }
+
+      function updateLiveTranscript() {
+        var html = '';
+        if (finalTranscript) html += finalTranscript;
+        if (interimTranscript) html += '<span class="interim">' + interimTranscript + '</span>';
+        if (!html) html = '<span class="transcript-placeholder">Start speaking\u2026</span>';
+        liveTranscript.innerHTML = html;
+        // Auto-scroll
+        transcriptArea.scrollTop = transcriptArea.scrollHeight;
+        resize();
+      }
+
+      /* ── Microphone ── */
+      function startMic() {
+        return navigator.mediaDevices.getUserMedia({ audio: true }).then(function (s) {
+          stream = s;
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          var source = audioContext.createMediaStreamSource(stream);
+          analyser = audioContext.createAnalyser();
+          analyser.fftSize = 2048;
+          source.connect(analyser);
         });
       }
 
-      function stopCamera() {
-        if (stream) {
-          stream.getTracks().forEach(function (t) { t.stop(); });
-          stream = null;
-        }
-        livePreview.srcObject = null;
+      function stopMic() {
+        if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+        stopWaveform();
+        if (audioContext) { audioContext.close().catch(function(){}); audioContext = null; analyser = null; }
       }
 
-      /* ── Show / hide panels ── */
+      /* ── Panels ── */
       function showIdle() {
-        stopCamera();
+        stopMic();
+        stopSpeechRecognition();
         idleScreen.style.display = 'block';
         recorderPanel.style.display = 'none';
         savedPanel.style.display = 'none';
@@ -524,27 +624,32 @@
         savedPanel.style.display = 'none';
         controlsLive.classList.remove('hidden');
         controlsReview.classList.add('hidden');
-        livePreview.classList.remove('hidden');
-        playbackVideo.classList.add('hidden');
         recBadge.classList.remove('visible');
         recTimer.classList.remove('visible');
-
-        // Reset record button look
+        idleText.style.display = 'flex';
         btnRecord.classList.remove('recording');
+        btnCancel.classList.remove('hidden');
         iconRecord.innerHTML = '<circle cx="12" cy="12" r="8"/>';
+        liveTranscript.innerHTML = '<span class="transcript-placeholder">Start speaking\u2026</span>';
+        initCanvas();
+        drawFlatLine();
         resize();
       }
 
       function showReview() {
         controlsLive.classList.add('hidden');
         controlsReview.classList.remove('hidden');
-        livePreview.classList.add('hidden');
-        playbackVideo.classList.remove('hidden');
         recBadge.classList.remove('visible');
         recTimer.classList.remove('visible');
+        idleText.style.display = 'none';
+        stopWaveform();
+        drawFlatLine();
+        reviewAudio.src = URL.createObjectURL(recordedBlob);
+        reviewAudio.currentTime = 0;
 
-        playbackVideo.src = URL.createObjectURL(recordedBlob);
-        playbackVideo.currentTime = 0;
+        // Show final transcript
+        var display = finalTranscript.trim() || '(no speech detected)';
+        liveTranscript.innerHTML = display;
         resize();
       }
 
@@ -552,19 +657,18 @@
         idleScreen.style.display = 'none';
         recorderPanel.style.display = 'none';
         savedPanel.style.display = 'block';
-        savedVideo.src = URL.createObjectURL(recordedBlob);
+        savedAudio.src = URL.createObjectURL(recordedBlob);
         document.getElementById('saved-duration').textContent = formatTime(finalDuration);
+        savedTranscriptEdit.value = finalTranscript.trim();
         resize();
       }
 
       /* ── Recording ── */
       function startRecording() {
         chunks = [];
-        var mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-          ? 'video/webm;codecs=vp9,opus'
-          : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
-            ? 'video/webm;codecs=vp8,opus'
-            : 'video/webm';
+        var mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
 
         mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
         mediaRecorder.ondataavailable = function (e) {
@@ -573,28 +677,28 @@
         mediaRecorder.onstop = function () {
           recordedBlob = new Blob(chunks, { type: mimeType });
           stopTimer();
-          stopCamera();
+          stopSpeechRecognition();
+          stopMic();
           showReview();
         };
 
         mediaRecorder.start(100);
         isRecording = true;
-
+        idleText.style.display = 'none';
         recBadge.classList.add('visible');
         recTimer.classList.add('visible');
         startTimer();
+        drawWaveform();
+        startSpeechRecognition();
 
         btnRecord.classList.add('recording');
         iconRecord.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2"/>';
         btnRecord.title = 'Stop';
         btnCancel.classList.add('hidden');
-        btnFlip.classList.add('hidden');
       }
 
       function stopRecording() {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          mediaRecorder.stop();
-        }
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
         isRecording = false;
       }
 
@@ -604,165 +708,148 @@
         reader.readAsDataURL(blob);
       }
 
-      /* ── Upload to Jotform ── */
+      /* ── Upload ── */
       function uploadToJotform(blob, callback) {
         var origin = uploadServerURL.replace('/upload', '');
         var url = origin + '/server.php?action=handleWidgetFiles&type=save';
-        var formData = new FormData();
-        formData.append('file', blob, 'recording-' + Date.now() + '.webm');
-
-        fetch(url, { method: 'POST', body: formData })
-          .then(function (res) { return res.json(); })
-          .then(function (response) {
-            if (response && response.success && response.message) {
-              callback(response.message);
-            } else {
-              callback(null);
-            }
-          })
+        var fd = new FormData();
+        fd.append('file', blob, 'recording-' + Date.now() + '.webm');
+        fetch(url, { method: 'POST', body: fd })
+          .then(function (r) { return r.json(); })
+          .then(function (r) { callback(r && r.success && r.message ? r.message : null); })
           .catch(function () { callback(null); });
       }
 
-      /* ── Buttons ── */
+      /* ── Button handlers ── */
 
-      // Start camera from idle screen
       document.getElementById('start-btn').addEventListener('click', function () {
-        startCamera().then(function () {
-          showRecorder();
-        }).catch(function (err) {
-          showError('Camera access denied. Please allow camera & microphone permissions.');
-          console.error('[VideoRecorder]', err);
+        startMic().then(showRecorder).catch(function (err) {
+          showError('Microphone access denied. Please allow microphone permissions.');
+          console.error('[AudioRecorder]', err);
         });
       });
 
-      // Record / Stop toggle
       btnRecord.addEventListener('click', function () {
-        if (!isRecording) {
-          startRecording();
-        } else {
-          stopRecording();
-        }
+        if (!isRecording) startRecording();
+        else stopRecording();
       });
 
-      // Cancel (back to idle)
-      btnCancel.addEventListener('click', function () {
-        showIdle();
-      });
+      btnCancel.addEventListener('click', showIdle);
 
-      // Flip camera
-      btnFlip.addEventListener('click', function () {
-        facingMode = facingMode === 'user' ? 'environment' : 'user';
-        stopCamera();
-        startCamera().catch(function () {
-          facingMode = facingMode === 'user' ? 'environment' : 'user';
-          startCamera();
-        });
-      });
-
-      // Discard recording
       btnDiscard.addEventListener('click', function () {
         recordedBlob = null;
         recordedBase64 = null;
-        playbackVideo.src = '';
-        startCamera().then(function () {
-          showRecorder();
-        });
+        finalTranscript = '';
+        interimTranscript = '';
+        reviewAudio.src = '';
+        startMic().then(showRecorder);
       });
 
-      // Play / Pause review
       btnPlay.addEventListener('click', function () {
-        if (playbackVideo.paused) {
-          playbackVideo.play();
+        if (reviewAudio.paused) {
+          reviewAudio.play();
           document.getElementById('icon-play').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
           btnPlay.title = 'Pause';
         } else {
-          playbackVideo.pause();
+          reviewAudio.pause();
           document.getElementById('icon-play').innerHTML = '<path d="M8 5v14l11-7z"/>';
           btnPlay.title = 'Play';
         }
       });
 
-      playbackVideo.addEventListener('ended', function () {
+      reviewAudio.addEventListener('ended', function () {
         document.getElementById('icon-play').innerHTML = '<path d="M8 5v14l11-7z"/>';
         btnPlay.title = 'Play';
       });
 
-      // Accept recording
       btnAccept.addEventListener('click', function () {
         if (uploadServerURL && uploadFolder) {
           uploadToJotform(recordedBlob, function (url) {
-            if (url) {
-              recordedBase64 = url;
-            } else {
-              blobToBase64(recordedBlob, function (b64) { recordedBase64 = b64; });
+            recordedBase64 = url || null;
+            if (!recordedBase64) {
+              blobToBase64(recordedBlob, function (b64) {
+                recordedBase64 = b64;
+                showSaved(); sendCurrentValue();
+              });
+              return;
             }
-            showSaved();
-            sendCurrentValue();
+            showSaved(); sendCurrentValue();
           });
         } else {
           blobToBase64(recordedBlob, function (b64) {
             recordedBase64 = b64;
-            showSaved();
-            sendCurrentValue();
+            showSaved(); sendCurrentValue();
           });
         }
       });
 
-      // Re-record
+      // Update value when user edits transcript
+      savedTranscriptEdit.addEventListener('input', function () {
+        sendCurrentValue();
+      });
+
       btnRerecord.addEventListener('click', function () {
         recordedBlob = null;
         recordedBase64 = null;
-        savedVideo.src = '';
+        finalTranscript = '';
+        interimTranscript = '';
+        savedAudio.src = '';
         sendCurrentValue();
-        startCamera().then(function () {
-          showRecorder();
-        }).catch(function () {
-          showIdle();
-        });
+        startMic().then(showRecorder).catch(showIdle);
       });
 
-      /* ── Jotform widget lifecycle ── */
+      /* ── Jotform lifecycle ── */
 
       JFCustomWidget.subscribe('ready', function (data) {
         isRequired = JFCustomWidget.isWidgetRequired();
         uploadServerURL = data.uploadServerURL || '';
-        if (uploadServerURL) {
-          uploadFolder = generateFolder(data.formID);
-        }
+        if (uploadServerURL) uploadFolder = generateFolder(data.formID);
 
         var isStatic = JFCustomWidget.isWidgetStatic();
         var isEditMode = data.isEditMode || (data.value && data.value.length > 0);
 
-        if (isStatic) {
-          document.body.classList.add('static-mode', 'view-only');
-        } else if (isEditMode) {
-          document.body.classList.add('view-only');
-        }
+        if (isStatic) document.body.classList.add('static-mode', 'view-only');
+        else if (isEditMode) document.body.classList.add('view-only');
 
         // Restore saved value
         if (data.value && JFCustomWidgetUtils.hasMetadata(data.value)) {
           var extracted = JFCustomWidgetUtils.extractMetadata(data.value);
           if (extracted && extracted.length > 0) {
             var item = extracted[0];
-            var src = item.base64 || '';
-            if (!src && item.url) {
-              src = JFCustomWidgetUtils.fixS3UriOrigin(item.url);
-            }
-            if (src) {
-              recordedBase64 = src;
-              // Create a blob-like URL for playback
-              savedVideo.src = src;
-              finalDuration = 0; // Unknown for restored
-              document.getElementById('saved-duration').textContent = 'Saved recording';
 
+            // Restore transcript
+            if (item.transcript) {
+              finalTranscript = item.transcript;
+              savedTranscriptEdit.value = item.transcript;
+            }
+
+            // Restore audio
+            if (item.audio) {
+              var src = item.audio.base64 || '';
+              if (!src && item.audio.url) src = JFCustomWidgetUtils.fixS3UriOrigin(item.audio.url);
+              if (src) {
+                recordedBase64 = src;
+                savedAudio.src = src;
+              }
+            } else {
+              // Legacy: flat structure
+              var src2 = item.base64 || '';
+              if (!src2 && item.url) src2 = JFCustomWidgetUtils.fixS3UriOrigin(item.url);
+              if (src2) {
+                recordedBase64 = src2;
+                savedAudio.src = src2;
+              }
+            }
+
+            if (recordedBase64 || finalTranscript) {
+              document.getElementById('saved-duration').textContent = 'Saved recording';
               idleScreen.style.display = 'none';
               savedPanel.style.display = 'block';
             }
           }
         }
 
-        // Static mode with no value — show nothing
-        if (isStatic && !recordedBase64) {
+        if (isStatic && !recordedBase64 && !finalTranscript) {
           idleScreen.style.display = 'none';
           resize();
           return;
@@ -770,21 +857,19 @@
 
         JFCustomWidget.subscribe('submit', function () {
           var value = buildMetadataValue();
-          var valid = !isRequired || !!recordedBase64;
-
-          if (!valid) {
-            JFCustomWidget.showWidgetError(JFCustomWidget.texts.required || 'This field is required.');
-          } else {
-            JFCustomWidget.hideWidgetError();
-          }
-
+          var valid = !isRequired || !!recordedBase64 || !!finalTranscript.trim();
+          if (!valid) JFCustomWidget.showWidgetError(JFCustomWidget.texts.required || 'This field is required.');
+          else JFCustomWidget.hideWidgetError();
           JFCustomWidget.sendSubmit({ valid: valid, value: value });
         });
 
         JFCustomWidget.subscribe('clear', function () {
           recordedBlob = null;
           recordedBase64 = null;
-          savedVideo.src = '';
+          finalTranscript = '';
+          interimTranscript = '';
+          savedAudio.src = '';
+          savedTranscriptEdit.value = '';
           document.body.classList.remove('view-only');
           showIdle();
           sendCurrentValue();
@@ -792,7 +877,6 @@
 
         resize();
       });
-
     })();
   </script>
 </body>
