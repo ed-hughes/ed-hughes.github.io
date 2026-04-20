@@ -121,9 +121,10 @@
       margin-left: 3px;
       vertical-align: middle;
     }
-    .badge.async { background: #e0eaff; color: #0044aa; }
-    .badge.sync { background: #e0ffee; color: #116622; }
+    .badge.cb { background: #e0eaff; color: #0044aa; }
     .badge.dep { background: #fff0cc; color: #886600; }
+    .cb-result { display: none; margin-left: 64px; }
+    .cb-result.visible { display: block; }
     #ready-data {
       background: #f8f8f8;
       border: 1px solid #ddd;
@@ -219,8 +220,10 @@
     </div>
     <div class="row">
       <button onclick="JFCustomWidget.detectFrameMovement(function(d){log('detectFrameMovement: '+JSON.stringify(d),'info','r-frame')}); log('detectFrameMovement() — listening...','ok','r-frame')">detectFrameMovement()</button>
-      <button onclick="JFCustomWidget.getFrameData(function(d){log('getFrameData: '+JSON.stringify(d),'ok','r-frame')})">getFrameData() <span class="badge async">async</span></button>
+      <label><input type="checkbox" id="cb-framedata" checked> callback</label>
+      <button onclick="doGetFrameData()">getFrameData() <span class="badge cb">callback</span></button>
     </div>
+    <div class="result cb-result" id="r-framedata-cb">—</div>
     <div class="result" id="r-frame"></div>
   </div>
 </div>
@@ -230,13 +233,13 @@
   <div class="section-header" onclick="toggleSection(this)">Widget Data &amp; Settings <span class="arrow">▾</span></div>
   <div class="section-body">
     <div class="row">
-      <button onclick="log('getWidgetData: '+JSON.stringify(JFCustomWidget.getWidgetData()),'ok','r-wdata')">getWidgetData() <span class="badge sync">sync</span></button>
-      <button onclick="log('getWidgetSettings: '+JSON.stringify(JFCustomWidget.getWidgetSettings()),'ok','r-wdata')">getWidgetSettings() <span class="badge sync">sync</span></button>
+      <button onclick="log('getWidgetData: '+JSON.stringify(JFCustomWidget.getWidgetData()),'ok','r-wdata')">getWidgetData()</button>
+      <button onclick="log('getWidgetSettings: '+JSON.stringify(JFCustomWidget.getWidgetSettings()),'ok','r-wdata')">getWidgetSettings()</button>
     </div>
     <div class="row">
       <label>setting</label>
       <input type="text" id="setting-name" placeholder="setting name">
-      <button onclick="doGetWidgetSetting()">getWidgetSetting() <span class="badge sync">sync</span></button>
+      <button onclick="doGetWidgetSetting()">getWidgetSetting()</button>
     </div>
     <div class="result" id="r-wdata"></div>
   </div>
@@ -247,14 +250,18 @@
   <div class="section-header" onclick="toggleSection(this)">Context &amp; Origin <span class="arrow">▾</span></div>
   <div class="section-body">
     <div class="row">
-      <button onclick="log('getParentOrigin: '+JFCustomWidget.getParentOrigin(),'ok','r-ctx')">getParentOrigin() <span class="badge sync">sync</span></button>
-      <button onclick="log('getEnterprise: '+JFCustomWidget.getEnterprise(),'ok','r-ctx')">getEnterprise() <span class="badge sync">sync</span></button>
-      <button onclick="JFCustomWidget.getFormTrackerID(function(d){log('getFormTrackerID: '+JSON.stringify(d),'ok','r-ctx')})">getFormTrackerID() <span class="badge async">async</span></button>
+      <button onclick="log('getParentOrigin: '+JFCustomWidget.getParentOrigin(),'ok','r-ctx')">getParentOrigin()</button>
+      <button onclick="log('getEnterprise: '+JFCustomWidget.getEnterprise(),'ok','r-ctx')">getEnterprise()</button>
     </div>
+    <div class="row">
+      <label><input type="checkbox" id="cb-trackerid" checked> callback</label>
+      <button onclick="doGetFormTrackerID()">getFormTrackerID() <span class="badge cb">callback</span></button>
+    </div>
+    <div class="result cb-result" id="r-trackerid-cb">—</div>
     <div class="row">
       <label>param</label>
       <input type="text" id="qs-param" placeholder="e.g. qid">
-      <button onclick="doGetWidgetSettingByKey()">getWidgetSetting(key) <span class="badge sync">sync</span></button>
+      <button onclick="doGetWidgetSettingByKey()">getWidgetSetting(key)</button>
     </div>
     <div class="result" id="r-ctx"></div>
   </div>
@@ -267,13 +274,17 @@
     <div class="row">
       <label>field ids</label>
       <input type="text" id="field-ids" placeholder="e.g. [3,5,12]">
-      <button onclick="doGetFieldById()">getFieldsValueById() <span class="badge async">async</span></button>
+      <label><input type="checkbox" id="cb-getbyid" checked> callback</label>
+      <button onclick="doGetFieldById()">getFieldsValueById() <span class="badge cb">callback</span></button>
     </div>
+    <div class="result cb-result" id="r-getbyid">—</div>
     <div class="row">
       <label>field names</label>
       <input type="text" id="field-names" placeholder='e.g. ["q3_name","q5_email"]'>
-      <button onclick="doGetFieldByName()">getFieldsValueByName() <span class="badge async">async</span></button>
+      <label><input type="checkbox" id="cb-getbyname" checked> callback</label>
+      <button onclick="doGetFieldByName()">getFieldsValueByName() <span class="badge cb">callback</span></button>
     </div>
+    <div class="result cb-result" id="r-getbyname">—</div>
     <div class="row">
       <label>set by id</label>
       <textarea id="set-fields-json">[{"id":"3","value":"hello"},{"id":"5","value":"world"}]</textarea>
@@ -288,17 +299,21 @@
       <label>input name</label>
       <input type="text" id="store-field-name" placeholder="e.g. first_10, input_11_city">
       <input type="text" id="store-field-val" placeholder="value">
-      <button onclick="doStoreToField()">storeToField()</button>
+      <label><input type="checkbox" id="cb-store" checked> callback</label>
+      <button onclick="doStoreToField()">storeToField() <span class="badge cb">optional callback</span></button>
     </div>
+    <div class="result cb-result" id="r-store-cb">—</div>
     <div class="row">
       <label>listen field</label>
       <input type="number" id="listen-field-id" placeholder="qid" style="width:60px;flex:none">
       <input type="text" id="listen-field-event" placeholder="event e.g. change" style="width:80px;flex:none">
       <button onclick="doListenFromField()">listenFromField()</button>
     </div>
+    <div class="result cb-result visible" id="r-listen-field">—</div>
     <div class="row">
-      <button onclick="doListenFromWidget()">listenFromWidget() — listen for values sent to this widget</button>
+      <button onclick="doListenFromWidget()">listenFromWidget()</button>
     </div>
+    <div class="result cb-result visible" id="r-listen-widget">—</div>
     <div class="row">
       <label>clear fields</label>
       <input type="text" id="clear-fields-json" placeholder="e.g. [3,5,12]">
@@ -486,6 +501,20 @@
       log('setFrameStyles(' + JSON.stringify(parsed) + ')', 'ok', 'r-frame');
     };
 
+    window.doGetFrameData = function() {
+      var useCallback = document.getElementById('cb-framedata').checked;
+      if (useCallback) {
+        JFCustomWidget.getFrameData(function(d) {
+          showCbResult('r-framedata-cb', JSON.stringify(d));
+          log('getFrameData callback: ' + JSON.stringify(d), 'info');
+        });
+        log('getFrameData() — waiting for callback...', 'ok', 'r-frame');
+      } else {
+        JFCustomWidget.getFrameData(null);
+        log('getFrameData() called without callback', 'ok', 'r-frame');
+      }
+    };
+
     // ---- Settings ----
     window.doGetWidgetSetting = function() {
       var name = document.getElementById('setting-name').value;
@@ -502,21 +531,58 @@
       log('getWidgetSetting("' + param + '"): ' + val, 'ok', 'r-ctx');
     };
 
+    window.doGetFormTrackerID = function() {
+      var useCallback = document.getElementById('cb-trackerid').checked;
+      if (useCallback) {
+        JFCustomWidget.getFormTrackerID(function(d) {
+          showCbResult('r-trackerid-cb', JSON.stringify(d));
+          log('getFormTrackerID callback: ' + JSON.stringify(d), 'info');
+        });
+        log('getFormTrackerID() — waiting for callback...', 'ok', 'r-ctx');
+      } else {
+        JFCustomWidget.getFormTrackerID(null);
+        log('getFormTrackerID() called without callback', 'ok', 'r-ctx');
+      }
+    };
+
     // ---- Field Interaction ----
+    function showCbResult(id, text) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'result cb-result visible ok';
+    }
+
     window.doGetFieldById = function() {
       var parsed = tryJSON(document.getElementById('field-ids').value);
       if (!parsed) { log('Enter valid JSON array e.g. [3,5]', 'err', 'r-field'); return; }
-      JFCustomWidget.getFieldsValueById(parsed, function(d) {
-        log('getFieldsValueById(' + JSON.stringify(parsed) + '): ' + JSON.stringify(d), 'ok', 'r-field');
-      });
+      var useCallback = document.getElementById('cb-getbyid').checked;
+      if (useCallback) {
+        JFCustomWidget.getFieldsValueById(parsed, function(d) {
+          showCbResult('r-getbyid', JSON.stringify(d));
+          log('getFieldsValueById callback: ' + JSON.stringify(d), 'info');
+        });
+        log('getFieldsValueById(' + JSON.stringify(parsed) + ') — waiting for callback...', 'ok', 'r-field');
+      } else {
+        JFCustomWidget.getFieldsValueById(parsed, null);
+        log('getFieldsValueById(' + JSON.stringify(parsed) + ') called without callback', 'ok', 'r-field');
+      }
     };
 
     window.doGetFieldByName = function() {
       var parsed = tryJSON(document.getElementById('field-names').value);
       if (!parsed) { log('Enter valid JSON array e.g. ["q3_name"]', 'err', 'r-field'); return; }
-      JFCustomWidget.getFieldsValueByName(parsed, function(d) {
-        log('getFieldsValueByName(' + JSON.stringify(parsed) + '): ' + JSON.stringify(d), 'ok', 'r-field');
-      });
+      var useCallback = document.getElementById('cb-getbyname').checked;
+      if (useCallback) {
+        JFCustomWidget.getFieldsValueByName(parsed, function(d) {
+          showCbResult('r-getbyname', JSON.stringify(d));
+          log('getFieldsValueByName callback: ' + JSON.stringify(d), 'info');
+        });
+        log('getFieldsValueByName(' + JSON.stringify(parsed) + ') — waiting for callback...', 'ok', 'r-field');
+      } else {
+        JFCustomWidget.getFieldsValueByName(parsed, null);
+        log('getFieldsValueByName(' + JSON.stringify(parsed) + ') called without callback', 'ok', 'r-field');
+      }
     };
 
     window.doSetFieldsById = function() {
@@ -537,9 +603,15 @@
       var name = document.getElementById('store-field-name').value;
       var val = document.getElementById('store-field-val').value;
       if (!name) { log('Enter an input name', 'err', 'r-field'); return; }
-      JFCustomWidget.storeToField(name, val, function(stored) {
-        log('storeToField callback: ' + stored, 'info', 'r-field');
-      });
+      var useCallback = document.getElementById('cb-store').checked;
+      if (useCallback) {
+        JFCustomWidget.storeToField(name, val, function(stored) {
+          showCbResult('r-store-cb', JSON.stringify(stored));
+          log('storeToField callback: ' + JSON.stringify(stored), 'info');
+        });
+      } else {
+        JFCustomWidget.storeToField(name, val);
+      }
       log('storeToField("' + name + '", "' + val + '")', 'ok', 'r-field');
     };
 
@@ -548,14 +620,16 @@
       var event = document.getElementById('listen-field-event').value || 'change';
       if (!id) { log('Enter a field qid', 'err', 'r-field'); return; }
       JFCustomWidget.listenFromField(id, event, function(value) {
-        log('listenFromField(' + id + ', "' + event + '") — value: ' + JSON.stringify(value), 'info', 'r-field');
+        showCbResult('r-listen-field', JSON.stringify(value));
+        log('listenFromField(' + id + ', "' + event + '") — value: ' + JSON.stringify(value), 'info');
       });
       log('listenFromField(' + id + ', "' + event + '") — now listening...', 'ok', 'r-field');
     };
 
     window.doListenFromWidget = function() {
       JFCustomWidget.listenFromWidget(null, function(value) {
-        log('listenFromWidget — received: ' + JSON.stringify(value), 'info', 'r-field');
+        showCbResult('r-listen-widget', JSON.stringify(value));
+        log('listenFromWidget — received: ' + JSON.stringify(value), 'info');
       });
       log('listenFromWidget() — listening for values sent to this widget (qid:' + JFCustomWidget.questionID + ')', 'ok', 'r-field');
     };
