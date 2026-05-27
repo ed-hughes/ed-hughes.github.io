@@ -263,12 +263,44 @@
         body.view-only .btn-delete { display: none; }
         body.view-only .thumbnails { background: transparent; }
 
-        /* Static/table mode — single image, compact */
-        body.static-mode .carousel-container { height: 160px; }
+        /* Auto-height carousel only when NOT in static mode */
+        body:not(.static-mode) #carousel { height: auto; }
+
+        /* Static/table mode — single image, compact, strictly contained in cell */
+        body.static-mode .widget-container {
+            max-height: 160px;
+            overflow: hidden;
+        }
+
+        body.static-mode .carousel-container {
+            height: 160px !important;
+            width: 100%;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        body.static-mode .carousel-track,
+        body.static-mode .carousel-slide {
+            height: 160px;
+        }
+
+        body.static-mode .carousel-slide img {
+            max-height: 160px;
+            max-width: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            cursor: pointer;
+        }
+
+        body.static-mode .carousel-slide img:hover {
+            transform: none;
+        }
+
         body.static-mode .thumbnails { display: none; }
         body.static-mode .btn-delete { display: none; }
-
-        #carousel { height: auto !important;  }
+        body.static-mode .nav-btn { display: none; }
+        body.static-mode .slide-info { display: none; }
 
         /* Hide navigation and info in static mode */
         #drop-zone { display: none; }
@@ -280,8 +312,8 @@
             z-index: 9999;
             top: 0;
             left: 0;
-            /* width: 100vw;
-            height: 100vh; */
+            width: 100vw;
+            height: 100vh;
             background: #ffffff;
             align-items: center;
             justify-content: center;
@@ -451,6 +483,13 @@
 
         // Request frame resize
         function requestResize() {
+            // In static mode (Tables / submission view), keep the iframe
+            // pinned to the compact cell height so the image can't push
+            // the frame larger than the cell.
+            if (document.body.classList.contains('static-mode')) {
+                JFCustomWidget.requestFrameResize({ height: 160 });
+                return;
+            }
             setTimeout(function () {
                 JFCustomWidget.requestFrameResize({
                     height: document.body.scrollHeight + 20
@@ -466,11 +505,13 @@
 
             // Apply container settings
             container.style.padding = widgetSettings.containerPadding + 'px';
-            // container.style.overflow = widgetSettings.containerOverflow;
+            container.style.overflow = widgetSettings.containerOverflow;
 
-            // Apply carousel settings
-            carousel.style.height = widgetSettings.carouselHeight + 'px';
-            carousel.style.width = widgetSettings.carouselWidth;
+            // Skip carousel sizing in static mode — CSS handles it
+            if (!document.body.classList.contains('static-mode')) {
+                carousel.style.height = widgetSettings.carouselHeight + 'px';
+                carousel.style.width = widgetSettings.carouselWidth;
+            }
 
             // Apply thumbnail settings
             const thumbs = document.querySelectorAll('.thumbnail');
@@ -496,7 +537,7 @@
             '<title>Image Viewer</title>' +
             '<style>' +
             '*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }' +
-            'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #0f0d2e; color: #fff; overflow: hidden; display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; }' +
+            'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #0f0d2e; color: #fff; overflow: hidden; height: 100vh; display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; }' +
             '.viewer-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: linear-gradient(135deg, #1D174F 0%, #004B88 100%); flex-shrink: 0; }' +
             '.viewer-counter { font-size: 14px; font-weight: 600; color: #CCEDFB; }' +
             '.viewer-filename { font-size: 12px; color: rgba(204, 237, 251, 0.6); margin-left: 12px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }' +
@@ -878,14 +919,16 @@
                 if (settings.thumbnailGap) widgetSettings.thumbnailGap = parseInt(settings.thumbnailGap);
             }
 
-            // Apply widget settings
-            applyWidgetSettings();
-
+            // IMPORTANT: set static-mode class BEFORE applyWidgetSettings so
+            // applyWidgetSettings can skip overriding the carousel height.
             if (isStatic) {
                 document.body.classList.add('static-mode', 'view-only');
             } else if (isEditMode) {
                 document.body.classList.add('view-only');
             }
+
+            // Apply widget settings
+            applyWidgetSettings();
 
             // Hide upload element when editLink is present
             var editLink = data.editLink || false;
