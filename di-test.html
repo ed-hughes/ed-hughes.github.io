@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>mycar Image Carousel - Design 1</title>
+    <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: transparent;
+        }
+
+        .widget-container {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Design 1: Modern Blue with mycar Curves */
+        /* Upload Area Styles */
+        .upload-area {
+            border: 2px solid #00A6E9;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #CCEDFB 0%, #f9f9f9 100%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 0 20px 0;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        /* Curved design element background */
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 166, 233, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #1D174F;
+            background: linear-gradient(135deg, #00A6E9 0%, #CCEDFB 100%);
+            box-shadow: 0 8px 24px rgba(0, 166, 233, 0.2);
+        }
+
+        .upload-area-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .upload-text {
+            color: #1D174F;
+            font-size: 18px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .upload-hint {
+            color: #004B88;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .btn-browse {
+            background: linear-gradient(135deg, #00A6E9 0%, #004B88 100%);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 166, 233, 0.3);
+        }
+
+        .btn-browse:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 166, 233, 0.4);
+        }
+
+        /* Carousel Styles */
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            background: linear-gradient(135deg, #f9f9f9 0%, #CCEDFB 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+            margin: 0 0 15px 0;
+            border: 2px solid #00A6E9;
+        }
+
+        .carousel-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.4s ease-in-out;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .carousel-slide img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .carousel-slide img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Navigation Arrows */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 166, 233, 0.8);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background-color: #1D174F;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-prev {
+            left: 15px;
+        }
+
+        .nav-next {
+            right: 15px;
+        }
+
+        /* Image Counter & Delete */
+        .slide-info {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(29, 23, 79, 0.8);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .btn-delete {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: #F39524;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(243, 149, 36, 0.3);
+        }
+
+        .btn-delete:hover {
+            background-color: #E67E0F;
+            transform: scale(1.15);
+        }
+
+        /* Thumbnail Strip */
+        .thumbnails {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0 0 0;
+            overflow-x: auto;
+            padding: 0 0 8px 0;
+            width: 100%;
+        }
+
+        .thumbnail {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            cursor: pointer;
+            opacity: 0.6;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .thumbnail:hover {
+            opacity: 0.8;
+            transform: scale(1.08);
+        }
+
+        .thumbnail.active {
+            opacity: 1;
+            border-color: #00A6E9;
+            box-shadow: 0 4px 12px rgba(0, 166, 233, 0.4);
+        }
+
+        /* Error message */
+        .error-msg {
+            display: none;
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: 6px;
+            text-align: center;
+        }
+        .error-msg.visible { display: block; }
+
+        /* View-only mode — no delete, no add, no thumbnails strip actions */
+        body.view-only .btn-delete { display: none; }
+        body.view-only .thumbnails { background: transparent; }
+
+        /* Static/table mode — single image, compact */
+        body.static-mode .carousel-container { height: 160px; }
+        body.static-mode .thumbnails { display: none; }
+        body.static-mode .btn-delete { display: none; }
+
+        #carousel { height: auto !important;  }
+
+        /* Hide navigation and info in static mode */
+        #drop-zone { display: none; }
+
+        /* Spinner styles */
+        #spinner-overlay {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #ffffff;
+            align-items: center;
+            justify-content: center;
+        }
+        #spinner-overlay.active { display: flex !important; }
+        #spinner-overlay.fade {
+            animation: fade 1.5s ease-in-out infinite;
+        }
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #00A6E9;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: auto;
+        }
+
+        body:not(.view-only) #spinner-overlay {
+            display: none!important;
+        }
+
+        @keyframes fade {
+            0% { opacity: 1; }
+            50% { opacity: 0.5;}
+            100% { opacity: 0; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .carousel-container {
+                height: 200px;
+            }
+
+            .thumbnail {
+                width: 45px;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="widget-container">
+        <!-- Upload Area -->
+        <div class="upload-area" id="drop-zone">
+            <div class="upload-area-content">
+                <div class="upload-icon">📸</div>
+                <div class="upload-text">Drag & drop images here</div>
+                <div class="upload-hint">PNG, JPG, GIF, WebP supported</div>
+                <button class="btn-browse" onclick="document.getElementById('file-input').click()">Browse Files</button>
+                <input type="file" id="file-input" multiple accept="image/*">
+            </div>
+        </div>
+
+        <div class="error-msg" id="error-msg"></div>
+
+        <!-- Spinner Overlay -->
+        <div id="spinner-overlay" class="active">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Carousel Area -->
+        <div class="carousel-container" id="carousel">
+            <button class="nav-btn nav-prev" id="btn-prev" onclick="moveSlide(-1)">&#10094;</button>
+            <button class="nav-btn nav-next" id="btn-next" onclick="moveSlide(1)">&#10095;</button>
+            
+            <div class="carousel-track" id="track"></div>
+        </div>
+
+        <!-- Thumbnails -->
+        <div class="thumbnails" id="thumbnails"></div>
+    </div>
+
+    <script>
+        let uploadedImages = [];
+        let currentSlide = 0;
+        let isRequired = false;
+        let modalCurrentIndex = 0;
+        let uploadServerURL = '';
+        let uploadFolder = '';
+
+        // Widget Settings Configuration
+        let widgetSettings = {
+            carouselHeight: 300,
+            carouselWidth: '100%',
+            containerPadding: 10,
+            // containerOverflow: 'visible',
+            thumbnailSize: 60,
+            thumbnailGap: 10
+        };
+
+        function hideSpinner() {
+            document.getElementById('spinner-overlay').classList.remove('active');
+            document.getElementById('spinner-overlay').classList.add('fade');
+        }
+
+        // Generate a folder ID matching Jotform's format: formID_hexTimestamp+seed
+        function generateFolder(formID) {
+            var seed = Math.floor(Math.random() * 0x75bcd15).toString(16);
+            var time = Math.floor(new Date().getTime() / 1000).toString(16);
+            return formID + '_' + time + seed;
+        }
+
+        // Build Jotform metadata structure
+        function buildMetadataValue() {
+            if (uploadedImages.length === 0) return '';
+            return JFCustomWidgetUtils.buildMetadata('imagelinks', uploadedImages.map(function (img) {
+                var isDataUri = img.base64 && img.base64.indexOf('data:') === 0;
+                if (isDataUri) {
+                    return { name: img.name, base64: img.base64 };
+                } else {
+                    return { name: img.name, url: JFCustomWidgetUtils.getS3UriRelativePath(img.base64) };
+                }
+            }));
+        }
+
+        // Upload file to Jotform server
+        function uploadToJotform(file, callback) {
+            var origin = uploadServerURL.replace('/upload', '');
+            var url = origin + '/server.php?action=handleWidgetFiles&type=save';
+
+            var formData = new FormData();
+            formData.append('file', file, file.name);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(function (res) { return res.json(); })
+            .then(function (response) {
+                console.log('[uploadToJotform] response:', JSON.stringify(response));
+                if (response && response.success && response.message) {
+                    callback(response.message);
+                } else {
+                    callback(null);
+                }
+            })
+            .catch(function () { callback(null); });
+        }
+
+        // Read file as base64
+        function readAsBase64(file, onDone) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                onDone(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Show error message
+        function showError(msg) {
+            var el = document.getElementById('error-msg');
+            el.textContent = msg;
+            el.classList.add('visible');
+            setTimeout(function () { el.classList.remove('visible'); }, 4000);
+        }
+
+        // Send current value to Jotform
+        function sendCurrentValue() {
+            JFCustomWidget.sendData({ value: buildMetadataValue() });
+        }
+
+        // Request frame resize
+        function requestResize() {
+            setTimeout(function () {
+                JFCustomWidget.requestFrameResize({
+                    height: document.body.scrollHeight + 20
+                });
+            }, 50);
+        }
+
+        // Apply widget settings to DOM
+        function applyWidgetSettings() {
+            const container = document.querySelector('.widget-container');
+            const carousel = document.getElementById('carousel');
+            const thumbnails = document.getElementById('thumbnails');
+
+            // Apply container settings
+            container.style.padding = widgetSettings.containerPadding + 'px';
+            container.style.overflow = widgetSettings.containerOverflow;
+
+            // Apply carousel settings
+            carousel.style.height = widgetSettings.carouselHeight + 'px';
+            carousel.style.width = widgetSettings.carouselWidth;
+
+            // Apply thumbnail settings
+            const thumbs = document.querySelectorAll('.thumbnail');
+            thumbs.forEach(function(thumb) {
+                thumb.style.width = widgetSettings.thumbnailSize + 'px';
+                thumb.style.height = widgetSettings.thumbnailSize + 'px';
+            });
+
+            thumbnails.style.gap = widgetSettings.thumbnailGap + 'px';
+        }
+
+        // =====================================================
+        // POPUP WINDOW VIEWER (replaces iframe-trapped modal)
+        // =====================================================
+
+        function buildPopupHTML(startIndex) {
+            var imagesJSON = JSON.stringify(uploadedImages);
+
+            return '<!DOCTYPE html>' +
+            '<html><head>' +
+            '<meta charset="utf-8">' +
+            '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+            '<title>Image Viewer</title>' +
+            '<style>' +
+            '*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }' +
+            'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #0f0d2e; color: #fff; overflow: hidden; height: 100vh; display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; }' +
+            '.viewer-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: linear-gradient(135deg, #1D174F 0%, #004B88 100%); flex-shrink: 0; }' +
+            '.viewer-counter { font-size: 14px; font-weight: 600; color: #CCEDFB; }' +
+            '.viewer-filename { font-size: 12px; color: rgba(204, 237, 251, 0.6); margin-left: 12px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }' +
+            '.header-left { display: flex; align-items: center; }' +
+            '.btn-close { background: none; border: 2px solid rgba(255,255,255,0.3); color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }' +
+            '.btn-close:hover { background: #F39524; border-color: #F39524; transform: scale(1.1); }' +
+            '.viewer-body { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #0a0820; }' +
+            '.image-wrapper { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; cursor: grab; }' +
+            '.image-wrapper.dragging { cursor: grabbing; }' +
+            '.viewer-img { max-width: 90%; max-height: 90%; object-fit: contain; transform-origin: center; transition: transform 0.1s ease-out; -webkit-user-drag: none; }' +
+            '.nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0, 166, 233, 0.85); color: #fff; border: none; width: 48px; height: 48px; border-radius: 50%; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; z-index: 10; }' +
+            '.nav-arrow:hover { background: #F39524; transform: translateY(-50%) scale(1.1); }' +
+            '.nav-arrow.prev { left: 16px; }' +
+            '.nav-arrow.next { right: 16px; }' +
+            '.nav-arrow.hidden { display: none; }' +
+            '.viewer-footer { display: flex; gap: 8px; justify-content: center; align-items: center; padding: 12px 20px; background: linear-gradient(135deg, #1D174F 0%, #004B88 100%); flex-shrink: 0; flex-wrap: wrap; }' +
+            '.zoom-btn { width: 36px; height: 36px; background: #00A6E9; color: #fff; border: none; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }' +
+            '.zoom-btn:hover { background: #F39524; transform: scale(1.1); }' +
+            '.zoom-btn:disabled { background: #555; cursor: not-allowed; opacity: 0.4; }' +
+            '.zoom-level { color: #CCEDFB; font-size: 13px; font-weight: 600; min-width: 50px; text-align: center; }' +
+            '.zoom-reset { width: auto; padding: 0 14px; height: 36px; background: rgba(255,255,255,0.15); color: #CCEDFB; border: 1px solid rgba(255,255,255,0.2); border-radius: 18px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-left: 4px; }' +
+            '.zoom-reset:hover { background: #F39524; border-color: #F39524; color: #fff; }' +
+            '.thumb-strip { display: flex; gap: 6px; padding: 10px 20px; background: #13103a; overflow-x: auto; flex-shrink: 0; }' +
+            '.thumb-strip::-webkit-scrollbar { height: 4px; }' +
+            '.thumb-strip::-webkit-scrollbar-thumb { background: #00A6E9; border-radius: 2px; }' +
+            '.thumb { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; cursor: pointer; opacity: 0.5; border: 2px solid transparent; transition: all 0.2s; flex-shrink: 0; }' +
+            '.thumb:hover { opacity: 0.8; transform: scale(1.08); }' +
+            '.thumb.active { opacity: 1; border-color: #00A6E9; box-shadow: 0 0 12px rgba(0, 166, 233, 0.5); }' +
+            '@media (max-width: 600px) {' +
+            '  .nav-arrow { width: 38px; height: 38px; font-size: 18px; }' +
+            '  .zoom-btn { width: 30px; height: 30px; font-size: 15px; }' +
+            '  .thumb { width: 40px; height: 40px; }' +
+            '}' +
+            '</style>' +
+            '</head><body>' +
+            '<div class="viewer-header">' +
+            '  <div class="header-left">' +
+            '    <span class="viewer-counter" id="counter"></span>' +
+            '    <span class="viewer-filename" id="filename"></span>' +
+            '  </div>' +
+            '  <button class="btn-close" onclick="window.close()" title="Close">&times;</button>' +
+            '</div>' +
+            '<div class="viewer-body">' +
+            '  <div class="image-wrapper" id="imgWrapper">' +
+            '    <img class="viewer-img" id="viewerImg" src="" alt="">' +
+            '  </div>' +
+            '  <button class="nav-arrow prev" id="btnPrev" onclick="navigate(-1)" title="Previous">&#10094;</button>' +
+            '  <button class="nav-arrow next" id="btnNext" onclick="navigate(1)" title="Next">&#10095;</button>' +
+            '</div>' +
+            '<div class="thumb-strip" id="thumbStrip"></div>' +
+            '<div class="viewer-footer">' +
+            '  <button class="zoom-btn" id="zoomOutBtn" onclick="doZoom(-1)" title="Zoom Out">&minus;</button>' +
+            '  <span class="zoom-level" id="zoomLevel">100%</span>' +
+            '  <button class="zoom-btn" id="zoomInBtn" onclick="doZoom(1)" title="Zoom In">+</button>' +
+            '  <button class="zoom-reset" onclick="resetView()" title="Reset Zoom">Reset</button>' +
+            '</div>' +
+            '<script>' +
+            'var images = ' + imagesJSON + ';' +
+            'var currentIndex = ' + startIndex + ';' +
+            'var zoom = 100;' +
+            'var MIN_ZOOM = 25, MAX_ZOOM = 500, ZOOM_STEP = 15;' +
+            'var isDragging = false, dragStartX = 0, dragStartY = 0, offsetX = 0, offsetY = 0, lastPinchDist = 0;' +
+            'function showImage(idx) {' +
+            '  currentIndex = idx;' +
+            '  var img = document.getElementById("viewerImg");' +
+            '  img.src = images[idx].base64;' +
+            '  img.alt = images[idx].name;' +
+            '  document.getElementById("counter").textContent = (idx + 1) + " / " + images.length;' +
+            '  document.getElementById("filename").textContent = images[idx].name;' +
+            '  resetView();' +
+            '  updateNavButtons();' +
+            '  updateThumbs();' +
+            '}' +
+            'function navigate(dir) {' +
+            '  var next = currentIndex + dir;' +
+            '  if (next < 0) next = images.length - 1;' +
+            '  if (next >= images.length) next = 0;' +
+            '  showImage(next);' +
+            '}' +
+            'function updateNavButtons() {' +
+            '  var hide = images.length <= 1;' +
+            '  document.getElementById("btnPrev").classList.toggle("hidden", hide);' +
+            '  document.getElementById("btnNext").classList.toggle("hidden", hide);' +
+            '}' +
+            'function buildThumbs() {' +
+            '  var strip = document.getElementById("thumbStrip");' +
+            '  strip.innerHTML = "";' +
+            '  if (images.length <= 1) { strip.style.display = "none"; return; }' +
+            '  images.forEach(function(img, i) {' +
+            '    var t = document.createElement("img");' +
+            '    t.src = img.base64;' +
+            '    t.className = "thumb" + (i === currentIndex ? " active" : "");' +
+            '    t.onclick = function() { showImage(i); };' +
+            '    strip.appendChild(t);' +
+            '  });' +
+            '}' +
+            'function updateThumbs() {' +
+            '  var thumbs = document.querySelectorAll(".thumb");' +
+            '  thumbs.forEach(function(t, i) { t.classList.toggle("active", i === currentIndex); });' +
+            '  var active = document.querySelector(".thumb.active");' +
+            '  if (active) active.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });' +
+            '}' +
+            'function doZoom(dir) {' +
+            '  zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom + dir * ZOOM_STEP));' +
+            '  applyTransform();' +
+            '}' +
+            'function resetView() {' +
+            '  zoom = 100; offsetX = 0; offsetY = 0;' +
+            '  applyTransform();' +
+            '}' +
+            'function applyTransform() {' +
+            '  var img = document.getElementById("viewerImg");' +
+            '  img.style.transform = "scale(" + (zoom / 100) + ") translate(" + offsetX + "px, " + offsetY + "px)";' +
+            '  document.getElementById("zoomLevel").textContent = zoom + "%";' +
+            '  document.getElementById("zoomOutBtn").disabled = zoom <= MIN_ZOOM;' +
+            '  document.getElementById("zoomInBtn").disabled = zoom >= MAX_ZOOM;' +
+            '}' +
+            'document.addEventListener("wheel", function(e) { e.preventDefault(); doZoom(e.deltaY < 0 ? 1 : -1); }, { passive: false });' +
+            'var wrapper = document.getElementById("imgWrapper");' +
+            'wrapper.addEventListener("mousedown", function(e) {' +
+            '  if (zoom <= 100) return;' +
+            '  isDragging = true; dragStartX = e.clientX - offsetX; dragStartY = e.clientY - offsetY;' +
+            '  wrapper.classList.add("dragging");' +
+            '});' +
+            'document.addEventListener("mousemove", function(e) {' +
+            '  if (!isDragging) return; offsetX = e.clientX - dragStartX; offsetY = e.clientY - dragStartY; applyTransform();' +
+            '});' +
+            'document.addEventListener("mouseup", function() { isDragging = false; wrapper.classList.remove("dragging"); });' +
+            'function pinchDist(touches) {' +
+            '  if (touches.length < 2) return 0;' +
+            '  var dx = touches[0].clientX - touches[1].clientX, dy = touches[0].clientY - touches[1].clientY;' +
+            '  return Math.sqrt(dx*dx + dy*dy);' +
+            '}' +
+            'wrapper.addEventListener("touchstart", function(e) { if (e.touches.length === 2) lastPinchDist = pinchDist(e.touches); });' +
+            'wrapper.addEventListener("touchmove", function(e) {' +
+            '  if (e.touches.length === 2) { e.preventDefault(); var d = pinchDist(e.touches); var diff = d - lastPinchDist;' +
+            '    if (diff > 8) { doZoom(1); lastPinchDist = d; } else if (diff < -8) { doZoom(-1); lastPinchDist = d; }' +
+            '  }' +
+            '}, { passive: false });' +
+            'document.addEventListener("keydown", function(e) {' +
+            '  if (e.key === "ArrowLeft") navigate(-1);' +
+            '  else if (e.key === "ArrowRight") navigate(1);' +
+            '  else if (e.key === "Escape") window.close();' +
+            '  else if (e.key === "+" || e.key === "=") doZoom(1);' +
+            '  else if (e.key === "-") doZoom(-1);' +
+            '  else if (e.key === "0") resetView();' +
+            '});' +
+            'buildThumbs();' +
+            'showImage(currentIndex);' +
+            '</' + 'script>' +
+            '</body></html>';
+        }
+
+        function openModal(index) {
+            var popupHTML = buildPopupHTML(index);
+            var w = Math.max(600, Math.round(screen.availWidth * 0.8));
+            var h = Math.max(500, Math.round(screen.availHeight * 0.8));
+            var left = Math.round((screen.availWidth - w) / 2);
+            var top = Math.round((screen.availHeight - h) / 2);
+            var features = 'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',scrollbars=no,resizable=yes,toolbar=no,menubar=no,location=no,status=no';
+
+            var popup = window.open('', '_blank', features);
+            if (popup) {
+                popup.document.write(popupHTML);
+                popup.document.close();
+                popup.focus();
+            } else {
+                var blob = new Blob([popupHTML], { type: 'text/html' });
+                var url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            }
+        }
+
+        // Process uploaded files
+        function processFiles(files) {
+            var imageFiles = Array.from(files).filter(function (f) {
+                return f.type.startsWith('image/');
+            });
+
+            if (imageFiles.length === 0) {
+                showError('Please select image files only.');
+                return;
+            }
+
+            var processed = 0;
+
+            function onImageReady() {
+                processed++;
+                if (processed === imageFiles.length) {
+                    currentSlide = uploadedImages.length - 1;
+                    updateCarousel();
+                    sendCurrentValue();
+                }
+            }
+
+            imageFiles.forEach(function (file) {
+                if (uploadServerURL && uploadFolder) {
+                    uploadToJotform(file, function (url) {
+                        if (url) {
+                            uploadedImages.push({ name: file.name, base64: url });
+                            onImageReady();
+                        } else {
+                            readAsBase64(file, function (dataUri) {
+                                uploadedImages.push({ name: file.name, base64: dataUri });
+                                onImageReady();
+                            });
+                        }
+                    });
+                } else {
+                    readAsBase64(file, function (dataUri) {
+                        uploadedImages.push({ name: file.name, base64: dataUri });
+                        onImageReady();
+                    });
+                }
+            });
+        }
+
+        // Update carousel display
+        function updateCarousel() {
+            const carousel = document.getElementById('carousel');
+            const track = document.getElementById('track');
+            const thumbsContainer = document.getElementById('thumbnails');
+            const dropZone = document.getElementById('drop-zone');
+
+            // document.getElementById('debugger').textContent = 'Images in carousel: ' + uploadedImages.length;
+            
+            if (uploadedImages.length == 0) {
+                carousel.style.display = 'none';
+                dropZone.style.display = 'block';
+
+                //Hide if there are no images and we're in view-only mode (e.g. tables/submission view)
+                if(document.body.classList.contains('view-only')) {
+                    dropZone.style.display = 'none';
+                }
+
+                thumbsContainer.innerHTML = '';
+                hideSpinner();
+                // document.getElementById('debugger').textContent = 'No images uploaded, showing drop zone.';
+                requestResize();
+                return;
+            }
+
+            dropZone.style.display = 'none';
+            carousel.style.display = 'block';
+            
+            if (currentSlide >= uploadedImages.length) {
+                currentSlide = Math.max(0, uploadedImages.length - 1);
+            }
+
+            track.innerHTML = '';
+            thumbsContainer.innerHTML = '';
+            
+            var imagesLoaded = 0;
+            uploadedImages.forEach((img, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'carousel-slide';
+
+                // Create image element and add onload handler
+                const imageEl = document.createElement('img');
+                imageEl.src = img.base64;
+                imageEl.alt = img.name;
+                imageEl.onclick = function() { openModal(index); };
+                imageEl.onload = function() {
+                    imagesLoaded++;
+                    if (imagesLoaded === uploadedImages.length) {
+                        hideSpinner();
+                    }
+                    requestResize();
+                };
+
+                // Add delete button
+                const btnDelete = document.createElement('button');
+                btnDelete.className = 'btn-delete';
+                btnDelete.onclick = function() { deleteImage(index); };
+                btnDelete.title = 'Remove image';
+                btnDelete.innerHTML = '&times;';
+
+                // Slide info
+                const slideInfo = document.createElement('div');
+                slideInfo.className = 'slide-info';
+                slideInfo.textContent = `${index + 1} / ${uploadedImages.length}`;
+
+                slide.appendChild(imageEl);
+                slide.appendChild(btnDelete);
+                slide.appendChild(slideInfo);
+                track.appendChild(slide);
+
+                // Thumbnails
+                const thumb = document.createElement('img');
+                thumb.src = img.base64;
+                thumb.className = `thumbnail ${index === currentSlide ? 'active' : ''}`;
+                thumb.onclick = () => goToSlide(index);
+                thumb.style.width = widgetSettings.thumbnailSize + 'px';
+                thumb.style.height = widgetSettings.thumbnailSize + 'px';
+                thumbsContainer.appendChild(thumb);
+            });
+
+            document.getElementById('btn-prev').style.display = uploadedImages.length > 1 ? 'flex' : 'none';
+            document.getElementById('btn-next').style.display = uploadedImages.length > 1 ? 'flex' : 'none';
+
+            goToSlide(currentSlide);
+            requestResize();
+        }
+
+        function moveSlide(direction) {
+            let newSlide = currentSlide + direction;
+            if (newSlide < 0) newSlide = uploadedImages.length - 1;
+            if (newSlide >= uploadedImages.length) newSlide = 0;
+            goToSlide(newSlide);
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            const track = document.getElementById('track');
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+            const thumbs = document.querySelectorAll('.thumbnail');
+            thumbs.forEach((thumb, i) => {
+                if (i === currentSlide) {
+                    thumb.classList.add('active');
+                } else {
+                    thumb.classList.remove('active');
+                }
+            });
+        }
+
+        function deleteImage(index) {
+            uploadedImages.splice(index, 1);
+            updateCarousel();
+            sendCurrentValue();
+        }
+
+        // File input handling
+        const fileInput = document.getElementById('file-input');
+        const dropZone = document.getElementById('drop-zone');
+
+        fileInput.addEventListener('change', function (e) {
+            if (e.target.files.length) processFiles(e.target.files);
+            e.target.value = '';
+        });
+
+        dropZone.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', function () {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) processFiles(e.dataTransfer.files);
+        });
+
+        // Jotform widget lifecycle
+        JFCustomWidget.subscribe('ready', function (data) {
+            isRequired = JFCustomWidget.isWidgetRequired();
+            uploadServerURL = data.uploadServerURL || '';
+            if (uploadServerURL) {
+                uploadFolder = generateFolder(data.formID);
+            }
+
+            // Static mode — widget is being viewed in tables/submission view
+            var isStatic = JFCustomWidget.isWidgetStatic();
+
+            // Edit mode — form loaded with an existing submission value
+            var isEditMode = data.isEditMode || (data.value && data.value.length > 0);
+
+            // Get widget settings from Jotform
+            var settings = JFCustomWidget.getWidgetSettings();
+            if (settings) {
+                if (settings.carouselHeight) widgetSettings.carouselHeight = parseInt(settings.carouselHeight);
+                if (settings.carouselWidth) widgetSettings.carouselWidth = settings.carouselWidth;
+                if (settings.containerPadding) widgetSettings.containerPadding = parseInt(settings.containerPadding);
+                if (settings.containerOverflow) widgetSettings.containerOverflow = settings.containerOverflow;
+                if (settings.thumbnailSize) widgetSettings.thumbnailSize = parseInt(settings.thumbnailSize);
+                if (settings.thumbnailGap) widgetSettings.thumbnailGap = parseInt(settings.thumbnailGap);
+            }
+
+            // Apply widget settings
+            applyWidgetSettings();
+
+            if (isStatic) {
+                document.body.classList.add('static-mode', 'view-only');
+            } else if (isEditMode) {
+                document.body.classList.add('view-only');
+            }
+
+            // Hide upload element when editLink is present
+            var editLink = data.editLink || false;
+            if (editLink) {
+                document.getElementById('drop-zone').style.display = 'none';
+            }
+
+            // Restore saved value (edit mode or static)
+            if (data.value && JFCustomWidgetUtils.hasMetadata(data.value)) {
+                var extracted = JFCustomWidgetUtils.extractMetadata(data.value);
+                if (extracted && extracted.length > 0) {
+                    uploadedImages = extracted.map(function (item) {
+                        var src = item.base64 || '';
+                        if (!src && item.url) {
+                            src = JFCustomWidgetUtils.fixS3UriOrigin(item.url);
+                        }
+                        return { name: item.name, base64: src };
+                    }).filter(function (img) { return !!img.base64; });
+                    currentSlide = 0;
+                    if (uploadedImages.length > 0) updateCarousel();
+                }
+            } else {
+                updateCarousel();
+            }
+
+            // In static mode with no value — show nothing
+            if (isStatic && uploadedImages.length === 0) {
+                document.getElementById('drop-zone').style.display = 'none';
+                requestResize();
+                return;
+            }
+
+            JFCustomWidget.subscribe('submit', function () {
+                var value = buildMetadataValue();
+                var valid = !isRequired || uploadedImages.length > 0;
+
+                if (!valid) {
+                    JFCustomWidget.showWidgetError(JFCustomWidget.texts.required || 'This field is required.');
+                } else {
+                    JFCustomWidget.hideWidgetError();
+                }
+
+                JFCustomWidget.sendSubmit({ valid: valid, value: value });
+            });
+
+            JFCustomWidget.subscribe('clear', function () {
+                uploadedImages = [];
+                currentSlide = 0;
+                document.body.classList.remove('view-only');
+                updateCarousel();
+                sendCurrentValue();
+            });
+
+            requestResize();
+            // Re-request resize when iframe becomes visible
+            // (handles sections that start collapsed/hidden)
+            if (typeof IntersectionObserver !== 'undefined') {
+                var observer = new IntersectionObserver(function(entries) {    
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            requestResize();
+                         }
+                    });
+                });
+                observer.observe(document.querySelector('.widget-container'));
+            }
+        });
+
+        // Listen for widget settings changes
+        JFCustomWidget.subscribe('settingsUpdated', function (settings) {
+            if (settings.carouselHeight) widgetSettings.carouselHeight = parseInt(settings.carouselHeight);
+            if (settings.carouselWidth) widgetSettings.carouselWidth = settings.carouselWidth;
+            if (settings.containerPadding) widgetSettings.containerPadding = parseInt(settings.containerPadding);
+            if (settings.containerOverflow) widgetSettings.containerOverflow = settings.containerOverflow;
+            if (settings.thumbnailSize) widgetSettings.thumbnailSize = parseInt(settings.thumbnailSize);
+            if (settings.thumbnailGap) widgetSettings.thumbnailGap = parseInt(settings.thumbnailGap);
+
+            applyWidgetSettings();
+            updateCarousel();
+            requestResize();
+        });
+    </script>
+</body>
+</html>
