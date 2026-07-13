@@ -102,16 +102,14 @@
       this.getData = getData;
 
       function init() {
-
-        JFCustomWidget.replaceWidget('control_email');
         // Initial iframe height
-        // requestAnimationFrame(() => {
-        //   JFCustomWidget.requestFrameResize({ height: input.offsetHeight + 20 });
-        // });
+        requestAnimationFrame(() => {
+          JFCustomWidget.requestFrameResize({ height: input.offsetHeight + 20 });
+        });
 
-        // input.addEventListener("input", onInput);
-        // input.addEventListener("keydown", onKeyDown);
-        // document.addEventListener("click", onClickOutside);
+        input.addEventListener("input", onInput);
+        input.addEventListener("keydown", onKeyDown);
+        document.addEventListener("click", onClickOutside);
       }
 
       async function onInput(e) {
@@ -255,8 +253,14 @@
 
       function getData() {
         return {
-          valid: true
-          value: "testing@test.com"
+          valid: !!selectedItem,
+          value: selectedItem
+            ? JSON.stringify({
+                id: selectedItem[valueField],
+                label: selectedItem[displayField],
+                raw: selectedItem
+              })
+            : ""
         };
       }
     }
