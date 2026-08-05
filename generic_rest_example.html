@@ -12,6 +12,7 @@
     // Same card, but styled with a <style> block + classes instead of inline styles.
     // Teal/green palette so it's obvious at a glance which version rendered.
     const HTML = `
+      <html>
       <style>
         .jfdemo-card { font-family:Arial,sans-serif; font-size:13px; max-width:400px; border:1px solid #99f6e4; border-radius:6px; }
         .jfdemo-head { background:#0d9488; color:#fff; padding:8px 12px; font-weight:bold; }
@@ -32,7 +33,7 @@
             <td>Example Retailer</td>
           </tr>
         </table>
-      </div>`;
+      </div></html>`;
     function toBase64(str) {
       return btoa(str);
     }
