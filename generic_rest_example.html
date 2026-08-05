@@ -117,6 +117,7 @@
 
         const term = e.target.value.trim();
         if (!term) {
+          selectedItem = null;
           clearResults();
           resizeFrame(input.offsetHeight + 20);
           return;
@@ -186,19 +187,15 @@
       function selectItem(item) {
         isSelecting = true;
         selectedItem = item;
-      
+
         input.value = item[displayField];
         clearResults();
         resizeFrame(input.offsetHeight + 20);
-        
-        JFCustomWidget.sendData({
-          valid: true,
-          value: JSON.stringify(item)
-        });
-      
+
+        JFCustomWidget.sendData(getData());
+
         setTimeout(() => (isSelecting = false), 100);
       }
-
 
       function clearResults() {
         resultsEl.innerHTML = "";
@@ -251,17 +248,42 @@
         });
       }
 
+      /* ---------- htmltext metadata ---------- */
+
+      // Unicode-safe base64
+      function toBase64(str) {
+        return btoa(unescape(encodeURIComponent(str)));
+      }
+
+      // Inline styles only — submission/email views strip <style> blocks.
+      function buildHtml(item) {
+        return `
+          <div style="font-family:Arial,sans-serif;font-size:13px;max-width:400px;border:1px solid #c7d2fe;border-radius:6px;">
+            <div style="background:#4f46e5;color:#fff;padding:8px 12px;font-weight:bold;">
+              ${item[displayField]}
+            </div>
+            <table style="border-collapse:collapse;width:100%;">
+              <tr style="background:#f5f6ff;">
+                <td style="padding:6px 12px;color:#4b5563;font-weight:bold;">ID</td>
+                <td style="padding:6px 12px;">${item[valueField]}</td>
+              </tr>
+              <tr>
+                <td style="padding:6px 12px;color:#4b5563;font-weight:bold;">Name</td>
+                <td style="padding:6px 12px;">${item[displayField]}</td>
+              </tr>
+            </table>
+          </div>`;
+      }
+
       function getData() {
-        return {
-          valid: !!selectedItem,
-          value: selectedItem
-            ? JSON.stringify({
-                id: selectedItem[valueField],
-                label: selectedItem[displayField],
-                raw: selectedItem
-              })
-            : ""
-        };
+        if (!selectedItem) {
+          return { valid: false, value: "" };
+        }
+
+        const b64 = toBase64(buildHtml(selectedItem));
+        const value = JFCustomWidgetUtils.buildMetadata("htmltext", b64);
+
+        return { valid: true, value: value };
       }
     }
 
