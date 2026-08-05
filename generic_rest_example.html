@@ -4,295 +4,51 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
-
-  <style>
-    .loading,
-    .no-results {
-      padding: 0.6rem 0.75rem;
-      font-size: 13px;
-      color: #6b7280;
-    }
-
-    .result-item.active {
-      background: #eef2ff;
-    }
-
-    .search-wrapper {
-      position: relative;
-    }
-
-    .search-input {
-      padding: 0.6rem 0.75rem;
-      font-size: 14px;
-      border: 1px solid #d0d5dd;
-      border-radius: 6px;
-      width: 100%;
-      max-width: 16rem;
-    }
-
-    .results-container {
-      position: absolute;
-      top: calc(100% + 4px);
-      left: 0;
-      right: 0;
-      z-index: 1000;
-    }
-
-    .result-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      max-height: 260px;
-      overflow-y: auto;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-    }
-
-    .result-item {
-      padding: 0.6rem 0.75rem;
-      cursor: pointer;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .result-item:last-child {
-      border-bottom: none;
-    }
-
-    .result-item:hover {
-      background: #f8fafc;
-    }
-
-    .highlight {
-      font-weight: 600;
-      color: #4f46e5;
-    }
-  </style>
 </head>
 
-<body>
-  <div class="search-wrapper">
-    <input
-      id="searchInput"
-      class="search-input"
-      type="text"
-      placeholder="Start typing to search…"
-    />
-    <div id="results" class="results-container"></div>
-  </div>
+<body style="margin:0;font-family:Arial,sans-serif;">
+  <!-- Live preview of exactly what gets sent as metadata -->
+  <div id="preview"></div>
 
   <script>
-    function RetailerLookupWidget() {
-      const input = document.getElementById("searchInput");
-      const resultsEl = document.getElementById("results");
+    // Hard-coded HTML. Inline styles only — submission/email views strip <style> blocks.
+    const HTML = `
+      <div style="font-family:Arial,sans-serif;font-size:13px;max-width:400px;border:1px solid #c7d2fe;border-radius:6px;">
+        <div style="background:#4f46e5;color:#fff;padding:8px 12px;font-weight:bold;">
+          Demo Card
+        </div>
+        <table style="border-collapse:collapse;width:100%;">
+          <tr style="background:#f5f6ff;">
+            <td style="padding:6px 12px;color:#4b5563;font-weight:bold;">ID</td>
+            <td style="padding:6px 12px;">12345</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 12px;color:#4b5563;font-weight:bold;">Name</td>
+            <td style="padding:6px 12px;">Example Retailer</td>
+          </tr>
+        </table>
+      </div>`;
 
-      let selectedItem = null;
-      let isSelecting = false;
-      let allResults = [];
-      let activeIndex = -1;
+    function toBase64(str) {
+      return btoa(unescape(encodeURIComponent(str)));
+    }
 
-      const settings = JFCustomWidget.getWidgetSettings();
-      const apiUrl = settings.apiUrl;
-      const searchLimit = Number(settings.searchLimit || 10);
-      const displayField = settings.displayField || "title";
-      const valueField = settings.valueField || "id";
-
-      this.init = init;
-      this.getData = getData;
-
-      function init() {
-        // Initial iframe height
-        requestAnimationFrame(() => {
-          JFCustomWidget.requestFrameResize({ height: input.offsetHeight + 20 });
-        });
-
-        input.addEventListener("input", onInput);
-        input.addEventListener("keydown", onKeyDown);
-        document.addEventListener("click", onClickOutside);
-      }
-
-      async function onInput(e) {
-        if (isSelecting) return;
-
-        const term = e.target.value.trim();
-        if (!term) {
-          selectedItem = null;
-          clearResults();
-          resizeFrame(input.offsetHeight + 20);
-          return;
-        }
-
-        showLoading();
-
-        const data = await fetchData();
-        allResults = filterResults(data, term);
-        activeIndex = -1;
-
-        renderResults();
-      }
-
-      async function fetchData() {
-        try {
-          const res = await fetch(apiUrl);
-          return await res.json();
-        } catch (err) {
-          console.error("API error:", err);
-          return [];
-        }
-      }
-
-      function filterResults(items, term) {
-        return items
-          .filter(item =>
-            String(item[displayField]).toLowerCase().includes(term.toLowerCase())
-          )
-          .slice(0, searchLimit);
-      }
-
-      function renderResults() {
-        resultsEl.innerHTML = "";
-
-        if (!allResults.length) {
-          resultsEl.innerHTML = `<div class="result-list no-results">No results found</div>`;
-          resizeFrame(input.offsetHeight + 40);
-          return;
-        }
-
-        const ul = document.createElement("ul");
-        ul.className = "result-list";
-
-        allResults.forEach((item, index) => {
-          const li = document.createElement("li");
-          li.className = "result-item";
-          if (index === activeIndex) li.classList.add("active");
-
-          li.innerHTML = highlightMatch(String(item[displayField]), input.value);
-          li.addEventListener("mousedown", () => selectItem(item));
-
-          ul.appendChild(li);
-        });
-
-        resultsEl.appendChild(ul);
-
-        // Resize iframe to fit results
-        resizeFrame(input.offsetHeight + resultsEl.offsetHeight + 20);
-      }
-
-      function showLoading() {
-        resultsEl.innerHTML = `<div class="result-list loading">Loading…</div>`;
-        resizeFrame(input.offsetHeight + 40);
-      }
-
-      function selectItem(item) {
-        isSelecting = true;
-        selectedItem = item;
-
-        input.value = item[displayField];
-        clearResults();
-        resizeFrame(input.offsetHeight + 20);
-
-        JFCustomWidget.sendData(getData());
-
-        setTimeout(() => (isSelecting = false), 100);
-      }
-
-      function clearResults() {
-        resultsEl.innerHTML = "";
-        allResults = [];
-        activeIndex = -1;
-      }
-
-      function highlightMatch(text, term) {
-        const regex = new RegExp(`(${term})`, "ig");
-        return text.replace(regex, `<span class="highlight">$1</span>`);
-      }
-
-      function onKeyDown(e) {
-        if (!allResults.length) return;
-
-        switch (e.key) {
-          case "ArrowDown":
-            e.preventDefault();
-            activeIndex = activeIndex < allResults.length - 1 ? activeIndex + 1 : 0;
-            renderResults();
-            break;
-          case "ArrowUp":
-            e.preventDefault();
-            activeIndex = activeIndex > 0 ? activeIndex - 1 : allResults.length - 1;
-            renderResults();
-            break;
-          case "Enter":
-            if (activeIndex >= 0) {
-              e.preventDefault();
-              selectItem(allResults[activeIndex]);
-            }
-            break;
-          case "Escape":
-            clearResults();
-            resizeFrame(input.offsetHeight + 20);
-            break;
-        }
-      }
-
-      function onClickOutside(e) {
-        if (!resultsEl.contains(e.target) && e.target !== input) {
-          clearResults();
-          resizeFrame(input.offsetHeight + 20);
-        }
-      }
-
-      function resizeFrame(newHeight) {
-        requestAnimationFrame(() => {
-          JFCustomWidget.requestFrameResize({ height: newHeight });
-        });
-      }
-
-      /* ---------- htmltext metadata ---------- */
-
-      // Unicode-safe base64
-      function toBase64(str) {
-        return btoa(unescape(encodeURIComponent(str)));
-      }
-
-      // Inline styles only — submission/email views strip <style> blocks.
-      function buildHtml(item) {
-        return `
-          <div style="font-family:Arial,sans-serif;font-size:13px;max-width:400px;border:1px solid #c7d2fe;border-radius:6px;">
-            <div style="background:#4f46e5;color:#fff;padding:8px 12px;font-weight:bold;">
-              ${item[displayField]}
-            </div>
-            <table style="border-collapse:collapse;width:100%;">
-              <tr style="background:#f5f6ff;">
-                <td style="padding:6px 12px;color:#4b5563;font-weight:bold;">ID</td>
-                <td style="padding:6px 12px;">${item[valueField]}</td>
-              </tr>
-              <tr>
-                <td style="padding:6px 12px;color:#4b5563;font-weight:bold;">Name</td>
-                <td style="padding:6px 12px;">${item[displayField]}</td>
-              </tr>
-            </table>
-          </div>`;
-      }
-
-      function getData() {
-        if (!selectedItem) {
-          return { valid: false, value: "" };
-        }
-
-        const b64 = toBase64(buildHtml(selectedItem));
-        const value = JFCustomWidgetUtils.buildMetadata("htmltext", b64);
-
-        return { valid: true, value: value };
-      }
+    function getData() {
+      const b64 = toBase64(HTML);
+      return {
+        valid: true,
+        value: JFCustomWidgetUtils.buildMetadata("htmltext", b64)
+      };
     }
 
     JFCustomWidget.subscribe("ready", () => {
-      const widget = new RetailerLookupWidget();
-      widget.init();
+      document.getElementById("preview").innerHTML = HTML;
+
+      JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 10 });
+      JFCustomWidget.sendData(getData());
 
       JFCustomWidget.subscribe("submit", () => {
-        JFCustomWidget.sendSubmit(widget.getData());
+        JFCustomWidget.sendSubmit(getData());
       });
     });
   </script>
