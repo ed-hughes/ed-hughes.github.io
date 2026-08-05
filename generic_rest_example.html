@@ -6,48 +6,74 @@
   <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
 </head>
 <body style="margin:0;font-family:Arial,sans-serif;">
-  <!-- Live preview of exactly what gets sent as metadata -->
-  <div id="preview"></div>
+  <input
+    id="nameInput"
+    type="text"
+    value="Example Retailer"
+    placeholder="Type a name…"
+    style="padding:6px 10px;font-size:14px;border:1px solid #d0d5dd;border-radius:6px;width:100%;max-width:400px;box-sizing:border-box;"
+  />
+
+  <!-- Live preview -->
+  <div id="preview" style="margin-top:10px;"></div>
+
   <script>
-    // Same card, but styled with a <style> block + classes instead of inline styles.
-    // Teal/green palette so it's obvious at a glance which version rendered.
-    const HTML = `
-      <html>
-      <style>
-        .jfdemo-card { font-family:Arial,sans-serif; font-size:13px; max-width:400px; border:1px solid #99f6e4; border-radius:6px; }
-        .jfdemo-head { background:#0d9488; color:#fff; padding:8px 12px; font-weight:bold; }
-        .jfdemo-table { border-collapse:collapse; width:100%; }
-        .jfdemo-table td { padding:6px 12px; }
-        .jfdemo-table tr.jfdemo-alt { background:#f0fdfa; }
-        .jfdemo-label { color:#4b5563; font-weight:bold; }
-      </style>
-      <div class="jfdemo-card">
-        <div class="jfdemo-head">Demo Card (style block)</div>
-        <table class="jfdemo-table">
-          <tr class="jfdemo-alt">
-            <td class="jfdemo-label">ID</td>
-            <td>12345</td>
-          </tr>
-          <tr>
-            <td class="jfdemo-label">Name</td>
-            <td>Example Retailer</td>
-          </tr>
-        </table>
-      </div></html>`;
-    function toBase64(str) {
-      return btoa(str);
+    const input = document.getElementById("nameInput");
+    const preview = document.getElementById("preview");
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     }
+
+    // Btoa alone would throw on accents/emoji.
+    function toBase64(str) {
+      const bytes = new TextEncoder().encode(str);
+      let binary = "";
+      bytes.forEach(b => (binary += String.fromCharCode(b)));
+      return btoa(binary);
+    }
+    
+    function buildHtml(name) {
+      return `
+        <div style="font-family:Arial,sans-serif;font-size:13px;max-width:400px;border:1px solid #c7d2fe;border-radius:6px;">
+          <div style="background:#4f46e5;color:#fff;padding:8px 12px;font-weight:bold;">
+            Demo Card
+          </div>
+          <table style="border-collapse:collapse;width:100%;">
+            <tr style="background:#f5f6ff;">
+              <td style="padding:6px 12px;color:#4b5563;font-weight:bold;">ID</td>
+              <td style="padding:6px 12px;">12345</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 12px;color:#4b5563;font-weight:bold;">Name</td>
+              <td style="padding:6px 12px;">${escapeHtml(name)}</td>
+            </tr>
+          </table>
+        </div>`;
+    }
+
     function getData() {
-      const b64 = toBase64(HTML);
+      const html = buildHtml(input.value);
       return {
-        valid: true,
-        value: JFCustomWidgetUtils.buildMetadata("htmltext", b64)
+        valid: input.value.trim().length > 0,
+        value: JFCustomWidgetUtils.buildMetadata("htmltext", toBase64(html))
       };
     }
-    JFCustomWidget.subscribe("ready", () => {
-      document.getElementById("preview").innerHTML = HTML;
+
+    function refresh() {
+      preview.innerHTML = buildHtml(input.value);
       JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 10 });
       JFCustomWidget.sendData(getData());
+    }
+
+    JFCustomWidget.subscribe("ready", () => {
+      refresh();
+      input.addEventListener("input", refresh);
+
       JFCustomWidget.subscribe("submit", () => {
         JFCustomWidget.sendSubmit(getData());
       });
