@@ -514,13 +514,63 @@
         function buildMetadataValue() {
             if (uploadedImages.length === 0) return '';
             return JFCustomWidgetUtils.buildMetadata('imagelinks', uploadedImages.map(function (img) {
+                if (img.url) {
+                    return { name: img.name, url: JFCustomWidgetUtils.getS3UriRelativePath(img.url) || img.url };
+                }
                 var isDataUri = img.base64 && img.base64.indexOf('data:') === 0;
                 if (isDataUri) {
                     return { name: img.name, base64: img.base64 };
-                } else {
-                    return { name: img.name, url: JFCustomWidgetUtils.getS3UriRelativePath(img.base64) };
                 }
+                return { name: img.name, url: JFCustomWidgetUtils.getS3UriRelativePath(img.base64) };
             }));
+        }
+
+        function restorePersistedImages(items, done) {
+            uploadedImages = (items || []).map(function (item) {
+                return {
+                    name: item.name,
+                    url: item.url || '',
+                    base64: (item.base64 && item.base64.indexOf('data:') === 0) ? item.base64 : ''
+                };
+            }).filter(function (img) {
+                return img.base64 || img.url;
+            });
+
+            if (uploadedImages.length === 0) {
+                if (typeof done === 'function') done();
+                return;
+            }
+
+            var pending = uploadedImages.length;
+            function settle() {
+                pending -= 1;
+                if (pending > 0) return;
+                currentSlide = 0;
+                updateCarousel();
+                if (typeof done === 'function') done();
+            }
+
+            uploadedImages.forEach(function (img) {
+                if (img.base64) {
+                    settle();
+                    return;
+                }
+
+                var persistUrl = img.url;
+                if (typeof JFCustomWidget.loadProtectedImage !== 'function') {
+                    console.error('[carousel] JFCustomWidget.loadProtectedImage missing. Form is not on a for-custom-widgets build that includes this API.');
+                    settle();
+                    return;
+                }
+
+                JFCustomWidget.loadProtectedImage(persistUrl).then(function (base64) {
+                    img.base64 = base64;
+                    settle();
+                }).catch(function (error) {
+                    console.error('[carousel] loadProtectedImage failed', persistUrl, error);
+                    settle();
+                });
+            });
         }
 
         // Upload file to Jotform server
@@ -854,8 +904,18 @@
                     uploadToJotform(file, function (url) {
                         if (url) {
                             updateFileProgress(index, 100);
-                            uploadedImages.push({ name: file.name, base64: url });
-                            onImageReady();
+                            var uploaded = {
+                                name: file.name,
+                                url: JFCustomWidgetUtils.getS3UriRelativePath(url) || url,
+                                base64: ''
+                            };
+                            uploadedImages.push(uploaded);
+                            readAsBase64(file, function (dataUri) {
+                                uploaded.base64 = dataUri;
+                                onImageReady();
+                            }, function (percent) {
+                                updateFileProgress(index, percent);
+                            });
                         } else {
                             readAsBase64(file, function (dataUri) {
                                 updateFileProgress(index, 100);
@@ -1108,15 +1168,9 @@
             if (data.value && JFCustomWidgetUtils.hasMetadata(data.value)) {
                 var extracted = JFCustomWidgetUtils.extractMetadata(data.value);
                 if (extracted && extracted.length > 0) {
-                    uploadedImages = extracted.map(function (item) {
-                        var src = item.base64 || '';
-                        if (!src && item.url) {
-                            src = JFCustomWidgetUtils.fixS3UriOrigin(item.url);
-                        }
-                        return { name: item.name, base64: src };
-                    }).filter(function (img) { return !!img.base64; });
-                    currentSlide = 0;
-                    if (uploadedImages.length > 0) updateCarousel();
+                    restorePersistedImages(extracted);
+                } else {
+                    updateCarousel();
                 }
             } else {
                 updateCarousel();
