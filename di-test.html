@@ -447,6 +447,10 @@
         let uploadServerURL = '';
         let uploadFolder = '';
         let allowSubmissionEditUpload = false;
+        // Lazy restore: value state is populated at ready, but protected-image
+        // downloads wait until the widget first scrolls into view.
+        let pendingImageFetch = false;
+        let pendingImageFetchSince = 0;
 
         // =====================================================
         // DIAGNOSTIC LOGGING (no logic changes)
@@ -617,8 +621,12 @@
             return value;
         }
 
-        function restorePersistedImages(items, done) {
-            var restoreStart = __now();
+        // Phase 1 of restore: synchronously rebuild uploadedImages (name + url)
+        // from the saved metadata. Cheap, and enough for buildMetadataValue /
+        // required-validation to work — so a widget that is never scrolled into
+        // view still submits its saved value intact.
+        // Returns true when at least one image still needs its data fetched.
+        function populatePersistedImages(items) {
             clog('restorePersistedImages: incoming items', (items || []).map(function (item) {
                 var b = item.base64 || '';
                 return {
@@ -639,6 +647,15 @@
             });
 
             clog('restorePersistedImages: kept ' + uploadedImages.length + ' of ' + (items || []).length + ' items', summarizeImages(uploadedImages));
+
+            return uploadedImages.some(function (img) { return !img.base64 && img.url; });
+        }
+
+        // Phase 2 of restore: download image data for entries that only have a
+        // url, then render. Deferred until first viewport intersection unless
+        // the widget is static or IntersectionObserver is unavailable.
+        function fetchPersistedImages(done) {
+            var restoreStart = __now();
 
             if (uploadedImages.length === 0) {
                 if (typeof done === 'function') done();
@@ -1240,6 +1257,7 @@
 
         // Jotform widget lifecycle
         JFCustomWidget.subscribe('ready', function (data) {
+            var readyStart = __now();
             isRequired = JFCustomWidget.isWidgetRequired();
             uploadServerURL = data.uploadServerURL || '';
             if (uploadServerURL) {
@@ -1339,7 +1357,20 @@
                 var extracted = JFCustomWidgetUtils.extractMetadata(data.value);
                 clog('ready: incoming value has metadata, extracted ' + (extracted ? extracted.length : 0) + ' item(s)');
                 if (extracted && extracted.length > 0) {
-                    restorePersistedImages(extracted);
+                    var needsFetch = populatePersistedImages(extracted);
+                    if (!needsFetch) {
+                        currentSlide = 0;
+                        updateCarousel();
+                    } else if (isStatic || typeof IntersectionObserver === 'undefined') {
+                        // Static/table cells render when shown; fetch eagerly there
+                        // (and when there is no observer to defer on).
+                        clog('lazy restore: fetching eagerly (isStatic=' + isStatic + ')');
+                        fetchPersistedImages();
+                    } else {
+                        pendingImageFetch = true;
+                        pendingImageFetchSince = __now();
+                        clog('lazy restore: DEFERRED protected-image fetch for ' + uploadedImages.length + ' image(s) until widget is visible — ready stays lightweight');
+                    }
                 } else {
                     updateCarousel();
                 }
@@ -1374,6 +1405,7 @@
             JFCustomWidget.subscribe('clear', function () {
                 clog('clear: resetting widget, discarding ' + uploadedImages.length + ' image(s)');
                 uploadedImages = [];
+                pendingImageFetch = false;
                 currentSlide = 0;
                 document.body.classList.remove('view-only');
                 updateCarousel();
@@ -1392,12 +1424,19 @@
                             clog('visibility: widget container is now ' + (entry.isIntersecting ? 'ON-SCREEN' : 'off-screen') + ' (viewport ' + window.innerWidth + 'x' + window.innerHeight + ')');
                         }
                         if (entry.isIntersecting) {
+                            if (pendingImageFetch) {
+                                pendingImageFetch = false;
+                                clog('lazy restore: widget entered viewport after being deferred for ' + __since(pendingImageFetchSince) + ' — fetching ' + uploadedImages.length + ' image(s) now');
+                                fetchPersistedImages();
+                            }
                             requestResize();
                          }
                     });
                 });
                 observer.observe(document.querySelector('.widget-container'));
             }
+
+            clog('ready: handler completed in ' + __since(readyStart) + (pendingImageFetch ? ' (image fetch deferred)' : ''));
         });
 
         // Listen for widget settings changes
