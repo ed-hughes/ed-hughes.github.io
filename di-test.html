@@ -455,6 +455,10 @@
         // =====================================================
         window.__carouselLogs = [];
 
+        // Random per-instance ID so logs from multiple mounted copies of this
+        // widget iframe can be told apart in a shared console.
+        var __instanceId = Math.random().toString(36).slice(2, 6).toUpperCase();
+
         var __t0 = (window.performance && performance.now) ? performance.now() : Date.now();
         function __now() {
             return (window.performance && performance.now) ? performance.now() : Date.now();
@@ -468,7 +472,7 @@
 
         function clog() {
             var args = Array.prototype.slice.call(arguments);
-            var stamp = '[carousel] ' + new Date().toISOString() + ' ' + __elapsed();
+            var stamp = '[carousel ' + __instanceId + '] ' + new Date().toISOString() + ' ' + __elapsed();
             try {
                 window.__carouselLogs.push([stamp].concat(args.map(function (a) {
                     if (typeof a === 'string') return a;
@@ -480,7 +484,7 @@
 
         function cwarn() {
             var args = Array.prototype.slice.call(arguments);
-            var stamp = '[carousel][WARN] ' + new Date().toISOString() + ' ' + __elapsed();
+            var stamp = '[carousel ' + __instanceId + '][WARN] ' + new Date().toISOString() + ' ' + __elapsed();
             try {
                 window.__carouselLogs.push([stamp].concat(args));
                 console.warn.apply(console, [stamp].concat(args));
@@ -1258,6 +1262,14 @@
                 isRequired: isRequired
             });
 
+            clog('instance environment:', {
+                instanceId: __instanceId,
+                href: window.location.href,
+                referrer: document.referrer || '(none)',
+                visibilityState: document.visibilityState,
+                viewport: window.innerWidth + 'x' + window.innerHeight
+            });
+
             //Output debug info if enabled
             if(enableDebug){
                 var dataDebugLines = Object.keys(data || {}).map(function (key) {
@@ -1372,8 +1384,13 @@
             // Re-request resize when iframe becomes visible
             // (handles sections that start collapsed/hidden)
             if (typeof IntersectionObserver !== 'undefined') {
+                var lastIntersecting = null;
                 var observer = new IntersectionObserver(function(entries) {
                     entries.forEach(function(entry) {
+                        if (entry.isIntersecting !== lastIntersecting) {
+                            lastIntersecting = entry.isIntersecting;
+                            clog('visibility: widget container is now ' + (entry.isIntersecting ? 'ON-SCREEN' : 'off-screen') + ' (viewport ' + window.innerWidth + 'x' + window.innerHeight + ')');
+                        }
                         if (entry.isIntersecting) {
                             requestResize();
                          }
