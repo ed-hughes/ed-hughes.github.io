@@ -455,9 +455,20 @@
         // =====================================================
         window.__carouselLogs = [];
 
+        var __t0 = (window.performance && performance.now) ? performance.now() : Date.now();
+        function __now() {
+            return (window.performance && performance.now) ? performance.now() : Date.now();
+        }
+        function __elapsed() {
+            return '+' + Math.round(__now() - __t0) + 'ms';
+        }
+        function __since(start) {
+            return Math.round(__now() - start) + 'ms';
+        }
+
         function clog() {
             var args = Array.prototype.slice.call(arguments);
-            var stamp = '[carousel] ' + new Date().toISOString();
+            var stamp = '[carousel] ' + new Date().toISOString() + ' ' + __elapsed();
             try {
                 window.__carouselLogs.push([stamp].concat(args.map(function (a) {
                     if (typeof a === 'string') return a;
@@ -469,7 +480,7 @@
 
         function cwarn() {
             var args = Array.prototype.slice.call(arguments);
-            var stamp = '[carousel][WARN] ' + new Date().toISOString();
+            var stamp = '[carousel][WARN] ' + new Date().toISOString() + ' ' + __elapsed();
             try {
                 window.__carouselLogs.push([stamp].concat(args));
                 console.warn.apply(console, [stamp].concat(args));
@@ -552,6 +563,7 @@
 
         // Build Jotform metadata structure
         function buildMetadataValue() {
+            var buildStart = __now();
             if (uploadedImages.length === 0) {
                 clog('buildMetadataValue: 0 images, returning empty value');
                 return '';
@@ -597,11 +609,12 @@
             });
 
             var value = JFCustomWidgetUtils.buildMetadata('imagelinks', entries);
-            clog('buildMetadataValue: ' + entries.length + ' entries, value length ' + (value ? value.length : 0));
+            clog('buildMetadataValue: ' + entries.length + ' entries, value length ' + (value ? value.length : 0) + ', built in ' + __since(buildStart));
             return value;
         }
 
         function restorePersistedImages(items, done) {
+            var restoreStart = __now();
             clog('restorePersistedImages: incoming items', (items || []).map(function (item) {
                 var b = item.base64 || '';
                 return {
@@ -632,7 +645,7 @@
             function settle() {
                 pending -= 1;
                 if (pending > 0) return;
-                clog('restorePersistedImages: all settled, rendering', summarizeImages(uploadedImages));
+                clog('restorePersistedImages: all settled in ' + __since(restoreStart) + ', rendering', summarizeImages(uploadedImages));
                 currentSlide = 0;
                 updateCarousel();
                 if (typeof done === 'function') done();
@@ -652,9 +665,10 @@
                     return;
                 }
 
+                var fetchStart = __now();
                 clog('restore "' + img.name + '": fetching via loadProtectedImage', persistUrl);
                 JFCustomWidget.loadProtectedImage(persistUrl).then(function (base64) {
-                    clog('restore "' + img.name + '": loadProtectedImage OK, got ' + (base64 ? base64.length : 0) + ' chars');
+                    clog('restore "' + img.name + '": loadProtectedImage OK in ' + __since(fetchStart) + ', got ' + (base64 ? base64.length : 0) + ' chars');
                     img.base64 = base64;
                     settle();
                 }).catch(function (error) {
@@ -668,6 +682,8 @@
         function uploadToJotform(file, callback, onProgress) {
             var origin = uploadServerURL.replace('/upload', '');
             var url = origin + '/server.php?action=handleWidgetFiles&type=save';
+            var uploadStart = __now();
+            var callbackCount = 0;
 
             clog('uploadToJotform: POST ' + url, 'file=' + file.name + ' (' + file.size + ' bytes, ' + file.type + ')');
 
@@ -688,21 +704,27 @@
                 try {
                     var response = JSON.parse(xhr.responseText || '{}');
                     console.log('[uploadToJotform] response:', JSON.stringify(response));
+                    callbackCount++;
+                    if (callbackCount > 1) cwarn('uploadToJotform: callback fired ' + callbackCount + ' times for ' + file.name + ' — this call will push a DUPLICATE image');
                     if (response && response.success && response.message) {
-                        clog('uploadToJotform: SUCCESS for ' + file.name + ' → ' + response.message);
+                        clog('uploadToJotform: SUCCESS for ' + file.name + ' in ' + __since(uploadStart) + ' → ' + response.message);
                         callback(response.message);
                     } else {
-                        cwarn('uploadToJotform: server responded without success for ' + file.name + ' (status ' + xhr.status + ') — will fall back to base64');
+                        cwarn('uploadToJotform: server responded without success for ' + file.name + ' (status ' + xhr.status + ') after ' + __since(uploadStart) + ' — will fall back to base64');
                         callback(null);
                     }
                 } catch (e) {
-                    cwarn('uploadToJotform: unparseable response for ' + file.name + ' (status ' + xhr.status + ') — will fall back to base64');
+                    callbackCount++;
+                    if (callbackCount > 1) cwarn('uploadToJotform: callback fired ' + callbackCount + ' times for ' + file.name + ' — this call will push a DUPLICATE image');
+                    cwarn('uploadToJotform: unparseable response for ' + file.name + ' (status ' + xhr.status + ') after ' + __since(uploadStart) + ' — will fall back to base64');
                     callback(null);
                 }
             };
 
             xhr.onerror = function () {
-                cwarn('uploadToJotform: network error for ' + file.name + ' — will fall back to base64');
+                callbackCount++;
+                if (callbackCount > 1) cwarn('uploadToJotform: callback fired ' + callbackCount + ' times for ' + file.name + ' — this call will push a DUPLICATE image');
+                cwarn('uploadToJotform: network error for ' + file.name + ' after ' + __since(uploadStart) + ' — will fall back to base64');
                 callback(null);
             };
             xhr.send(formData);
@@ -711,6 +733,7 @@
         // Read file as base64
         function readAsBase64(file, onDone, onProgress) {
             var reader = new FileReader();
+            var readStart = __now();
 
             reader.onprogress = function (e) {
                 if (e.lengthComputable && typeof onProgress === 'function') {
@@ -719,6 +742,7 @@
             };
 
             reader.onload = function (e) {
+                clog('readAsBase64: "' + file.name + '" read in ' + __since(readStart) + ' (' + (e.target.result ? e.target.result.length : 0) + ' chars)');
                 onDone(e.target.result);
             };
             reader.readAsDataURL(file);
@@ -965,6 +989,7 @@
                 return f.type.startsWith('image/');
             });
 
+            var batchStart = __now();
             clog('processFiles: ' + imageFiles.length + ' image file(s) selected', imageFiles.map(function (f) {
                 return f.name + ' (' + f.size + ' bytes)';
             }), 'existing images before this batch: ' + uploadedImages.length, summarizeImages(uploadedImages));
@@ -995,7 +1020,7 @@
                 processed++;
                 setUploadProgress((processed / imageFiles.length) * 100, processed, imageFiles.length);
                 if (processed === imageFiles.length) {
-                    clog('processFiles: batch complete, total images now ' + uploadedImages.length, summarizeImages(uploadedImages));
+                    clog('processFiles: batch complete in ' + __since(batchStart) + ', total images now ' + uploadedImages.length, summarizeImages(uploadedImages));
                     setUploadProgress(100, processed, imageFiles.length);
                     setTimeout(function () { hideUploadProgress(); }, 400);
                     currentSlide = uploadedImages.length - 1;
@@ -1311,10 +1336,11 @@
             }
 
             JFCustomWidget.subscribe('submit', function () {
+                var submitStart = __now();
                 var value = buildMetadataValue();
                 var valid = !isRequired || uploadedImages.length > 0;
 
-                clog('submit: valid=' + valid + ', ' + uploadedImages.length + ' image(s), value length ' + (value ? value.length : 0), summarizeImages(uploadedImages));
+                clog('submit: valid=' + valid + ', ' + uploadedImages.length + ' image(s), value length ' + (value ? value.length : 0) + ', prepared in ' + __since(submitStart), summarizeImages(uploadedImages));
 
                 if (!valid) {
                     JFCustomWidget.showWidgetError(JFCustomWidget.texts.required || 'This field is required.');
