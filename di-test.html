@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>mycar Image Carousel - Design 1</title>
     <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
-    
+
     <style>
         * {
             box-sizing: border-box;
@@ -426,7 +425,7 @@
         <div class="carousel-container" id="carousel">
             <button class="nav-btn nav-prev" id="btn-prev" onclick="moveSlide(-1)">&#10094;</button>
             <button class="nav-btn nav-next" id="btn-next" onclick="moveSlide(1)">&#10095;</button>
-            
+
             <div class="carousel-track" id="track"></div>
         </div>
 
@@ -448,6 +447,47 @@
         let uploadServerURL = '';
         let uploadFolder = '';
         let allowSubmissionEditUpload = false;
+
+        // =====================================================
+        // DIAGNOSTIC LOGGING (no logic changes)
+        // All entries also collect in window.__carouselLogs so
+        // they can be dumped later: copy(window.__carouselLogs)
+        // =====================================================
+        window.__carouselLogs = [];
+
+        function clog() {
+            var args = Array.prototype.slice.call(arguments);
+            var stamp = '[carousel] ' + new Date().toISOString();
+            try {
+                window.__carouselLogs.push([stamp].concat(args.map(function (a) {
+                    if (typeof a === 'string') return a;
+                    try { return JSON.parse(JSON.stringify(a)); } catch (e) { return String(a); }
+                })));
+                console.log.apply(console, [stamp].concat(args));
+            } catch (e) { /* logging must never break the widget */ }
+        }
+
+        function cwarn() {
+            var args = Array.prototype.slice.call(arguments);
+            var stamp = '[carousel][WARN] ' + new Date().toISOString();
+            try {
+                window.__carouselLogs.push([stamp].concat(args));
+                console.warn.apply(console, [stamp].concat(args));
+            } catch (e) { /* noop */ }
+        }
+
+        // Compact, log-safe view of the image state (never dumps full base64)
+        function summarizeImages(list) {
+            return (list || []).map(function (img, i) {
+                var b = img.base64 || '';
+                return {
+                    i: i,
+                    name: img.name,
+                    url: img.url || '(none)',
+                    base64: !b ? '(none)' : (b.indexOf('data:') === 0 ? 'dataUri ' + b.length + ' chars' : 'NON-DATA-URI: ' + b.slice(0, 80))
+                };
+            });
+        }
 
         function showUploadProgress() {
             document.getElementById('upload-progress').classList.add('visible');
@@ -512,20 +552,65 @@
 
         // Build Jotform metadata structure
         function buildMetadataValue() {
-            if (uploadedImages.length === 0) return '';
-            return JFCustomWidgetUtils.buildMetadata('imagelinks', uploadedImages.map(function (img) {
+            if (uploadedImages.length === 0) {
+                clog('buildMetadataValue: 0 images, returning empty value');
+                return '';
+            }
+
+            var seenKeys = {};
+            var entries = uploadedImages.map(function (img, index) {
+                var entry;
+                var branch;
+
                 if (img.url) {
-                    return { name: img.name, url: JFCustomWidgetUtils.getS3UriRelativePath(img.url) || img.url };
+                    branch = 'url';
+                    entry = { name: img.name, url: JFCustomWidgetUtils.getS3UriRelativePath(img.url) || img.url };
+                } else {
+                    var isDataUri = img.base64 && img.base64.indexOf('data:') === 0;
+                    if (isDataUri) {
+                        branch = 'base64';
+                        entry = { name: img.name, base64: img.base64 };
+                    } else {
+                        branch = 'base64-treated-as-url';
+                        entry = { name: img.name, url: JFCustomWidgetUtils.getS3UriRelativePath(img.base64) };
+                    }
                 }
-                var isDataUri = img.base64 && img.base64.indexOf('data:') === 0;
-                if (isDataUri) {
-                    return { name: img.name, base64: img.base64 };
+
+                var key = entry.url ? ('url:' + entry.url) : ('b64:' + img.name + ':' + (entry.base64 ? entry.base64.length : 0));
+                if (seenKeys[key]) {
+                    cwarn('DUPLICATE metadata entry at index ' + index + ' — same key already emitted:', key);
                 }
-                return { name: img.name, url: JFCustomWidgetUtils.getS3UriRelativePath(img.base64) };
-            }));
+                seenKeys[key] = true;
+
+                clog('buildMetadataValue[' + index + '] branch=' + branch,
+                    'name=' + entry.name,
+                    entry.url ? ('url=' + entry.url) : ('base64=' + (entry.base64 ? entry.base64.length + ' chars' : '(empty)')));
+
+                if (branch === 'base64') {
+                    cwarn('entry ' + index + ' (' + entry.name + ') has NO server url — submitting raw base64. If this image existed in a previous send, the server may store it again (duplicate risk).');
+                }
+                if (branch === 'base64-treated-as-url' && !entry.url) {
+                    cwarn('entry ' + index + ' (' + entry.name + ') resolved to an empty url from getS3UriRelativePath — value will be malformed.');
+                }
+
+                return entry;
+            });
+
+            var value = JFCustomWidgetUtils.buildMetadata('imagelinks', entries);
+            clog('buildMetadataValue: ' + entries.length + ' entries, value length ' + (value ? value.length : 0));
+            return value;
         }
 
         function restorePersistedImages(items, done) {
+            clog('restorePersistedImages: incoming items', (items || []).map(function (item) {
+                var b = item.base64 || '';
+                return {
+                    name: item.name,
+                    url: item.url || '(none)',
+                    base64: !b ? '(none)' : (b.indexOf('data:') === 0 ? 'dataUri ' + b.length + ' chars' : 'NON-DATA-URI: ' + b.slice(0, 80))
+                };
+            }));
+
             uploadedImages = (items || []).map(function (item) {
                 return {
                     name: item.name,
@@ -536,6 +621,8 @@
                 return img.base64 || img.url;
             });
 
+            clog('restorePersistedImages: kept ' + uploadedImages.length + ' of ' + (items || []).length + ' items', summarizeImages(uploadedImages));
+
             if (uploadedImages.length === 0) {
                 if (typeof done === 'function') done();
                 return;
@@ -545,6 +632,7 @@
             function settle() {
                 pending -= 1;
                 if (pending > 0) return;
+                clog('restorePersistedImages: all settled, rendering', summarizeImages(uploadedImages));
                 currentSlide = 0;
                 updateCarousel();
                 if (typeof done === 'function') done();
@@ -552,6 +640,7 @@
 
             uploadedImages.forEach(function (img) {
                 if (img.base64) {
+                    clog('restore "' + img.name + '": already has base64, no fetch needed');
                     settle();
                     return;
                 }
@@ -563,7 +652,9 @@
                     return;
                 }
 
+                clog('restore "' + img.name + '": fetching via loadProtectedImage', persistUrl);
                 JFCustomWidget.loadProtectedImage(persistUrl).then(function (base64) {
+                    clog('restore "' + img.name + '": loadProtectedImage OK, got ' + (base64 ? base64.length : 0) + ' chars');
                     img.base64 = base64;
                     settle();
                 }).catch(function (error) {
@@ -577,6 +668,8 @@
         function uploadToJotform(file, callback, onProgress) {
             var origin = uploadServerURL.replace('/upload', '');
             var url = origin + '/server.php?action=handleWidgetFiles&type=save';
+
+            clog('uploadToJotform: POST ' + url, 'file=' + file.name + ' (' + file.size + ' bytes, ' + file.type + ')');
 
             var formData = new FormData();
             formData.append('file', file, file.name);
@@ -596,16 +689,22 @@
                     var response = JSON.parse(xhr.responseText || '{}');
                     console.log('[uploadToJotform] response:', JSON.stringify(response));
                     if (response && response.success && response.message) {
+                        clog('uploadToJotform: SUCCESS for ' + file.name + ' → ' + response.message);
                         callback(response.message);
                     } else {
+                        cwarn('uploadToJotform: server responded without success for ' + file.name + ' (status ' + xhr.status + ') — will fall back to base64');
                         callback(null);
                     }
                 } catch (e) {
+                    cwarn('uploadToJotform: unparseable response for ' + file.name + ' (status ' + xhr.status + ') — will fall back to base64');
                     callback(null);
                 }
             };
 
-            xhr.onerror = function () { callback(null); };
+            xhr.onerror = function () {
+                cwarn('uploadToJotform: network error for ' + file.name + ' — will fall back to base64');
+                callback(null);
+            };
             xhr.send(formData);
         }
 
@@ -635,6 +734,7 @@
 
         // Send current value to Jotform
         function sendCurrentValue() {
+            clog('sendCurrentValue: sending full value for ' + uploadedImages.length + ' image(s)', summarizeImages(uploadedImages));
             JFCustomWidget.sendData({ value: buildMetadataValue() });
         }
 
@@ -865,6 +965,10 @@
                 return f.type.startsWith('image/');
             });
 
+            clog('processFiles: ' + imageFiles.length + ' image file(s) selected', imageFiles.map(function (f) {
+                return f.name + ' (' + f.size + ' bytes)';
+            }), 'existing images before this batch: ' + uploadedImages.length, summarizeImages(uploadedImages));
+
             if (imageFiles.length === 0) {
                 showError('Please select image files only.');
                 return;
@@ -891,6 +995,7 @@
                 processed++;
                 setUploadProgress((processed / imageFiles.length) * 100, processed, imageFiles.length);
                 if (processed === imageFiles.length) {
+                    clog('processFiles: batch complete, total images now ' + uploadedImages.length, summarizeImages(uploadedImages));
                     setUploadProgress(100, processed, imageFiles.length);
                     setTimeout(function () { hideUploadProgress(); }, 400);
                     currentSlide = uploadedImages.length - 1;
@@ -903,6 +1008,7 @@
                 if (uploadServerURL && uploadFolder) {
                     uploadToJotform(file, function (url) {
                         if (url) {
+                            clog('processFiles: "' + file.name + '" uploaded, storing url + reading local base64 for preview');
                             updateFileProgress(index, 100);
                             var uploaded = {
                                 name: file.name,
@@ -917,6 +1023,7 @@
                                 updateFileProgress(index, percent);
                             });
                         } else {
+                            cwarn('processFiles: upload FAILED for "' + file.name + '" — storing base64 only (no url). This entry will re-submit base64 on every send (duplicate risk).');
                             readAsBase64(file, function (dataUri) {
                                 updateFileProgress(index, 100);
                                 uploadedImages.push({ name: file.name, base64: dataUri });
@@ -929,6 +1036,7 @@
                         updateFileProgress(index, percent);
                     });
                 } else {
+                    clog('processFiles: no uploadServerURL/uploadFolder — storing "' + file.name + '" as base64 only');
                     readAsBase64(file, function (dataUri) {
                         updateFileProgress(index, 100);
                         uploadedImages.push({ name: file.name, base64: dataUri });
@@ -951,7 +1059,7 @@
             if(enableDebug){
                 document.getElementById('debug').textContent = 'Images in carousel: ' + uploadedImages.length;
             }
-            
+
             if (uploadedImages.length == 0) {
                 carousel.style.display = 'none';
                 addPhotoBtn.style.display = 'none';
@@ -975,14 +1083,14 @@
             dropZone.style.display = 'none';
             carousel.style.display = 'block';
             addPhotoBtn.style.display = document.body.classList.contains('view-only') ? 'none' : 'flex';
-            
+
             if (currentSlide >= uploadedImages.length) {
                 currentSlide = Math.max(0, uploadedImages.length - 1);
             }
 
             track.innerHTML = '';
             thumbsContainer.innerHTML = '';
-            
+
             var imagesLoaded = 0;
             uploadedImages.forEach((img, index) => {
                 const slide = document.createElement('div');
@@ -1058,6 +1166,7 @@
         }
 
         function deleteImage(index) {
+            clog('deleteImage: removing index ' + index + ' ("' + (uploadedImages[index] && uploadedImages[index].name) + '")');
             uploadedImages.splice(index, 1);
             updateCarousel();
             sendCurrentValue();
@@ -1105,6 +1214,16 @@
             var userRole = getRoleFromData(data);
             var isTechnicianSession = userRole === 'technician';
             var isReviewerSession = userRole === 'reviewer';
+
+            clog('ready:', {
+                isStatic: isStatic,
+                isEditMode: !!data.isEditMode,
+                userRole: userRole || '(none)',
+                valueLength: data.value ? data.value.length : 0,
+                hasEditLink: !!data.editLink,
+                uploadServerURL: uploadServerURL || '(none)',
+                isRequired: isRequired
+            });
 
             //Output debug info if enabled
             if(enableDebug){
@@ -1158,6 +1277,12 @@
                 document.body.classList.add('view-only');
             }
 
+            clog('ready: mode resolution', {
+                isEditMode: isEditMode,
+                allowSubmissionEditUpload: allowSubmissionEditUpload,
+                bodyClasses: document.body.className || '(none)'
+            });
+
             // Hide upload element when editLink is present
             var editLink = data.editLink || false;
             if (editLink && !allowSubmissionEditUpload) {
@@ -1167,12 +1292,14 @@
             // Restore saved value (edit mode or static)
             if (data.value && JFCustomWidgetUtils.hasMetadata(data.value)) {
                 var extracted = JFCustomWidgetUtils.extractMetadata(data.value);
+                clog('ready: incoming value has metadata, extracted ' + (extracted ? extracted.length : 0) + ' item(s)');
                 if (extracted && extracted.length > 0) {
                     restorePersistedImages(extracted);
                 } else {
                     updateCarousel();
                 }
             } else {
+                clog('ready: no metadata in incoming value, starting empty');
                 updateCarousel();
             }
 
@@ -1187,6 +1314,8 @@
                 var value = buildMetadataValue();
                 var valid = !isRequired || uploadedImages.length > 0;
 
+                clog('submit: valid=' + valid + ', ' + uploadedImages.length + ' image(s), value length ' + (value ? value.length : 0), summarizeImages(uploadedImages));
+
                 if (!valid) {
                     JFCustomWidget.showWidgetError(JFCustomWidget.texts.required || 'This field is required.');
                 } else {
@@ -1197,6 +1326,7 @@
             });
 
             JFCustomWidget.subscribe('clear', function () {
+                clog('clear: resetting widget, discarding ' + uploadedImages.length + ' image(s)');
                 uploadedImages = [];
                 currentSlide = 0;
                 document.body.classList.remove('view-only');
@@ -1208,7 +1338,7 @@
             // Re-request resize when iframe becomes visible
             // (handles sections that start collapsed/hidden)
             if (typeof IntersectionObserver !== 'undefined') {
-                var observer = new IntersectionObserver(function(entries) {    
+                var observer = new IntersectionObserver(function(entries) {
                     entries.forEach(function(entry) {
                         if (entry.isIntersecting) {
                             requestResize();
