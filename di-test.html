@@ -684,6 +684,20 @@
             var url = origin + '/server.php?action=handleWidgetFiles&type=save';
             var uploadStart = __now();
             var callbackCount = 0;
+            var settled = false;
+
+            // One-shot guard: a failed XHR fires BOTH onreadystatechange (readyState 4,
+            // status 0) AND onerror, which double-invoked the callback and pushed every
+            // failed image twice. Only the first invocation may pass through.
+            function settle(result) {
+                callbackCount++;
+                if (settled) {
+                    clog('uploadToJotform: suppressed duplicate callback #' + callbackCount + ' for ' + file.name + ' — already settled');
+                    return;
+                }
+                settled = true;
+                callback(result);
+            }
 
             clog('uploadToJotform: POST ' + url, 'file=' + file.name + ' (' + file.size + ' bytes, ' + file.type + ')');
 
@@ -704,28 +718,22 @@
                 try {
                     var response = JSON.parse(xhr.responseText || '{}');
                     console.log('[uploadToJotform] response:', JSON.stringify(response));
-                    callbackCount++;
-                    if (callbackCount > 1) cwarn('uploadToJotform: callback fired ' + callbackCount + ' times for ' + file.name + ' — this call will push a DUPLICATE image');
                     if (response && response.success && response.message) {
                         clog('uploadToJotform: SUCCESS for ' + file.name + ' in ' + __since(uploadStart) + ' → ' + response.message);
-                        callback(response.message);
+                        settle(response.message);
                     } else {
                         cwarn('uploadToJotform: server responded without success for ' + file.name + ' (status ' + xhr.status + ') after ' + __since(uploadStart) + ' — will fall back to base64');
-                        callback(null);
+                        settle(null);
                     }
                 } catch (e) {
-                    callbackCount++;
-                    if (callbackCount > 1) cwarn('uploadToJotform: callback fired ' + callbackCount + ' times for ' + file.name + ' — this call will push a DUPLICATE image');
                     cwarn('uploadToJotform: unparseable response for ' + file.name + ' (status ' + xhr.status + ') after ' + __since(uploadStart) + ' — will fall back to base64');
-                    callback(null);
+                    settle(null);
                 }
             };
 
             xhr.onerror = function () {
-                callbackCount++;
-                if (callbackCount > 1) cwarn('uploadToJotform: callback fired ' + callbackCount + ' times for ' + file.name + ' — this call will push a DUPLICATE image');
                 cwarn('uploadToJotform: network error for ' + file.name + ' after ' + __since(uploadStart) + ' — will fall back to base64');
-                callback(null);
+                settle(null);
             };
             xhr.send(formData);
         }
