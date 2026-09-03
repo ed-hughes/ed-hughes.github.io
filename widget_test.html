@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+    <style>
+      html, body { margin: 0; padding: 0; font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+      /* In production nothing renders: hideWidgetContainer() removes the whole
+         container from the form. The panel below is debug-only. */
+      #panel { display: none; border: 1px solid #d5d9e0; border-radius: 6px; padding: 10px 12px; background: #fbfcfd; color: #1f2933; }
+      #panel.on { display: block; }
+      .row { display: flex; align-items: center; gap: 8px; }
+      .dot { width: 9px; height: 9px; border-radius: 50%; background: #b9c0cc; flex: none; }
+      .dot.wait { background: #e0a325; }
+      .dot.ok   { background: #2f9e5f; }
+      .dot.err  { background: #cf3f3f; }
+      .state { font-weight: 600; }
+      .val { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #4a5568; word-break: break-all; margin-top: 6px; }
+      .log { margin-top: 8px; padding-top: 8px; border-top: 1px solid #e6e9ee; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: #5a6472; max-height: 130px; overflow-y: auto; }
+      .log div { padding: 1px 0; }
+      .log .e { color: #cf3f3f; }
+    </style>
+  </head>
+  <body>
+    <div id="panel">
+      <div class="row"><span id="dot" class="dot"></span><span id="state" class="state">initialising</span></div>
+      <div id="val" class="val"></div>
+      <div id="log" class="log"></div>
+    </div>
+
+    <script type="text/javascript">
+      JFCustomWidgetUtils.domReady(function () {
+
+        /* ------------------------------------------------------------------
+         * Host correlation widget
+         *
+         * Carries an opaque, single-use correlation nonce into the submission
+         * so the webhook can be joined back to a patient — WITHOUT putting any
+         * patient data into the form.
+         *
+         * The host application postMessages the nonce down into this widget; the
+         * widget submits it as its own answer. Server-side:
+         *   nonce -> (formId, patientId, teamMemberId, entityId)
+         *
+         * Nothing decodable reaches the browser, and the value lives in a
+         * field the patient cannot type into.
+         *
+         * NOTE: all functions are declared at this scope, never inside a
+         * block — see "Function Declarations in Blocks" in the SDK docs.
+         * ------------------------------------------------------------------ */
+
+        var PROTOCOL   = 1;
+        var WIDGET_SRC = 'correlation-widget';
+        var HOST_SRC   = 'host-app';
+
+        // Re-announce until the host answers: its listener may attach late.
+        var ANNOUNCE_INTERVAL_MS = 400;
+        var ANNOUNCE_TIMEOUT_MS  = 12000;
+
+        // Opaque tokens only. A misconfigured host cannot smuggle structured
+        // data — and therefore PHI — into a submitted answer.
+        var NONCE_RE = /^[A-Za-z0-9_-]{16,128}$/;
+
+        var state = {
+          nonce: null,
+          adopted: false,   // value restored from an existing submission
+          settled: false,
+          error: null,
+          ctx: {}
+        };
+
+        var announceTimer = null;
+        var startedAt = 0;
+        var allowedOrigins = [];
+        var debug = false;
+        var requireContext = true;
+
+        var panelEl = document.getElementById('panel');
+        var dotEl   = document.getElementById('dot');
+        var stateEl = document.getElementById('state');
+        var valEl   = document.getElementById('val');
+        var logEl   = document.getElementById('log');
+
+        // ---- helpers -----------------------------------------------------
+        var setting = function (name, fallback) {
+          try {
+            var v = JFCustomWidget.getWidgetSetting(name);   // sync
+            if (v === undefined || v === null || v === '') return fallback;
+            return v;
+          } catch (e) { return fallback; }
+        };
+
+        var truthy = function (v) {
+          var s = String(v).toLowerCase();
+          return s === 'true' || s === '1' || s === 'yes';
+        };
+
+        var validNonce = function (v) {
+          return typeof v === 'string' && NONCE_RE.test(v);
+        };
+
+        var resize = function () {
+          try {
+            JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 8 });
+          } catch (e) { /* non-fatal */ }
+        };
+
+        var log = function (msg, isErr) {
+          if (!debug) return;
+          var d = document.createElement('div');
+          if (isErr) d.className = 'e';
+          d.textContent = new Date().toISOString().substr(11, 12) + '  ' + msg;
+          logEl.appendChild(d);
+          logEl.scrollTop = logEl.scrollHeight;
+          resize();
+        };
+
+        var render = function (cls, text, detail) {
+          if (!debug) return;
+          dotEl.className = 'dot ' + cls;
+          stateEl.textContent = text;
+          valEl.textContent = detail || '';
+          resize();
+        };
+
+        var postToHost = function (type, extra) {
+          var msg = { source: WIDGET_SRC, type: type, v: PROTOCOL };
+          if (extra) {
+            Object.keys(extra).forEach(function (k) { msg[k] = extra[k]; });
+          }
+          // targetOrigin is always pinned, never '*'. If this form is opened
+          // outside the host application, window.top is Jotform's own origin and
+          // the browser drops the message — which is the behaviour we want.
+          allowedOrigins.forEach(function (origin) {
+            try { window.top.postMessage(msg, origin); } catch (e) { /* expected */ }
+          });
+        };
+
+        var stopAnnouncing = function () {
+          if (announceTimer) { clearInterval(announceTimer); announceTimer = null; }
+        };
+
+        var announce = function () {
+          if (state.settled) { stopAnnouncing(); return; }
+
+          if (Date.now() - startedAt > ANNOUNCE_TIMEOUT_MS) {
+            stopAnnouncing();
+            if (!state.nonce) {
+              state.error = 'no-host-response';
+              render('err', 'no context — submission will be blocked',
+                     'No host replied within ' + (ANNOUNCE_TIMEOUT_MS / 1000) + 's.');
+              log('handshake timed out; host did not respond', true);
+              postToHost('error', { reason: 'no-host-response' });
+            }
+            return;
+          }
+
+          postToHost('ready', {});
+        };
+
+        var onMessage = function (event) {
+          // Exact origin match. Never substring, never startsWith.
+          if (allowedOrigins.indexOf(event.origin) === -1) return;
+
+          var d = event.data;
+          if (!d || typeof d !== 'object') return;
+          if (d.source !== HOST_SRC) return;
+          if (d.v !== PROTOCOL) {
+            log('ignored message: protocol v' + d.v + ' (expected v' + PROTOCOL + ')', true);
+            return;
+          }
+          if (d.type !== 'context') return;
+
+          if (!validNonce(d.nonce)) {
+            state.error = 'bad-nonce';
+            render('err', 'rejected malformed context', String(d.nonce).slice(0, 60));
+            log('rejected nonce from ' + event.origin + ' — failed format check', true);
+            postToHost('error', { reason: 'bad-nonce' });
+            return;
+          }
+
+          state.nonce  = d.nonce;
+          state.settled = true;
+          state.error  = null;
+          stopAnnouncing();
+
+          try { JFCustomWidget.hideWidgetError(); } catch (e) { /* non-fatal */ }
+
+          render('ok', state.adopted ? 'context replaced (was edit-mode value)' : 'context received',
+                 state.nonce);
+          log('accepted nonce from ' + event.origin);
+
+          // Keep the parent form's hidden input in sync immediately, so the
+          // value is present even if 'submit' never reaches us.
+          try { JFCustomWidget.sendData({ value: state.nonce }); } catch (e) {
+            log('sendData failed: ' + e.message, true);
+          }
+
+          // Reply on the exact window that sent it — no frame traversal.
+          try {
+            event.source.postMessage({ source: WIDGET_SRC, type: 'ack', v: PROTOCOL }, event.origin);
+          } catch (e) {
+            log('ack failed: ' + e.message, true);
+          }
+        };
+
+        var getData = function () {
+          if (state.nonce) {
+            return { valid: true, value: state.nonce };
+          }
+          if (!requireContext) {
+            log('submitting empty value (requireContext=false)');
+            return { valid: true, value: '' };
+          }
+          // Block rather than silently create an uncorrelatable clinical record.
+          try {
+            JFCustomWidget.showWidgetError(
+              'This form could not be linked to a patient record. Please reopen it from the application.'
+            );
+          } catch (e) { /* non-fatal */ }
+          log('submit blocked — no correlation context', true);
+          render('err', 'submit blocked — no context', 'Form was not opened from the host application.');
+          postToHost('submit-blocked', { reason: state.error || 'no-context' });
+          return { valid: false, value: '' };
+        };
+
+        var onSubmit = function () {
+          var payload = getData();
+          if (payload.valid && payload.value) {
+            postToHost('submitting', { nonce: payload.value });
+          }
+          JFCustomWidget.sendSubmit(payload);
+        };
+
+        // ---- lifecycle ---------------------------------------------------
+        JFCustomWidget.subscribe('ready', function (data) {
+          data = data || {};
+
+          allowedOrigins = String(setting('allowedOrigins', 'https://app.example.com'))
+            .split(',')
+            .map(function (s) { return s.trim().replace(/\/+$/, ''); })
+            .filter(Boolean);
+
+          debug          = truthy(setting('debug', 'false'));
+          requireContext = truthy(setting('requireContext', 'true'));
+
+          if (debug) panelEl.className = 'on';
+
+          state.ctx = {
+            formID: data.formID,
+            qid: data.qid || JFCustomWidget.questionID,
+            sid: data.sid,
+            isEditMode: !!data.isEditMode
+          };
+
+          // Static mode: submission tables and generated PDFs. Render the
+          // stored value read-only and do nothing else — no handshake, no
+          // submit gating. PDF generation hits this path, so it must not
+          // handshake or block.
+          if (typeof JFCustomWidget.isWidgetStatic === 'function' && JFCustomWidget.isWidgetStatic()) {
+            if (debug) render('ok', 'static view', data.value || '(empty)');
+            else { try { JFCustomWidget.hideWidgetContainer(); } catch (e) {} }
+            return;
+          }
+
+          // Form builder: never handshake or show errors while someone is
+          // editing the form.
+          if (typeof JFCustomWidget.isWidgetOnBuilder === 'function' && JFCustomWidget.isWidgetOnBuilder()) {
+            panelEl.className = 'on';
+            debug = true;
+            render('wait', 'Correlation field', 'Inactive in the builder. Do not delete this widget.');
+            return;
+          }
+
+          // Live form. Hide the container unless explicitly debugging — this
+          // is what replaces the hand-built hide condition and
+          // clearFieldOnHide in the current onboarding sequence.
+          if (!debug) {
+            try { JFCustomWidget.hideWidgetContainer(); } catch (e) { /* non-fatal */ }
+          }
+
+          log('ready — form ' + state.ctx.formID + ', qid ' + state.ctx.qid +
+              (state.ctx.isEditMode ? ', EDIT sid ' + state.ctx.sid : ''));
+          try { log('parent origin: ' + JFCustomWidget.getParentOrigin()); } catch (e) {}
+          log('allowed host origins: ' + allowedOrigins.join(', '));
+
+          // Edit mode: the previous submission's value arrives in data.value.
+          // Keep it, so an edited record stays joined to the same patient even
+          // if no host answers.
+          if (data.isEditMode && validNonce(data.value)) {
+            state.nonce = data.value;
+            state.adopted = true;
+            render('ok', 'restored context from submission ' + (data.sid || ''), data.value);
+            log('adopted existing nonce from edit mode');
+          } else {
+            render('wait', 'waiting for context from host', allowedOrigins.join(', '));
+          }
+
+          window.addEventListener('message', onMessage, false);
+
+          // Announce regardless: on edit the host may still supply a fresh
+          // nonce, and it tells the host the widget is alive.
+          startedAt = Date.now();
+          announce();
+          announceTimer = setInterval(announce, ANNOUNCE_INTERVAL_MS);
+
+          JFCustomWidget.subscribe('submit', onSubmit);
+        });
+      });
+    </script>
+  </body>
+</html>
