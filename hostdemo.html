@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Host page — correlation demo</title>
+  <style>
+    :root { --bg:#f6f7f9; --card:#fff; --line:#dfe3e9; --ink:#1f2933; --mut:#6b7480; --ok:#2f9e5f; --err:#cf3f3f; --warn:#e0a325; }
+    * { box-sizing: border-box; }
+    body { margin:0; padding:24px; background:var(--bg); color:var(--ink);
+           font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+    h1 { font-size:17px; margin:0 0 4px; }
+    .sub { color:var(--mut); font-size:13px; margin-bottom:18px; }
+    .grid { display:grid; grid-template-columns: 380px 1fr; gap:18px; align-items:start; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; }
+    .card h2 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:0 0 10px; }
+    label { display:block; font-size:12px; color:var(--mut); margin:10px 0 4px; }
+    input { width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:5px; font-size:13px; }
+    button { margin-top:12px; padding:8px 14px; border:0; border-radius:6px; background:#2f6fdb; color:#fff;
+             font-size:13px; font-weight:600; cursor:pointer; }
+    button:hover { background:#2a62c2; }
+    .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; }
+    .kv { display:flex; justify-content:space-between; gap:12px; padding:4px 0; border-bottom:1px solid #f0f2f5; }
+    .kv:last-child { border-bottom:0; }
+    .kv span:first-child { color:var(--mut); }
+    .log { margin-top:4px; max-height:260px; overflow-y:auto; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; }
+    .log div { padding:2px 0; border-bottom:1px solid #f3f5f7; }
+    .log .ok { color:var(--ok); } .log .err { color:var(--err); } .log .warn { color:var(--warn); }
+    iframe { width:100%; height:640px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+    .note { font-size:12px; color:var(--mut); margin-top:10px; }
+    code { background:#eef1f5; padding:1px 4px; border-radius:3px; font-size:11.5px; }
+  </style>
+</head>
+<body>
+  <h1>Host page — correlation demo</h1>
+  <div class="sub">Stands in for the host application. Mints a nonce, embeds the form, hands the nonce to the widget over postMessage.</div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>1 · Server mints the nonce</h2>
+        <div class="note" style="margin-top:0">
+          In production this happens server-side when the prefill URL is minted. The row below is written to
+          your own database. Nothing here ever reaches JotForm.
+        </div>
+        <label>Form URL (prefill link)</label>
+        <input id="formUrl" placeholder="https://forms.example.com/2624.../prefill/abc123" />
+        <label>patientId</label>
+        <input id="patientId" value="pat_88213" />
+        <label>teamMemberId</label>
+        <input id="teamMemberId" value="tm_4471" />
+        <label>entityId (journal entry / consent)</label>
+        <input id="entityId" value="jrn_99120" />
+        <button id="go">Mint nonce &amp; load form</button>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>2 · Server-side lookup row</h2>
+        <div id="row" class="mono" style="color:var(--mut)">— not minted yet —</div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>3 · Handshake</h2>
+        <div id="log" class="log"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Embedded form</h2>
+      <iframe id="frame" title="JotForm"></iframe>
+      <div class="note">
+        The widget posts <code>ready</code> up to <code>window.top</code>; this page replies to
+        <code>event.source</code> with the nonce, pinned to the widget's exact origin.
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  var PROTOCOL   = 1;
+  var WIDGET_SRC = 'correlation-widget';
+  var HOST_SRC   = 'host-app';
+
+  // The origin widget.html is served from — NOT this page's origin.
+  // In production: https://widget.example.com
+  // Override for a demo with ?widgetOrigin=https://your-host
+  var WIDGET_ORIGIN =
+    new URLSearchParams(location.search).get('widgetOrigin') ||
+    'https://widget.example.com';
+
+  var logEl = document.getElementById('log');
+  var rowEl = document.getElementById('row');
+  var lookup = {};        // nonce -> context. Stands in for the DB table.
+  var current = null;
+
+  function log(msg, cls) {
+    var d = document.createElement('div');
+    if (cls) d.className = cls;
+    d.textContent = new Date().toISOString().substr(11, 12) + '  ' + msg;
+    logEl.insertBefore(d, logEl.firstChild);
+  }
+
+  function mintNonce() {
+    var b = new Uint8Array(24);
+    crypto.getRandomValues(b);
+    return btoa(String.fromCharCode.apply(null, b))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  document.getElementById('go').addEventListener('click', function () {
+    var url = document.getElementById('formUrl').value.trim();
+    if (!url) { log('enter a form URL first', 'err'); return; }
+
+    var nonce = mintNonce();
+    current = {
+      nonce: nonce,
+      patientId:    document.getElementById('patientId').value.trim(),
+      teamMemberId: document.getElementById('teamMemberId').value.trim(),
+      entityId:     document.getElementById('entityId').value.trim(),
+      mintedAt:     new Date().toISOString()
+    };
+    lookup[nonce] = current;
+
+    rowEl.innerHTML = Object.keys(current).map(function (k) {
+      return '<div class="kv"><span>' + k + '</span><span>' + current[k] + '</span></div>';
+    }).join('');
+
+    log('minted nonce ' + nonce.slice(0, 12) + '…', 'ok');
+    log('loading form');
+    document.getElementById('frame').src = url;
+  });
+
+  window.addEventListener('message', function (event) {
+    // Exact origin match — never substring, never startsWith.
+    if (event.origin !== WIDGET_ORIGIN) return;
+
+    var d = event.data;
+    if (!d || typeof d !== 'object' || d.source !== WIDGET_SRC) return;
+    if (d.v !== PROTOCOL) { log('widget protocol v' + d.v + ' mismatch', 'err'); return; }
+
+    if (d.type === 'ready') {
+      if (!current) { log('widget ready, but no nonce minted yet', 'warn'); return; }
+      // Reply on the sending window directly — no frame traversal needed.
+      event.source.postMessage(
+        { source: HOST_SRC, type: 'context', v: PROTOCOL, nonce: current.nonce },
+        event.origin
+      );
+      log('widget ready → sent context');
+      return;
+    }
+
+    if (d.type === 'ack')            { log('widget acknowledged context', 'ok'); return; }
+    if (d.type === 'submitting')     {
+      var ctx = lookup[d.nonce];
+      log('submitting with nonce ' + String(d.nonce).slice(0, 12) + '…', 'ok');
+      log(ctx ? '  → resolves to patient ' + ctx.patientId + ', entity ' + ctx.entityId
+              : '  → UNKNOWN NONCE (would quarantine)', ctx ? 'ok' : 'err');
+      return;
+    }
+    if (d.type === 'submit-blocked') { log('widget BLOCKED submit: ' + d.reason, 'err'); return; }
+    if (d.type === 'error')          { log('widget error: ' + d.reason, 'err'); return; }
+  }, false);
+
+  log('host ready — listening for widget on ' + WIDGET_ORIGIN);
+})();
+</script>
+</body>
+</html>
