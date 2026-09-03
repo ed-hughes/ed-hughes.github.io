@@ -62,6 +62,20 @@
         // data — and therefore PHI — into a submitted answer.
         var NONCE_RE = /^[A-Za-z0-9_-]{16,128}$/;
 
+        /* ---- defaults ----------------------------------------------------
+         * Used when the matching widget setting is absent. Widget settings are
+         * stored per placed instance, so a widget already on a form will not
+         * pick up newly declared settings until it is reconfigured or re-added.
+         *
+         * For a quick demo, just edit these three and ignore widget settings:
+         *   DEFAULT_ALLOWED_ORIGINS -> the origin of the HOST page
+         *   DEFAULT_DEBUG           -> 'true' to show the panel
+         *   DEFAULT_REQUIRE_CONTEXT -> 'false' while testing the handshake
+         * ------------------------------------------------------------------ */
+        var DEFAULT_ALLOWED_ORIGINS = 'https://ed-hughes.github.io';
+        var DEFAULT_DEBUG           = 'true';
+        var DEFAULT_REQUIRE_CONTEXT = 'false';
+
         var state = {
           nonce: null,
           adopted: false,   // value restored from an existing submission
@@ -237,13 +251,13 @@
         JFCustomWidget.subscribe('ready', function (data) {
           data = data || {};
 
-          allowedOrigins = String(setting('allowedOrigins', 'https://app.example.com'))
+          allowedOrigins = String(setting('allowedOrigins', DEFAULT_ALLOWED_ORIGINS))
             .split(',')
             .map(function (s) { return s.trim().replace(/\/+$/, ''); })
             .filter(Boolean);
 
-          debug          = truthy(setting('debug', 'false'));
-          requireContext = truthy(setting('requireContext', 'true'));
+          debug          = truthy(setting('debug', DEFAULT_DEBUG));
+          requireContext = truthy(setting('requireContext', DEFAULT_REQUIRE_CONTEXT));
 
           if (debug) panelEl.className = 'on';
 
