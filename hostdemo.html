@@ -93,6 +93,13 @@
   var lookup = {};        // nonce -> context. Stands in for the DB table.
   var current = null;
 
+  // Prefill the form URL from ?formUrl= so the whole demo is one link.
+  // Add &auto=1 to mint and load immediately on page load.
+  var qs = new URLSearchParams(location.search);
+  if (qs.get('formUrl')) {
+    document.getElementById('formUrl').value = qs.get('formUrl');
+  }
+
   function log(msg, cls) {
     var d = document.createElement('div');
     if (cls) d.className = cls;
@@ -162,6 +169,10 @@
   }, false);
 
   log('host ready — listening for widget on ' + WIDGET_ORIGIN);
+
+  if (qs.get('formUrl') && qs.get('auto')) {
+    document.getElementById('go').click();
+  }
 })();
 </script>
 </body>
