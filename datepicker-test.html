@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Date Setter Test Widget</title>
+    <script>
+        // ?sdk=old loads the legacy JotFormCustomWidget.min.js, anything else loads the UMD build.
+        // Jotform appends its own params to the iframe URL, so look for ours explicitly.
+        (function () {
+            var sdk = (location.search.match(/[?&]sdk=(old|new)/) || [])[1] || 'new';
+            window.__SDK = sdk;
+            var src = sdk === 'old'
+                ? 'https://js.jotform.com/JotFormCustomWidget.min.js'
+                : 'https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js';
+            document.write('<script src="' + src + '"><\/script>');
+        })();
+    </script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 8px; color: #0a1551; }
+        fieldset { border: 1px solid #c3cad8; border-radius: 6px; margin: 0 0 8px; padding: 8px; }
+        legend { font-weight: 600; padding: 0 4px; }
+        .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }
+        label { display: flex; flex-direction: column; font-size: 11px; color: #6c73a8; }
+        input, select { font: inherit; padding: 4px 6px; border: 1px solid #c3cad8; border-radius: 4px; }
+        input.sm { width: 60px; }
+        button { font: inherit; padding: 5px 9px; border: 0; border-radius: 4px; background: #0075e3; color: #fff; cursor: pointer; }
+        button.alt { background: #6c73a8; }
+        button.warn { background: #f23a3c; }
+        #preview { font-family: ui-monospace, Menlo, monospace; background: #f3f3fe; padding: 2px 6px; border-radius: 4px; }
+        #log { font-family: ui-monospace, Menlo, monospace; font-size: 11px; background: #0a1551; color: #e3e5f5; padding: 6px; border-radius: 6px; height: 200px; overflow: auto; white-space: pre-wrap; margin: 0; }
+        .ok { color: #7fe3a2; } .err { color: #ff8a8a; } .evt { color: #ffd37a; }
+    </style>
+</head>
+<body>
+<fieldset>
+    <legend>Target date field <span id="sdkTag" style="font-weight:400;color:#6c73a8"></span></legend>
+    <div class="row">
+        <label>QID<input id="qid" class="sm" value="3"></label>
+        <label>Label (for ByLabel)<input id="label" value="Date"></label>
+        <label>Year<input id="year" class="sm" value="2026"></label>
+        <label>Month<input id="month" class="sm" value="04"></label>
+        <label>Day<input id="day" class="sm" value="19"></label>
+        <label>Format
+            <select id="fmt">
+                <option value="MM-DD-YYYY">MM-DD-YYYY</option>
+                <option value="DD-MM-YYYY">DD-MM-YYYY</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+            </select>
+        </label>
+        <label>Sep
+            <select id="sep"><option>-</option><option>/</option><option>.</option></select>
+        </label>
+    </div>
+    <div class="row">String value: <span id="preview"></span></div>
+</fieldset>
+
+<fieldset>
+    <legend>Set methods</legend>
+    <div class="row">
+        <button data-act="byIdItems">setFieldsValueById (+items)</button>
+        <button data-act="byId">setFieldsValueById (string)</button>
+        <button data-act="byLabel">setFieldsValueByLabel</button>
+    </div>
+    <div class="row">
+        <button data-act="storeLite">storeToField lite_mode_{qid}</button>
+        <button data-act="storeParts">storeToField month/day/year_{qid}</button>
+        <button data-act="storeAll">storeToField lite + parts</button>
+    </div>
+    <div class="row">
+        <button class="alt" data-act="read">getFieldsValueById (read back)</button>
+        <button class="alt" data-act="listen">listenFromField (log changes)</button>
+        <button class="alt" data-act="switchSdk">Reload with other SDK</button>
+        <button class="warn" data-act="clearLog">Clear log</button>
+    </div>
+</fieldset>
+
+<pre id="log"></pre>
+
+<script>
+    var $ = function (id) { return document.getElementById(id); };
+    var logEl = $('log');
+
+    function log(msg, cls) {
+        var t = new Date().toISOString().substr(11, 12);
+        var line = document.createElement('span');
+        if (cls) line.className = cls;
+        line.textContent = '[' + t + '] ' + (typeof msg === 'string' ? msg : JSON.stringify(msg)) + '\n';
+        logEl.appendChild(line);
+        logEl.scrollTop = logEl.scrollHeight;
+        console.log('[date-test]', msg);
+    }
+
+    function pad(v) { return String(v).padStart(2, '0'); }
+
+    function parts() {
+        return { qid: $('qid').value.trim(), year: $('year').value.trim(), month: pad($('month').value.trim()), day: pad($('day').value.trim()) };
+    }
+
+    function dateString() {
+        var p = parts(), s = $('sep').value;
+        switch ($('fmt').value) {
+            case 'DD-MM-YYYY': return [p.day, p.month, p.year].join(s);
+            case 'YYYY-MM-DD': return [p.year, p.month, p.day].join(s);
+            default: return [p.month, p.day, p.year].join(s);
+        }
+    }
+
+    function refreshPreview() { $('preview').textContent = dateString(); }
+    ['qid', 'year', 'month', 'day', 'fmt', 'sep'].forEach(function (id) { $(id).addEventListener('input', refreshPreview); });
+
+    function call(name, args) {
+        if (typeof JFCustomWidget[name] !== 'function') {
+            log('JFCustomWidget.' + name + ' is not available in this SDK', 'err');
+            return;
+        }
+        log('→ ' + name + '(' + args.map(function (a) { return typeof a === 'function' ? '<cb>' : JSON.stringify(a); }).join(', ') + ')');
+        try {
+            var r = JFCustomWidget[name].apply(JFCustomWidget, args);
+            if (r && typeof r.then === 'function') {
+                r.then(function (v) { log('  ← resolved ' + JSON.stringify(v), 'ok'); }, function (e) { log('  ← rejected ' + e, 'err'); });
+            }
+        } catch (e) {
+            log('  threw: ' + e.message, 'err');
+        }
+    }
+
+    var actions = {
+        byIdItems: function () {
+            var p = parts();
+            call('setFieldsValueById', [[{ id: p.qid, value: dateString(), items: { month: p.month, day: p.day, year: p.year } }]]);
+        },
+        byId: function () {
+            call('setFieldsValueById', [[{ id: parts().qid, value: dateString() }]]);
+        },
+        byLabel: function () {
+            call('setFieldsValueByLabel', [[{ label: $('label').value, value: dateString() }]]);
+        },
+        storeLite: function () {
+            call('storeToField', ['lite_mode_' + parts().qid, dateString()]);
+        },
+        storeParts: function () {
+            var p = parts();
+            call('storeToField', ['month_' + p.qid, p.month]);
+            call('storeToField', ['day_' + p.qid, p.day]);
+            call('storeToField', ['year_' + p.qid, p.year]);
+        },
+        storeAll: function () {
+            actions.storeLite();
+            actions.storeParts();
+        },
+        read: function () {
+            call('getFieldsValueById', [[parts().qid], function (res) { log('  ← ' + JSON.stringify(res), 'ok'); }]);
+        },
+        listen: function () {
+            var p = parts();
+            ['change', 'blur', 'input', 'date:changed'].forEach(function (evt) {
+                ['lite_mode_' + p.qid, 'month_' + p.qid, 'input_' + p.qid].forEach(function (fid) {
+                    call('listenFromField', [fid, evt, function (d) { log('EVENT ' + fid + ' ' + evt + ' ' + JSON.stringify(d), 'evt'); }]);
+                });
+            });
+        },
+        switchSdk: function () {
+            var other = window.__SDK === 'old' ? 'new' : 'old';
+            var q = location.search.replace(/([?&])sdk=(old|new)&?/, '$1').replace(/[?&]$/, '');
+            location.search = (q ? q + '&' : '?') + 'sdk=' + other;
+        },
+        clearLog: function () { logEl.textContent = ''; }
+    };
+
+    document.addEventListener('click', function (e) {
+        var act = e.target.getAttribute && e.target.getAttribute('data-act');
+        if (act && actions[act]) actions[act]();
+    });
+
+    refreshPreview();
+    $('sdkTag').textContent = '— SDK: ' + (window.__SDK === 'old' ? 'JotFormCustomWidget.min.js' : 'for-custom-widgets.js (UMD latest)');
+
+    if (typeof JFCustomWidget === 'undefined') {
+        log('JFCustomWidget global not found — SDK failed to load', 'err');
+    } else {
+        JFCustomWidget.subscribe('ready', function (data) {
+            log('ready ' + JSON.stringify(data), 'ok');
+            if (typeof JFCustomWidget.requestFrameResize === 'function') {
+                JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 10 });
+            }
+        });
+        JFCustomWidget.subscribe('submit', function () {
+            JFCustomWidget.sendSubmit({ valid: true, value: '' });
+        });
+    }
+</script>
+</body>
+</html>
