@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JF Widget SDK Explorer</title>
+  <script src="https://cdn.jotfor.ms/s/umd/latest/for-custom-widgets.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #fff;
+      color: #111;
+      font-size: 12px;
+      padding: 8px;
+    }
+    h1 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: #111;
+      border-bottom: 2px solid #111;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+    }
+    .section {
+      margin-bottom: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .section-header {
+      background: #f0f0f0;
+      padding: 5px 8px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #444;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      border-bottom: 1px solid #ccc;
+    }
+    .section-header:hover { background: #e8e8e8; }
+    .section-header .arrow { transition: transform 0.2s; }
+    .section-header.collapsed .arrow { transform: rotate(-90deg); }
+    .section-body { padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; background: #fff; }
+    .section-body.hidden { display: none; }
+    .row { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+    label { color: #555; font-size: 10px; min-width: 60px; }
+    input[type="text"], input[type="number"], textarea {
+      background: #fff;
+      border: 1px solid #aaa;
+      color: #111;
+      padding: 3px 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      border-radius: 2px;
+      flex: 1;
+      min-width: 80px;
+    }
+    textarea { height: 36px; resize: vertical; }
+    input:focus, textarea:focus { outline: none; border-color: #333; }
+    button {
+      background: #fff;
+      border: 1px solid #888;
+      color: #111;
+      padding: 3px 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+    button:hover { background: #f0f0f0; border-color: #333; }
+    button:active { background: #e0e0e0; }
+    button.danger { color: #cc0011; border-color: #cc0011; }
+    button.danger:hover { background: #fff0f0; }
+    button.warning { color: #886600; border-color: #886600; }
+    button.warning:hover { background: #fffbe0; }
+    .result {
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      padding: 4px 6px;
+      font-size: 10px;
+      color: #888;
+      min-height: 18px;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+    .result.ok { color: #116622; border-color: #aaddbb; background: #f0fff4; }
+    .result.err { color: #cc0011; border-color: #ffaaaa; background: #fff0f0; }
+    .result.info { color: #0044aa; border-color: #aaccff; background: #f0f4ff; }
+    .result.warn { color: #886600; border-color: #ddcc88; background: #fffbe0; }
+    .console {
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 6px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 10px;
+      line-height: 1.6;
+    }
+    .console-line { border-bottom: 1px solid #eee; padding: 2px 0; }
+    .console-line .ts { color: #aaa; margin-right: 6px; }
+    .console-line.ok .msg { color: #116622; }
+    .console-line.err .msg { color: #cc0011; }
+    .console-line.info .msg { color: #0044aa; }
+    .console-line.warn .msg { color: #886600; }
+    .badge {
+      display: inline-block;
+      font-size: 9px;
+      padding: 1px 4px;
+      border-radius: 2px;
+      margin-left: 3px;
+      vertical-align: middle;
+    }
+    .badge.cb { background: #e0eaff; color: #0044aa; }
+    .badge.dep { background: #fff0cc; color: #886600; }
+    .cb-result { display: none; margin-left: 64px; }
+    .cb-result.visible { display: block; }
+    #ready-data {
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      padding: 6px;
+      font-size: 10px;
+      color: #444;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+<h1>⬡ SDK Explorer</h1>
+
+<!-- READY DATA -->
+<div class="section">
+  <div class="section-header" onclick="toggleSection(this)">Ready Event Data <span class="arrow">▾</span></div>
+  <div class="section-body">
+    <div id="ready-data">Waiting for ready event...</div>
+  </div>
+</div>
+
+<!-- SUBMIT / VALUE -->
+<div class="section">
+  <div class="section-header" onclick="toggleSection(this)">Submit &amp; Value <span class="arrow">▾</span></div>
+  <div class="section-body">
+    <div class="row">
+      <label>value</label>
+      <input type="text" id="send-value" placeholder="widget value">
+    </div>
+    <div class="row">
+      <button onclick="doSendData()">sendData()</button>
+      <button onclick="doSendSubmit(true)">sendSubmit(valid:true)</button>
+      <button class="danger" onclick="doSendSubmit(false)">sendSubmit(valid:false)</button>
+    </div>
+    <div class="row">
+      <label>calc value</label>
+      <input type="text" id="calc-value" placeholder="calculated value">
+      <button onclick="doSendCalcValue()">sendCalcValue()</button>
+    </div>
+    <div class="result" id="r-send"></div>
+  </div>
+</div>
+
+<!-- VALIDATION -->
+<div class="section">
+  <div class="section-header" onclick="toggleSection(this)">Validation <span class="arrow">▾</span></div>
+  <div class="section-body">
+    <div class="row">
+      <button onclick="log('isWidgetRequired: ' + JFCustomWidget.isWidgetRequired(), 'ok', 'r-valid')">isWidgetRequired()</button>
+      <button onclick="log('isWidgetReady: ' + JFCustomWidget.isWidgetReady(), 'ok', 'r-valid')">isWidgetReady()</button>
+      <button onclick="log('isWidgetStatic: ' + JFCustomWidget.isWidgetStatic(), 'ok', 'r-valid')">isWidgetStatic()</button>
+      <button onclick="log('isWidgetOnBuilder: ' + JFCustomWidget.isWidgetOnBuilder(), 'ok', 'r-valid')">isWidgetOnBuilder()</button>
+      <button onclick="log('isFromCardform: ' + JFCustomWidget.isFromCardform(), 'ok', 'r-valid')">isFromCardform()</button>
+    </div>
+    <div class="row">
+      <button class="warning" onclick="JFCustomWidget.makeWidgetRequired(); log('makeWidgetRequired() called', 'ok', 'r-valid')">makeWidgetRequired()</button>
+      <button onclick="JFCustomWidget.makeWidgetNotRequired(); log('makeWidgetNotRequired() called', 'ok', 'r-valid')">makeWidgetNotRequired()</button>
+    </div>
+    <div class="row">
+      <input type="text" id="error-msg-input" placeholder="error message">
+      <button class="danger" onclick="doShowError()">showWidgetError() <span class="badge warn">also sends invalid submit</span></button>
+      <button onclick="JFCustomWidget.hideWidgetError(); log('hideWidgetError() called', 'ok', 'r-valid')">hideWidgetError()</button>
+    </div>
+    <div class="result" id="r-valid"></div>
+  </div>
+</div>
+
+<!-- FRAME -->
+<div class="section">
+  <div class="section-header" onclick="toggleSection(this)">Frame &amp; Layout <span class="arrow">▾</span></div>
+  <div class="section-body">
+    <div class="row">
+      <label>height px</label>
+      <input type="number" id="frame-height" value="600" style="width:70px;flex:none">
+      <button onclick="doRequestResize()">requestFrameResize()</button>
+      <button onclick="JFCustomWidget.setFrameSize({height: parseInt(document.getElementById('frame-height').value)}); log('setFrameSize() called — alias for requestFrameResize', 'ok', 'r-frame')">setFrameSize() <span class="badge dep">alias</span></button>
+    </div>
+    <div class="row">
+      <label>styles JSON</label>
+      <input type="text" id="frame-styles" value='{"border":"2px solid #00ff88"}'>
+      <button onclick="doSetFrameStyles()">setFrameStyles()</button>
+    </div>
+    <div class="row">
+      <button onclick="JFCustomWidget.showWidgetContainer(); log('showWidgetContainer()', 'ok', 'r-frame')">showContainer()</button>
+      <button class="danger" onclick="JFCustomWidget.hideWidgetContainer(); log('hideWidgetContainer()', 'warn', 'r-frame')">hideContainer()</button>
+      <button class="warning" onclick="JFCustomWidget.makeInvisibleWidgetContainer(); log('makeInvisibleWidgetContainer()', 'warn', 'r-frame')">makeInvisible()</button>
+      <button onclick="JFCustomWidget.resetWidgetContainer(); log('resetWidgetContainer()', 'ok', 'r-frame')">resetContainer()</button>
+    </div>
+    <div class="row">
+      <button onclick="JFCustomWidget.detectFrameMovement(function(d){log('detectFrameMovement: '+JSON.stringify(d),'info','r-frame')}); log('detectFrameMovement() — listening...','ok','r-frame')">detectFrameMovement()</button>
+      <label><input type="checkbox" id="cb-framedata" checked> callback</label>
+      <button onclick="doGetFrameData()">getFrameData() <span class="badge cb">callback</span></button>
+    </div>
+    <div class="result cb-result" id="r-framedata-cb">—</div>
+    <div class="result" id="r-frame"></div>
+  </div>
+</div>
+
+<!-- WIDGET DATA & SETTINGS -->
+<div class="section">
+  <div class="section-header" onclick="toggleSection(this)">Widget Data &amp; Settings <span class="arrow">▾</span></div>
+  <div class="section-body">
+    <div class="row">
+      <button onclick="log('getWidgetData: '+JSON.stringify(JFCustomWidget.getWidgetData()),'ok','r-wdata')">getWidgetData()</button>
+      <button onclick="log('getWidgetSettings: '+JSON.stringify(JFCustomWidget.getWidgetSettings()),'ok','r-wdata')">getWidgetSettings()</button>
+    </div>
+    <div class="row">
+      <label>setting</label>
+      <input type="text" id="setting-name" placeholder="setting name">
+      <button onclick="doGetWidgetSetting()">getWidgetSetting()</button>
+    </div>
+    <div class="result" id="r-wdata"></div>
+  </div>
+</div>
+
+<!-- CONTEXT -->
+<div class="section">
+  <div class="section-header" onclick="toggleSection(this)">Context &amp; Origin <span class="arrow">▾</span></div>
+  <div class="section-body">
+    <div class="row">
+      <button onclick="log('getParentOrigin: '+JFCustomWidget.getParentOrigin(),'ok','r-ctx')">getParentOrigin()</button>
+      <button onclick="log('getEnterprise: '+JFCustomWidget.getEnterprise(),'ok','r-ctx')">getEnterprise()</button>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="cb-trackerid" checked> callback</label>
+      <button onclick="doGetFormTrackerID()">getFormTrackerID() <span class="badge cb">callback</span></button>
+    </div>
+    <div class="result cb-result" id="r-trackerid-cb">—</div>
+    <div class="row">
+      <label>param</label>
+      <input type="text" id="qs-param" placeholder="e.g. qid">
+      <button onclick="doGetWidgetSettingByKey()">getWidgetSetting(key)</button>
+    </div>
+    <div class="result" id="r-ctx"></div>
+  </div>
+</div>
+
+<!-- FIELD INTERACTION -->
+<div class="section">
+  <div class="section-header" onclick="toggleSection(this)">Field Interaction (Parent Form) <span class="arrow">▾</span></div>
+  <div class="section-body">
+    <div class="row">
+      <label>field ids</label>
+      <input type="text" id="field-ids" placeholder="e.g. [3,5,12]">
+      <label><input type="checkbox" id="cb-getbyid" checked> callback</label>
+      <button onclick="doGetFieldById()">getFieldsValueById() <span class="badge cb">callback</span></button>
+    </div>
+    <div class="result cb-result" id="r-getbyid">—</div>
+    <div class="row">
+      <label>field names</label>
+      <input type="text" id="field-names" placeholder='e.g. ["q3_name","q5_email"]'>
+      <label><input type="checkbox" id="cb-getbyname" checked> callback</label>
+      <button onclick="doGetFieldByName()">getFieldsValueByName() <span class="badge cb">callback</span></button>
+    </div>
+    <div class="result cb-result" id="r-getbyname">—</div>
+    <div class="row">
+      <label>set by id</label>
+      <textarea id="set-fields-json">[{"id":"3","value":"hello"},{"id":"5","value":"world"}]</textarea>
+      <button onclick="doSetFieldsById()">setFieldsValueById()</button>
+    </div>
+    <div class="row">
+      <label>set by label</label>
+      <textarea id="set-fields-label-json">[{"label":"First Name","value":"John"},{"label":"Email","value":"john@example.com"}]</textarea>
+      <button onclick="doSetFieldsByLabel()">setFieldsValueByLabel()</button>
+    </div>
+    <div class="row">
+      <label>input name</label>
+      <input type="text" id="store-field-name" placeholder="e.g. first_10, input_11_city">
+      <input type="text" id="store-field-val" placeholder="value">
+      <label><input type="checkbox" id="cb-store" checked> callback</label>
+      <button onclick="doStoreToField()">storeToField() <span class="badge cb">optional callback</span></button>
+    </div>
+    <div class="result cb-result" id="r-store-cb">—</div>
+    <div class="row">
+      <label>listen field</label>
+      <input type="number" id="listen-field-id" placeholder="qid" style="width:60px;flex:none">
+      <input type="text" id="listen-field-event" placeholder="event e.g. change" style="width:80px;flex:none">
+      <button onclick="doListenFromField()">listenFromField()</button>
+    </div>
+    <div class="result cb-result visible" id="r-listen-field">—</div>
+    <div class="row">
+      <button onclick="doListenFromWidget()">listenFromWidget()</button>
+    </div>
+    <div class="result cb-result visible" id="r-listen-widget">—</div>
+    <div class="row">
+      <label>clear fields</label>
+      <input type="text" id="clear-fields-json" placeholder="e.g. [3,5,12]">
+      <button class="danger" onclick="doClearFields()">clearFields() — parent form</button>
+      <button class="warning" onclick="JFCustomWidget.clearWidgetFields(); log('clearWidgetFields() — cleared inputs in this iframe','warn','r-field')">clearWidgetFields() — this iframe</button>
+    </div>
+    <div class="result" id="r-field"></div>
+  </div>
+</div>
+
+<!-- METADATA -->
+<div class="section">
+  <div class="section-header" onclick="toggleSection(this)">Metadata Utils <span class="arrow">▾</span></div>
+  <div class="section-body">
+    <div class="row">
+      <label>name</label>
+      <input type="text" id="meta-name" placeholder="file.png">
+      <label>url</label>
+      <input type="text" id="meta-url" placeholder="/uploads/...">
+      <button onclick="doBuildMetadata()">buildMetadata()</button>
+    </div>
+    <div class="row">
+      <label>value str</label>
+      <input type="text" id="meta-str" placeholder="paste metadata string">
+      <button onclick="doHasMetadata()">hasMetadata()</button>
+      <button onclick="doExtractMetadata()">extractMetadata()</button>
+    </div>
+    <div class="row">
+      <label>url/path</label>
+      <input type="text" id="s3-url" placeholder="full url or relative path">
+      <button onclick="doFixS3()">fixS3UriOrigin()</button>
+      <button onclick="doGetRelPath()">getS3UriRelativePath()</button>
+    </div>
+    <div class="row">
+      <button onclick="log('getFormDomain: '+JFCustomWidgetUtils.getFormDomain(),'ok','r-meta')">getFormDomain()</button>
+    </div>
+    <div class="result" id="r-meta"></div>
+  </div>
+</div>
+
+<!-- UTILS -->
+<div class="section">
+  <div class="section-header" onclick="toggleSection(this)">Utils <span class="arrow">▾</span></div>
+  <div class="section-body">
+    <div class="row">
+      <button onclick="log('isMobile: '+JFCustomWidgetUtils.isMobile(),'ok','r-utils')">isMobile()</button>
+      <button onclick="log('isSafari: '+JFCustomWidgetUtils.isSafari(),'ok','r-utils')">isSafari()</button>
+      <button onclick="log('isFirefox: '+JFCustomWidgetUtils.isFirefox(),'ok','r-utils')">isFirefox()</button>
+      <button onclick="log('getIE: '+JFCustomWidgetUtils.getIE(),'ok','r-utils')">getIE()</button>
+    </div>
+    <div class="row">
+      <input type="text" id="encode-str" placeholder="string to encode/decode/check">
+      <button onclick="log('encodeHtml: '+JFCustomWidgetUtils.encodeHtmlEntities(document.getElementById('encode-str').value),'ok','r-utils')">encodeHtml()</button>
+      <button onclick="log('decodeHtml: '+JFCustomWidgetUtils.decodeHtmlEntities(document.getElementById('encode-str').value),'ok','r-utils')">decodeHtml()</button>
+      <button onclick="log('isJsonString: '+JFCustomWidgetUtils.isJsonString(document.getElementById('encode-str').value),'ok','r-utils')">isJsonString()</button>
+    </div>
+    <div class="row">
+      <input type="text" id="type-check-val" placeholder="value to type-check">
+      <button onclick="doTypeChecks()">isArray / isObject / isEmpty</button>
+    </div>
+    <div class="result" id="r-utils"></div>
+  </div>
+</div>
+
+<!-- CONSOLE -->
+<div class="section">
+  <div class="section-header" onclick="toggleSection(this)">Console <span class="arrow">▾</span></div>
+  <div class="section-body">
+    <div class="console" id="console-log"></div>
+    <div class="row" style="margin-top:4px">
+      <button onclick="document.getElementById('console-log').innerHTML=''">clear console</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  JFCustomWidgetUtils.domReady(function() {
+
+    // ---- Logging ----
+    window.log = function(msg, type, resultId) {
+      type = type || 'ok';
+      if (resultId) {
+        var el = document.getElementById(resultId);
+        if (el) { el.textContent = msg; el.className = 'result ' + type; }
+      }
+      var c = document.getElementById('console-log');
+      var line = document.createElement('div');
+      line.className = 'console-line ' + type;
+      var ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
+      line.innerHTML = '<span class="ts">' + ts + '</span><span class="msg">' + esc(String(msg)) + '</span>';
+      c.appendChild(line);
+      c.scrollTop = c.scrollHeight;
+    };
+
+    function esc(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function tryJSON(str) {
+      try { return JSON.parse(str); } catch(e) { return null; }
+    }
+
+    window.toggleSection = function(header) {
+      header.classList.toggle('collapsed');
+      header.nextElementSibling.classList.toggle('hidden');
+    };
+
+    // ---- SDK Events ----
+    JFCustomWidget.subscribe('ready', function(data) {
+      document.getElementById('ready-data').textContent = JSON.stringify(data, null, 2);
+      log('ready — qid:' + data.qid + ' formID:' + data.formID + ' isEditMode:' + data.isEditMode + ' required:' + data.required + ' static:' + data.static + ' onWizard:' + data.onWizard, 'ok');
+    });
+
+    JFCustomWidget.subscribe('submit', function() {
+      var value = document.getElementById('send-value').value;
+      var valid = value.length > 0 || !JFCustomWidget.isWidgetRequired();
+      log('submit event — value:"' + value + '" valid:' + valid, valid ? 'ok' : 'err');
+      if (!valid) {
+        JFCustomWidget.showWidgetError('This field is required.');
+      } else {
+        JFCustomWidget.hideWidgetError();
+        JFCustomWidget.sendSubmit({ valid: valid, value: value });
+      }
+    });
+
+    JFCustomWidget.subscribe('clear', function() {
+      document.getElementById('send-value').value = '';
+      log('clear event', 'warn');
+    });
+
+    JFCustomWidget.subscribe('populate', function(data) {
+      log('populate event: ' + JSON.stringify(data), 'info');
+    });
+
+    JFCustomWidget.subscribe('required', function(data) {
+      log('required event: ' + JSON.stringify(data), 'info');
+    });
+
+    JFCustomWidget.subscribe('style', function(data) {
+      log('style event: ' + JSON.stringify(data), 'info');
+    });
+
+    // ---- Submit / Value ----
+    window.doSendData = function() {
+      var v = document.getElementById('send-value').value;
+      JFCustomWidget.sendData({ value: v });
+      log('sendData({ value: "' + v + '" })', 'ok', 'r-send');
+    };
+
+    window.doSendSubmit = function(valid) {
+      var v = document.getElementById('send-value').value;
+      if (!valid) {
+        JFCustomWidget.showWidgetError('Manual invalid submit triggered');
+      } else {
+        JFCustomWidget.hideWidgetError();
+        JFCustomWidget.sendSubmit({ valid: valid, value: v });
+      }
+      log('sendSubmit({ valid:' + valid + ', value:"' + v + '" })', valid ? 'ok' : 'err', 'r-send');
+    };
+
+    window.doSendCalcValue = function() {
+      var v = document.getElementById('calc-value').value;
+      JFCustomWidget.sendCalcValue({ value: v });
+      log('sendCalcValue({ value: "' + v + '" })', 'ok', 'r-send');
+    };
+
+    // ---- Validation ----
+    window.doShowError = function() {
+      var msg = document.getElementById('error-msg-input').value || 'Test error message';
+      JFCustomWidget.showWidgetError(msg);
+      log('showWidgetError("' + msg + '") — also sent invalid submit automatically', 'err', 'r-valid');
+    };
+
+    // ---- Frame ----
+    window.doRequestResize = function() {
+      var h = parseInt(document.getElementById('frame-height').value) || 600;
+      JFCustomWidget.requestFrameResize({ height: h });
+      log('requestFrameResize({ height: ' + h + ' })', 'ok', 'r-frame');
+    };
+
+    window.doSetFrameStyles = function() {
+      var parsed = tryJSON(document.getElementById('frame-styles').value);
+      if (!parsed) { log('Invalid JSON', 'err', 'r-frame'); return; }
+      JFCustomWidget.setFrameStyles(parsed);
+      log('setFrameStyles(' + JSON.stringify(parsed) + ')', 'ok', 'r-frame');
+    };
+
+    window.doGetFrameData = function() {
+      var useCallback = document.getElementById('cb-framedata').checked;
+      if (useCallback) {
+        JFCustomWidget.getFrameData(function(d) {
+          showCbResult('r-framedata-cb', JSON.stringify(d));
+          log('getFrameData callback: ' + JSON.stringify(d), 'info');
+        });
+        log('getFrameData() — waiting for callback...', 'ok', 'r-frame');
+      } else {
+        JFCustomWidget.getFrameData(null);
+        log('getFrameData() called without callback', 'ok', 'r-frame');
+      }
+    };
+
+    // ---- Settings ----
+    window.doGetWidgetSetting = function() {
+      var name = document.getElementById('setting-name').value;
+      if (!name) { log('Enter a setting name', 'err', 'r-wdata'); return; }
+      var val = JFCustomWidget.getWidgetSetting(name);
+      log('getWidgetSetting("' + name + '"): ' + JSON.stringify(val), 'ok', 'r-wdata');
+    };
+
+    // ---- Context ----
+    window.doGetWidgetSettingByKey = function() {
+      var param = document.getElementById('qs-param').value;
+      if (!param) { log('Enter a param name', 'err', 'r-ctx'); return; }
+      var val = JFCustomWidget.getWidgetSetting(param);
+      log('getWidgetSetting("' + param + '"): ' + val, 'ok', 'r-ctx');
+    };
+
+    window.doGetFormTrackerID = function() {
+      var useCallback = document.getElementById('cb-trackerid').checked;
+      if (useCallback) {
+        JFCustomWidget.getFormTrackerID(function(d) {
+          showCbResult('r-trackerid-cb', JSON.stringify(d));
+          log('getFormTrackerID callback: ' + JSON.stringify(d), 'info');
+        });
+        log('getFormTrackerID() — waiting for callback...', 'ok', 'r-ctx');
+      } else {
+        JFCustomWidget.getFormTrackerID(null);
+        log('getFormTrackerID() called without callback', 'ok', 'r-ctx');
+      }
+    };
+
+    // ---- Field Interaction ----
+    function showCbResult(id, text) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'result cb-result visible ok';
+    }
+
+    window.doGetFieldById = function() {
+      var parsed = tryJSON(document.getElementById('field-ids').value);
+      if (!parsed) { log('Enter valid JSON array e.g. [3,5]', 'err', 'r-field'); return; }
+      var useCallback = document.getElementById('cb-getbyid').checked;
+      if (useCallback) {
+        JFCustomWidget.getFieldsValueById(parsed, function(d) {
+          showCbResult('r-getbyid', JSON.stringify(d));
+          log('getFieldsValueById callback: ' + JSON.stringify(d), 'info');
+        });
+        log('getFieldsValueById(' + JSON.stringify(parsed) + ') — waiting for callback...', 'ok', 'r-field');
+      } else {
+        JFCustomWidget.getFieldsValueById(parsed, null);
+        log('getFieldsValueById(' + JSON.stringify(parsed) + ') called without callback', 'ok', 'r-field');
+      }
+    };
+
+    window.doGetFieldByName = function() {
+      var parsed = tryJSON(document.getElementById('field-names').value);
+      if (!parsed) { log('Enter valid JSON array e.g. ["q3_name"]', 'err', 'r-field'); return; }
+      var useCallback = document.getElementById('cb-getbyname').checked;
+      if (useCallback) {
+        JFCustomWidget.getFieldsValueByName(parsed, function(d) {
+          showCbResult('r-getbyname', JSON.stringify(d));
+          log('getFieldsValueByName callback: ' + JSON.stringify(d), 'info');
+        });
+        log('getFieldsValueByName(' + JSON.stringify(parsed) + ') — waiting for callback...', 'ok', 'r-field');
+      } else {
+        JFCustomWidget.getFieldsValueByName(parsed, null);
+        log('getFieldsValueByName(' + JSON.stringify(parsed) + ') called without callback', 'ok', 'r-field');
+      }
+    };
+
+    window.doSetFieldsById = function() {
+      var parsed = tryJSON(document.getElementById('set-fields-json').value);
+      if (!parsed) { log('Enter valid JSON array e.g. [{"id":"3","value":"hello"}]', 'err', 'r-field'); return; }
+      JFCustomWidget.setFieldsValueById(parsed);
+      log('setFieldsValueById(' + JSON.stringify(parsed) + ')', 'ok', 'r-field');
+    };
+
+    window.doSetFieldsByLabel = function() {
+      var parsed = tryJSON(document.getElementById('set-fields-label-json').value);
+      if (!parsed) { log('Enter valid JSON array e.g. [{"label":"Name","value":"John"}]', 'err', 'r-field'); return; }
+      JFCustomWidget.setFieldsValueByLabel(parsed);
+      log('setFieldsValueByLabel(' + JSON.stringify(parsed) + ')', 'ok', 'r-field');
+    };
+
+    window.doStoreToField = function() {
+      var name = document.getElementById('store-field-name').value;
+      var val = document.getElementById('store-field-val').value;
+      if (!name) { log('Enter an input name', 'err', 'r-field'); return; }
+      var useCallback = document.getElementById('cb-store').checked;
+      if (useCallback) {
+        JFCustomWidget.storeToField(name, val, function(stored) {
+          showCbResult('r-store-cb', JSON.stringify(stored));
+          log('storeToField callback: ' + JSON.stringify(stored), 'info');
+        });
+      } else {
+        JFCustomWidget.storeToField(name, val);
+      }
+      log('storeToField("' + name + '", "' + val + '")', 'ok', 'r-field');
+    };
+
+    window.doListenFromField = function() {
+      var id = parseInt(document.getElementById('listen-field-id').value);
+      var event = document.getElementById('listen-field-event').value || 'change';
+      if (!id) { log('Enter a field qid', 'err', 'r-field'); return; }
+      JFCustomWidget.listenFromField(id, event, function(value) {
+        showCbResult('r-listen-field', JSON.stringify(value));
+        log('listenFromField(' + id + ', "' + event + '") — value: ' + JSON.stringify(value), 'info');
+      });
+      log('listenFromField(' + id + ', "' + event + '") — now listening...', 'ok', 'r-field');
+    };
+
+    window.doListenFromWidget = function() {
+      JFCustomWidget.listenFromWidget(null, function(value) {
+        showCbResult('r-listen-widget', JSON.stringify(value));
+        log('listenFromWidget — received: ' + JSON.stringify(value), 'info');
+      });
+      log('listenFromWidget() — listening for values sent to this widget (qid:' + JFCustomWidget.questionID + ')', 'ok', 'r-field');
+    };
+
+    window.doClearFields = function() {
+      var parsed = tryJSON(document.getElementById('clear-fields-json').value);
+      if (!parsed) { log('Enter valid JSON array e.g. [3,5]', 'err', 'r-field'); return; }
+      JFCustomWidget.clearFields(parsed);
+      log('clearFields(' + JSON.stringify(parsed) + ') — sent to parent form', 'warn', 'r-field');
+    };
+
+    // ---- Metadata ----
+    window.doBuildMetadata = function() {
+      var name = document.getElementById('meta-name').value || 'test.png';
+      var url = document.getElementById('meta-url').value || '/uploads/test.png';
+      var result = JFCustomWidgetUtils.buildMetadata('imagelinks', [{ name: name, url: url }]);
+      log('buildMetadata: ' + result, 'ok', 'r-meta');
+    };
+
+    window.doHasMetadata = function() {
+      var str = document.getElementById('meta-str').value;
+      var result = JFCustomWidgetUtils.hasMetadata(str);
+      log('hasMetadata: ' + result, result ? 'ok' : 'warn', 'r-meta');
+    };
+
+    window.doExtractMetadata = function() {
+      var str = document.getElementById('meta-str').value;
+      try {
+        var result = JFCustomWidgetUtils.extractMetadata(str);
+        log('extractMetadata: ' + JSON.stringify(result), 'ok', 'r-meta');
+      } catch(e) {
+        log('extractMetadata error: ' + e.message, 'err', 'r-meta');
+      }
+    };
+
+    window.doFixS3 = function() {
+      var url = document.getElementById('s3-url').value;
+      if (!url) { log('Enter a URL or path', 'err', 'r-meta'); return; }
+      log('fixS3UriOrigin: ' + JFCustomWidgetUtils.fixS3UriOrigin(url), 'ok', 'r-meta');
+    };
+
+    window.doGetRelPath = function() {
+      var url = document.getElementById('s3-url').value;
+      if (!url) { log('Enter a URL', 'err', 'r-meta'); return; }
+      log('getS3UriRelativePath: ' + JFCustomWidgetUtils.getS3UriRelativePath(url), 'ok', 'r-meta');
+    };
+
+    // ---- Utils ----
+    window.doTypeChecks = function() {
+      var raw = document.getElementById('type-check-val').value;
+      var parsed = tryJSON(raw) !== null ? tryJSON(raw) : raw;
+      log(
+        'isArray:' + JFCustomWidgetUtils.isArray(parsed) +
+        ' isObject:' + JFCustomWidgetUtils.isObject(parsed) +
+        ' isEmpty:' + JFCustomWidgetUtils.isEmpty(parsed),
+        'ok', 'r-utils'
+      );
+    };
+
+    log('SDK Explorer ready — waiting for ready event...', 'info');
+    JFCustomWidget.requestFrameResize({ height: document.body.scrollHeight + 20 });
+  });
+</script>
+</body>
+</html>
